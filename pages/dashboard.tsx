@@ -1,48 +1,74 @@
+// /pages/dashboard.tsx - Protected dashboard with invoices table
 import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import type { Invoice, InvoicesResponse, ErrorResponse } from "../types";
+import type {
+  Invoice,
+  InvoicesResponse,
+  MeResponse,
+  ErrorResponse,
+} from "../types";
 
 export default function DashboardPage() {
   const router = useRouter();
 
-  // Firm data from localStorage
-  const [firmId, setFirmId] = useState<string | null>(null);
-  const [firmName, setFirmName] = useState<string | null>(null);
+  // Firm data from /api/me
+  const [firmId, setFirmId] = useState<number | null>(null);
+  const [firmName, setFirmName] = useState<string>("");
+  const [usageCurrentMonth, setUsageCurrentMonth] = useState<number>(0);
+  const [planLimit, setPlanLimit] = useState<number>(0);
+  const [userEmail, setUserEmail] = useState<string>("");
 
   // Filter state
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [clientName, setClientName] = useState("");
+  const [clientFilter, setClientFilter] = useState("");
 
   // Invoices data
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMe, setLoadingMe] = useState(true);
   const [error, setError] = useState("");
 
-  // Check authentication on mount
+  // Fetch user/firm info on mount
   useEffect(() => {
-    const storedFirmId = localStorage.getItem("firmId");
-    const storedFirmName = localStorage.getItem("firmName");
+    const fetchMe = async () => {
+      try {
+        const response = await fetch("/api/me");
 
-    if (!storedFirmId) {
-      // Not authenticated, redirect to login
-      router.replace("/login");
-      return;
-    }
+        if (!response.ok) {
+          // Not authenticated or error - redirect handled by middleware
+          // but just in case, redirect to login
+          if (response.status === 401) {
+            router.replace("/login");
+            return;
+          }
+          throw new Error("Failed to fetch user info");
+        }
 
-    setFirmId(storedFirmId);
-    setFirmName(storedFirmName);
+        const data: MeResponse = await response.json();
+        setFirmId(data.firmId);
+        setFirmName(data.firmName);
+        setUsageCurrentMonth(data.usageCurrentMonth);
+        setPlanLimit(data.planLimit);
+        setUserEmail(data.email);
+      } catch (err) {
+        console.error("Error fetching /api/me:", err);
+        router.replace("/login");
+      } finally {
+        setLoadingMe(false);
+      }
+    };
+
+    fetchMe();
   }, [router]);
 
-  const handleLogout = () => {
-    // Clear localStorage
-    localStorage.removeItem("firmId");
-    localStorage.removeItem("firmName");
-    localStorage.removeItem("usageCurrentMonth");
-    localStorage.removeItem("planLimit");
-
-    // Redirect to login
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
     router.replace("/login");
   };
 
@@ -54,9 +80,8 @@ export default function DashboardPage() {
     setError("");
 
     try {
-      // Build query string
+      // Build query string with optional filters
       const params = new URLSearchParams();
-      params.set("firmId", firmId);
 
       if (fromDate) {
         params.set("from", fromDate);
@@ -64,11 +89,14 @@ export default function DashboardPage() {
       if (toDate) {
         params.set("to", toDate);
       }
-      if (clientName.trim()) {
-        params.set("clientName", clientName.trim());
+      if (clientFilter.trim()) {
+        params.set("client", clientFilter.trim());
       }
 
-      const response = await fetch(`/api/invoices?${params.toString()}`);
+      const url = `/api/invoices${
+        params.toString() ? `?${params.toString()}` : ""
+      }`;
+      const response = await fetch(url);
       const data: InvoicesResponse | ErrorResponse = await response.json();
 
       if (!response.ok) {
@@ -89,7 +117,7 @@ export default function DashboardPage() {
   };
 
   // Show loading state while checking authentication
-  if (!firmId) {
+  if (loadingMe) {
     return (
       <div style={styles.loadingContainer}>
         <p>Cargando...</p>
@@ -111,12 +139,20 @@ export default function DashboardPage() {
           <div>
             <h1 style={styles.headerTitle}>ContableBot Portal</h1>
             <p style={styles.headerSubtitle}>
-              {firmName} (ID: {firmId})
+              {firmName} • {userEmail}
             </p>
           </div>
-          <button onClick={handleLogout} style={styles.logoutButton}>
-            Cerrar Sesión
-          </button>
+          <div style={styles.headerRight}>
+            <div style={styles.usageInfo}>
+              <span style={styles.usageLabel}>Uso este mes:</span>
+              <span style={styles.usageValue}>
+                {usageCurrentMonth} / {planLimit} facturas
+              </span>
+            </div>
+            <button onClick={handleLogout} style={styles.logoutButton}>
+              Cerrar Sesión
+            </button>
+          </div>
         </header>
 
         {/* Main content */}
@@ -152,15 +188,15 @@ export default function DashboardPage() {
               </div>
 
               <div style={styles.filterGroup}>
-                <label htmlFor="clientName" style={styles.label}>
+                <label htmlFor="clientFilter" style={styles.label}>
                   Nombre del Cliente
                 </label>
                 <input
                   type="text"
-                  id="clientName"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Nombre exacto del cliente"
+                  id="clientFilter"
+                  value={clientFilter}
+                  onChange={(e) => setClientFilter(e.target.value)}
+                  placeholder="Buscar por nombre"
                   style={styles.input}
                 />
               </div>
@@ -281,6 +317,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#fff",
     borderBottom: "1px solid #e0e0e0",
     boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+    flexWrap: "wrap",
+    gap: "16px",
   },
   headerTitle: {
     margin: 0,
@@ -292,6 +330,25 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: "4px 0 0 0",
     fontSize: "14px",
     color: "#666",
+  },
+  headerRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+  },
+  usageInfo: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+  },
+  usageLabel: {
+    fontSize: "12px",
+    color: "#888",
+  },
+  usageValue: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#333",
   },
   logoutButton: {
     padding: "10px 20px",

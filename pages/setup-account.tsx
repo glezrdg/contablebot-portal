@@ -1,14 +1,16 @@
-// /pages/login.tsx - Email/password login page
+// /pages/setup-account.tsx - First-time account setup page
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
 import type { ErrorResponse } from "../types";
 
-export default function LoginPage() {
+export default function SetupAccountPage() {
   const router = useRouter();
+  const [licenseKey, setLicenseKey] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,24 +19,34 @@ export default function LoginPage() {
     setError("");
 
     // Client-side validation
+    if (!licenseKey.trim()) {
+      setError("La licencia es requerida");
+      return;
+    }
     if (!email.trim() || !email.includes("@")) {
       setError("Email inválido");
       return;
     }
-    if (!password) {
-      setError("La contraseña es requerida");
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch("/api/setup-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          licenseKey: licenseKey.trim(),
           email: email.trim(),
           password,
+          confirmPassword,
         }),
       });
 
@@ -42,7 +54,7 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = data as ErrorResponse;
-        setError(errorData.error || "Error al iniciar sesión");
+        setError(errorData.error || "Error al crear la cuenta");
         setLoading(false);
         return;
       }
@@ -50,7 +62,7 @@ export default function LoginPage() {
       // Success - redirect to dashboard
       router.push("/dashboard");
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Setup error:", err);
       setError("Error de conexión. Intente nuevamente.");
       setLoading(false);
     }
@@ -59,17 +71,36 @@ export default function LoginPage() {
   return (
     <>
       <Head>
-        <title>Iniciar Sesión - ContableBot Portal</title>
-        <meta name="description" content="Portal de facturación ContableBot" />
+        <title>Crear Cuenta - ContableBot Portal</title>
+        <meta
+          name="description"
+          content="Configure su cuenta de ContableBot Portal"
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <div style={styles.container}>
-        <div style={styles.loginBox}>
+        <div style={styles.formBox}>
           <h1 style={styles.title}>ContableBot Portal</h1>
-          <p style={styles.subtitle}>Ingrese sus credenciales</p>
+          <p style={styles.subtitle}>Configure su cuenta por primera vez</p>
 
           <form onSubmit={handleSubmit} style={styles.form}>
+            <div style={styles.inputGroup}>
+              <label htmlFor="licenseKey" style={styles.label}>
+                Licencia
+              </label>
+              <input
+                type="text"
+                id="licenseKey"
+                value={licenseKey}
+                onChange={(e) => setLicenseKey(e.target.value)}
+                placeholder="Ingrese su clave de licencia"
+                style={styles.input}
+                disabled={loading}
+                autoFocus
+              />
+            </div>
+
             <div style={styles.inputGroup}>
               <label htmlFor="email" style={styles.label}>
                 Email
@@ -82,7 +113,6 @@ export default function LoginPage() {
                 placeholder="su@email.com"
                 style={styles.input}
                 disabled={loading}
-                autoFocus
               />
             </div>
 
@@ -95,7 +125,22 @@ export default function LoginPage() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Su contraseña"
+                placeholder="Mínimo 6 caracteres"
+                style={styles.input}
+                disabled={loading}
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label htmlFor="confirmPassword" style={styles.label}>
+                Confirmar Contraseña
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repita la contraseña"
                 style={styles.input}
                 disabled={loading}
               />
@@ -112,13 +157,13 @@ export default function LoginPage() {
               }}
               disabled={loading}
             >
-              {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+              {loading ? "Creando cuenta..." : "Crear Cuenta"}
             </button>
 
             <p style={styles.linkText}>
-              ¿Primera vez?{" "}
-              <Link href="/setup-account" style={styles.link}>
-                Crear cuenta con licencia
+              ¿Ya tiene una cuenta?{" "}
+              <Link href="/login" style={styles.link}>
+                Iniciar sesión
               </Link>
             </p>
           </form>
@@ -137,13 +182,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#f5f5f5",
     padding: "20px",
   },
-  loginBox: {
+  formBox: {
     backgroundColor: "#fff",
     padding: "40px",
     borderRadius: "8px",
     boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
     width: "100%",
-    maxWidth: "400px",
+    maxWidth: "420px",
   },
   title: {
     margin: "0 0 8px 0",
@@ -161,7 +206,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   form: {
     display: "flex",
     flexDirection: "column",
-    gap: "20px",
+    gap: "18px",
   },
   inputGroup: {
     display: "flex",
@@ -200,12 +245,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "6px",
     cursor: "pointer",
     transition: "background-color 0.2s",
+    marginTop: "8px",
   },
   linkText: {
     textAlign: "center",
     fontSize: "14px",
     color: "#666",
-    marginTop: "4px",
+    marginTop: "8px",
   },
   link: {
     color: "#0070f3",

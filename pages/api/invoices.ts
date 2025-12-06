@@ -1,5 +1,7 @@
+// GET /api/invoices - Fetch invoices for the authenticated firm
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { Invoice, InvoicesResponse, ErrorResponse } from "../../types";
+import { requireAuth } from "../../lib/auth";
 
 const POSTGREST_BASE_URL = process.env.POSTGREST_BASE_URL;
 
@@ -21,19 +23,18 @@ export default async function handler(
       .json({ error: "Error de configuración del servidor" });
   }
 
-  // Extract query parameters
-  const { firmId, from, to, clientName } = req.query;
+  // Require authentication and get firmId from JWT
+  const session = requireAuth(req, res);
+  if (!session) return; // Response already sent by requireAuth
 
-  // Validate firmId is required
-  if (!firmId || typeof firmId !== "string") {
-    return res.status(400).json({ error: "El parámetro firmId es requerido" });
-  }
+  // Extract optional query parameters
+  const { from, to, client } = req.query;
 
   // Build the PostgREST query URL
   const queryParams: string[] = [];
 
-  // Required: filter by firm_id
-  queryParams.push(`firm_id=eq.${encodeURIComponent(firmId)}`);
+  // Always filter by firm_id from the authenticated session
+  queryParams.push(`firm_id=eq.${session.firmId}`);
 
   // Optional: filter by fecha >= from
   if (from && typeof from === "string") {
@@ -45,9 +46,12 @@ export default async function handler(
     queryParams.push(`fecha=lte.${encodeURIComponent(to)}`);
   }
 
-  // Optional: filter by client_name
-  if (clientName && typeof clientName === "string") {
-    queryParams.push(`client_name=eq.${encodeURIComponent(clientName)}`);
+  // Optional: filter by client_name (case-insensitive partial match)
+  if (client && typeof client === "string" && client.trim().length > 0) {
+    // Use ILIKE for case-insensitive partial match
+    queryParams.push(
+      `client_name=ilike.*${encodeURIComponent(client.trim())}*`
+    );
   }
 
   // Add limit
@@ -63,10 +67,7 @@ export default async function handler(
   try {
     const response = await fetch(postgrestUrl, {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
+      headers: { Accept: "application/json" },
     });
 
     if (!response.ok) {
