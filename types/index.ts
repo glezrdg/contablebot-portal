@@ -8,7 +8,7 @@ export interface Firm {
   id: number;
   name: string;
   license_key: string;
-  usage_current_month: number;
+  used_this_month: number;
   plan_limit: number;
   whop_membership_id?: string;
   whop_plan_id?: string;
