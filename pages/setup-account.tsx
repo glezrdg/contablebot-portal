@@ -18,7 +18,6 @@ export default function SetupAccountPage() {
     e.preventDefault();
     setError("");
 
-    // Client-side validation
     if (!licenseKey.trim()) {
       setError("La licencia es requerida");
       return;
@@ -59,7 +58,6 @@ export default function SetupAccountPage() {
         return;
       }
 
-      // Success - redirect to dashboard
       router.push("/dashboard");
     } catch (err) {
       console.error("Setup error:", err);
@@ -79,14 +77,21 @@ export default function SetupAccountPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div style={styles.container}>
-        <div style={styles.formBox}>
-          <h1 style={styles.title}>ContableBot Portal</h1>
-          <p style={styles.subtitle}>Configure su cuenta por primera vez</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+        <div className="bg-white p-8 sm:p-10 rounded-xl shadow-lg w-full max-w-md">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-2">
+            ContableBot Portal
+          </h1>
+          <p className="text-sm text-center text-gray-500 mb-8">
+            Configure su cuenta por primera vez
+          </p>
 
-          <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.inputGroup}>
-              <label htmlFor="licenseKey" style={styles.label}>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label
+                htmlFor="licenseKey"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Licencia
               </label>
               <input
@@ -95,14 +100,17 @@ export default function SetupAccountPage() {
                 value={licenseKey}
                 onChange={(e) => setLicenseKey(e.target.value)}
                 placeholder="Ingrese su clave de licencia"
-                style={styles.input}
                 disabled={loading}
                 autoFocus
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
-            <div style={styles.inputGroup}>
-              <label htmlFor="email" style={styles.label}>
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email
               </label>
               <input
@@ -111,13 +119,16 @@ export default function SetupAccountPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="su@email.com"
-                style={styles.input}
                 disabled={loading}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
-            <div style={styles.inputGroup}>
-              <label htmlFor="password" style={styles.label}>
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Contraseña
               </label>
               <input
@@ -126,13 +137,16 @@ export default function SetupAccountPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
-                style={styles.input}
                 disabled={loading}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
-            <div style={styles.inputGroup}>
-              <label htmlFor="confirmPassword" style={styles.label}>
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Confirmar Contraseña
               </label>
               <input
@@ -141,28 +155,33 @@ export default function SetupAccountPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Repita la contraseña"
-                style={styles.input}
                 disabled={loading}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
-            {error && <div style={styles.error}>{error}</div>}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 text-center">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"
-              style={{
-                ...styles.button,
-                opacity: loading ? 0.7 : 1,
-                cursor: loading ? "not-allowed" : "pointer",
-              }}
               disabled={loading}
+              className={`w-full py-3 px-4 text-base font-semibold text-white bg-blue-600 rounded-lg transition-colors mt-2 ${
+                loading ? "opacity-60 cursor-not-allowed" : "hover:bg-blue-700"
+              }`}
             >
               {loading ? "Creando cuenta..." : "Crear Cuenta"}
             </button>
 
-            <p style={styles.linkText}>
+            <p className="text-center text-sm text-gray-500 mt-4">
               ¿Ya tiene una cuenta?{" "}
-              <Link href="/login" style={styles.link}>
+              <Link
+                href="/login"
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
                 Iniciar sesión
               </Link>
             </p>
@@ -172,89 +191,3 @@ export default function SetupAccountPage() {
     </>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5",
-    padding: "20px",
-  },
-  formBox: {
-    backgroundColor: "#fff",
-    padding: "40px",
-    borderRadius: "8px",
-    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-    width: "100%",
-    maxWidth: "420px",
-  },
-  title: {
-    margin: "0 0 8px 0",
-    fontSize: "28px",
-    fontWeight: "600",
-    textAlign: "center",
-    color: "#333",
-  },
-  subtitle: {
-    margin: "0 0 30px 0",
-    fontSize: "14px",
-    textAlign: "center",
-    color: "#666",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "18px",
-  },
-  inputGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  label: {
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#333",
-  },
-  input: {
-    padding: "12px 16px",
-    fontSize: "16px",
-    border: "1px solid #ddd",
-    borderRadius: "6px",
-    outline: "none",
-    transition: "border-color 0.2s",
-  },
-  error: {
-    padding: "12px",
-    backgroundColor: "#fee",
-    border: "1px solid #fcc",
-    borderRadius: "6px",
-    color: "#c00",
-    fontSize: "14px",
-    textAlign: "center",
-  },
-  button: {
-    padding: "14px 20px",
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#fff",
-    backgroundColor: "#0070f3",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "background-color 0.2s",
-    marginTop: "8px",
-  },
-  linkText: {
-    textAlign: "center",
-    fontSize: "14px",
-    color: "#666",
-    marginTop: "8px",
-  },
-  link: {
-    color: "#0070f3",
-    textDecoration: "none",
-  },
-};

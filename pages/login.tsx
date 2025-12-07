@@ -16,7 +16,6 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    // Client-side validation
     if (!email.trim() || !email.includes("@")) {
       setError("Email inválido");
       return;
@@ -32,10 +31,7 @@ export default function LoginPage() {
       const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-        }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
       const data = await response.json();
@@ -47,7 +43,6 @@ export default function LoginPage() {
         return;
       }
 
-      // Success - redirect to dashboard
       router.push("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
@@ -64,14 +59,21 @@ export default function LoginPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div style={styles.container}>
-        <div style={styles.loginBox}>
-          <h1 style={styles.title}>ContableBot Portal</h1>
-          <p style={styles.subtitle}>Ingrese sus credenciales</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+        <div className="bg-white p-8 sm:p-10 rounded-xl shadow-lg w-full max-w-md">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-2">
+            ContableBot Portal
+          </h1>
+          <p className="text-sm text-center text-gray-500 mb-8">
+            Ingrese sus credenciales
+          </p>
 
-          <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.inputGroup}>
-              <label htmlFor="email" style={styles.label}>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email
               </label>
               <input
@@ -80,14 +82,17 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="su@email.com"
-                style={styles.input}
                 disabled={loading}
                 autoFocus
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
-            <div style={styles.inputGroup}>
-              <label htmlFor="password" style={styles.label}>
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Contraseña
               </label>
               <input
@@ -96,28 +101,33 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Su contraseña"
-                style={styles.input}
                 disabled={loading}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
-            {error && <div style={styles.error}>{error}</div>}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 text-center">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"
-              style={{
-                ...styles.button,
-                opacity: loading ? 0.7 : 1,
-                cursor: loading ? "not-allowed" : "pointer",
-              }}
               disabled={loading}
+              className={`w-full py-3 px-4 text-base font-semibold text-white bg-blue-600 rounded-lg transition-colors ${
+                loading ? "opacity-60 cursor-not-allowed" : "hover:bg-blue-700"
+              }`}
             >
               {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
             </button>
 
-            <p style={styles.linkText}>
+            <p className="text-center text-sm text-gray-500 mt-4">
               ¿Primera vez?{" "}
-              <Link href="/setup-account" style={styles.link}>
+              <Link
+                href="/setup-account"
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
                 Crear cuenta con licencia
               </Link>
             </p>
@@ -127,88 +137,3 @@ export default function LoginPage() {
     </>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5",
-    padding: "20px",
-  },
-  loginBox: {
-    backgroundColor: "#fff",
-    padding: "40px",
-    borderRadius: "8px",
-    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-    width: "100%",
-    maxWidth: "400px",
-  },
-  title: {
-    margin: "0 0 8px 0",
-    fontSize: "28px",
-    fontWeight: "600",
-    textAlign: "center",
-    color: "#333",
-  },
-  subtitle: {
-    margin: "0 0 30px 0",
-    fontSize: "14px",
-    textAlign: "center",
-    color: "#666",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-  },
-  inputGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  label: {
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#333",
-  },
-  input: {
-    padding: "12px 16px",
-    fontSize: "16px",
-    border: "1px solid #ddd",
-    borderRadius: "6px",
-    outline: "none",
-    transition: "border-color 0.2s",
-  },
-  error: {
-    padding: "12px",
-    backgroundColor: "#fee",
-    border: "1px solid #fcc",
-    borderRadius: "6px",
-    color: "#c00",
-    fontSize: "14px",
-    textAlign: "center",
-  },
-  button: {
-    padding: "14px 20px",
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#fff",
-    backgroundColor: "#0070f3",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "background-color 0.2s",
-  },
-  linkText: {
-    textAlign: "center",
-    fontSize: "14px",
-    color: "#666",
-    marginTop: "4px",
-  },
-  link: {
-    color: "#0070f3",
-    textDecoration: "none",
-  },
-};

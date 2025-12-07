@@ -30,8 +30,35 @@ export interface Invoice {
   rnc: string;
   ncf: string;
   nombre_compania?: string;
-  total_facturado: number;
+  materiales?: string;
+
+  // Exento
+  monto_servicio_exento?: number;
+  monto_bien_exento?: number;
+  total_montos_exentos?: number;
+
+  // Gravado
+  monto_servicio_gravado?: number;
+  monto_bien_gravado?: number;
+  total_montos_gravados?: number;
+
+  // ITBIS
+  itbis_servicios?: number;
+  itbis_compras_bienes?: number;
   total_facturado_itbis?: number;
+
+  // Retenciones
+  itbis_servicios_retenido?: number;
+  retencion_30_itbis?: number;
+  retencion_10?: number;
+  retencion_2?: number;
+
+  // Totales
+  propina?: number;
+  propina_legal?: number;
+  total_facturado: number;
+  total_a_cobrar?: number;
+
   raw_ai_dump?: Record<string, unknown>;
   status: "OK" | "REVIEW" | "ERROR" | string;
   created_at?: string;
