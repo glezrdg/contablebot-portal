@@ -14,78 +14,120 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<DeleteSuccessResponse | ErrorResponse>
 ) {
- 
-try {
+  // Only allow DELETE method
+  if (req.method !== "DELETE") {
+    res.setHeader("Allow", ["DELETE"]);
+    return res.status(405).json({ error: "Método no permitido" });
+  }
+
+  // Validate environment variable
+  if (!POSTGREST_BASE_URL) {
+    console.error("[delete invoice] POSTGREST_BASE_URL is not defined");
+    return res
+      .status(500)
+      .json({ error: "Error de configuración del servidor" });
+  }
+
+  // Require authentication - get session from cookie
+  console.log(
+    "[delete invoice] Checking auth, cookies present:",
+    !!req.headers.cookie
+  );
+  const session = requireAuth(req, res);
+
+  if (!session) {
+    // requireAuth already sent 401 response
+    console.log("[delete invoice] No valid session found");
+    return;
+  }
+
+  console.log("[delete invoice] Session obtained:", {
+    firmId: session.firmId,
+    portalUserId: session.portalUserId,
+  });
+
+  // Validate invoice ID
   const { id } = req.query;
-  const invoiceId = parseInt(id as string, 10);
+  if (!id || typeof id !== "string") {
+    return res.status(400).json({ error: "ID de factura requerido" });
+  }
 
-  console.log("[delete invoice] session:", session);
-  console.log("[delete invoice] invoiceId:", invoiceId);
+  const invoiceId = parseInt(id, 10);
+  if (isNaN(invoiceId)) {
+    return res.status(400).json({ error: "ID de factura inválido" });
+  }
 
-  // 1) Verificar que la factura pertenece a la firma
-  const verifyUrl = `${POSTGREST_BASE_URL}/invoices?id=eq.${invoiceId}&firm_id=eq.${session.firmId}&is_deleted=eq.false`;
-  console.log("[delete invoice] VERIFY URL:", verifyUrl);
-
-  const verifyResponse = await fetch(verifyUrl, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  });
-
-  const verifyText = await verifyResponse.text();
   console.log(
-    "[delete invoice] verify status:",
-    verifyResponse.status,
-    verifyResponse.statusText
+    "[delete invoice] Deleting invoice:",
+    invoiceId,
+    "for firm:",
+    session.firmId
   );
-  console.log("[delete invoice] verify body:", verifyText);
 
-  if (!verifyResponse.ok) {
-    return res.status(verifyResponse.status).json({
-      error: `Error al verificar la factura (PostgREST ${verifyResponse.status})`,
+  try {
+    // 1) Verify the invoice belongs to the authenticated firm
+    const verifyUrl = `${POSTGREST_BASE_URL}/invoices?id=eq.${invoiceId}&firm_id=eq.${session.firmId}&is_deleted=eq.false`;
+    console.log("[delete invoice] VERIFY URL:", verifyUrl);
+
+    const verifyResponse = await fetch(verifyUrl, {
+      method: "GET",
+      headers: { Accept: "application/json" },
     });
-  }
 
-  const existingInvoices = JSON.parse(verifyText);
-  if (!Array.isArray(existingInvoices) || existingInvoices.length === 0) {
-    return res.status(404).json({ error: "Factura no encontrada" });
-  }
+    if (!verifyResponse.ok) {
+      console.error(
+        "[delete invoice] PostgREST verify error:",
+        verifyResponse.status,
+        verifyResponse.statusText
+      );
+      return res.status(verifyResponse.status).json({
+        error: `Error al verificar la factura (PostgREST ${verifyResponse.status})`,
+      });
+    }
 
-  // 2) Hacer el soft-delete
-  const deleteUrl = `${POSTGREST_BASE_URL}/invoices?id=eq.${invoiceId}&firm_id=eq.${session.firmId}`;
-  console.log("[delete invoice] PATCH URL:", deleteUrl);
+    const existingInvoices = await verifyResponse.json();
+    console.log("[delete invoice] Found invoices:", existingInvoices.length);
 
-  const deleteResponse = await fetch(deleteUrl, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify({
-      is_deleted: true,
-      deleted_at: new Date().toISOString(),
-    }),
-  });
+    if (!Array.isArray(existingInvoices) || existingInvoices.length === 0) {
+      return res.status(404).json({ error: "Factura no encontrada" });
+    }
 
-  const deleteText = await deleteResponse.text();
-  console.log(
-    "[delete invoice] delete status:",
-    deleteResponse.status,
-    deleteResponse.statusText
-  );
-  console.log("[delete invoice] delete body:", deleteText);
+    // 2) Soft delete the invoice
+    const deleteUrl = `${POSTGREST_BASE_URL}/invoices?id=eq.${invoiceId}&firm_id=eq.${session.firmId}`;
+    console.log("[delete invoice] PATCH URL:", deleteUrl);
 
-  if (!deleteResponse.ok) {
-    return res.status(deleteResponse.status).json({
-      error: `Error al eliminar la factura (PostgREST ${deleteResponse.status})`,
+    const deleteResponse = await fetch(deleteUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+      }),
     });
-  }
 
-  return res.status(200).json({
-    ok: true,
-    message: "Factura eliminada correctamente",
-  });
-} catch (error) {
-  console.error("Error calling PostgREST:", error);
-  return res.status(500).json({ error: "Error interno del servidor" });
-}
+    if (!deleteResponse.ok) {
+      const errorText = await deleteResponse.text();
+      console.error(
+        "[delete invoice] PostgREST PATCH error:",
+        deleteResponse.status,
+        errorText
+      );
+      // Return the actual PostgREST error for debugging
+      return res.status(deleteResponse.status).json({
+        error: `Error al eliminar la factura: ${errorText}`,
+      });
+    }
+
+    console.log("[delete invoice] Invoice deleted successfully");
+    return res.status(200).json({
+      ok: true,
+      message: "Factura eliminada correctamente",
+    });
+  } catch (error) {
+    console.error("[delete invoice] Error calling PostgREST:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
 }

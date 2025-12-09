@@ -180,6 +180,7 @@ export default function DashboardPage() {
         try {
           const response = await fetch(`/api/invoices/${invoice.id}`, {
             method: "DELETE",
+            credentials: "include",
           });
 
           if (!response.ok) {
