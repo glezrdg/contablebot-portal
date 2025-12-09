@@ -4,33 +4,43 @@
 //   import "primereact/resources/primereact.min.css";
 //   import "primeicons/primeicons.css";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import { Calendar } from "primereact/calendar";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Toast } from "primereact/toast";
 import * as XLSX from "xlsx";
 import type {
   Invoice,
+  Client,
   InvoicesResponse,
+  ClientsResponse,
   MeResponse,
   ErrorResponse,
 } from "../types";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const toast = useRef<Toast>(null);
 
   // Firm data from /api/me
   const [firmId, setFirmId] = useState<number | null>(null);
   const [firmName, setFirmName] = useState<string>("");
-  const [usageCurrentMonth, setUsageCurrentMonth] = useState<number>(0);
+  const [usedThisMonth, setUsedThisMonth] = useState<number>(0);
   const [planLimit, setPlanLimit] = useState<number>(0);
   const [userEmail, setUserEmail] = useState<string>("");
 
   // Filter state
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  const [clientFilter, setClientFilter] = useState("");
+  const [fromDate, setFromDate] = useState<Date | null>(null);
+  const [toDate, setToDate] = useState<Date | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+
+  // Clients for filter buttons
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loadingClients, setLoadingClients] = useState(false);
 
   // Invoices data
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -40,7 +50,7 @@ export default function DashboardPage() {
 
   // Calculate usage percentage
   const usagePercentage =
-    planLimit > 0 ? Math.min((usageCurrentMonth / planLimit) * 100, 100) : 0;
+    planLimit > 0 ? Math.min((usedThisMonth / planLimit) * 100, 100) : 0;
 
   // Fetch user/firm info on mount
   useEffect(() => {
@@ -59,7 +69,7 @@ export default function DashboardPage() {
         const data: MeResponse = await response.json();
         setFirmId(data.firmId);
         setFirmName(data.firmName);
-        setUsageCurrentMonth(data.usageCurrentMonth);
+        setUsedThisMonth(data.usedThisMonth);
         setPlanLimit(data.planLimit);
         setUserEmail(data.email);
       } catch (err) {
@@ -73,6 +83,31 @@ export default function DashboardPage() {
     fetchMe();
   }, [router]);
 
+  // Fetch clients for filter buttons
+  const fetchClients = useCallback(async () => {
+    if (!firmId) return;
+
+    setLoadingClients(true);
+    try {
+      const response = await fetch("/api/clients");
+      const data: ClientsResponse | ErrorResponse = await response.json();
+
+      if (response.ok) {
+        setClients((data as ClientsResponse).clients);
+      }
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+    } finally {
+      setLoadingClients(false);
+    }
+  }, [firmId]);
+
+  useEffect(() => {
+    if (firmId) {
+      fetchClients();
+    }
+  }, [firmId, fetchClients]);
+
   const handleLogout = async () => {
     try {
       await fetch("/api/logout", { method: "POST" });
@@ -82,8 +117,8 @@ export default function DashboardPage() {
     router.replace("/login");
   };
 
-  const handleApplyFilters = async (e?: FormEvent<HTMLFormElement>) => {
-    if (e) e.preventDefault();
+  // Fetch invoices with filters
+  const fetchInvoices = useCallback(async () => {
     if (!firmId) return;
 
     setLoading(true);
@@ -91,9 +126,16 @@ export default function DashboardPage() {
 
     try {
       const params = new URLSearchParams();
-      if (fromDate) params.set("from", fromDate);
-      if (toDate) params.set("to", toDate);
-      if (clientFilter.trim()) params.set("client", clientFilter.trim());
+
+      if (fromDate) {
+        params.set("from", formatDateForAPI(fromDate));
+      }
+      if (toDate) {
+        params.set("to", formatDateForAPI(toDate));
+      }
+      if (selectedClientId) {
+        params.set("clientId", selectedClientId.toString());
+      }
 
       const url = `/api/invoices${
         params.toString() ? `?${params.toString()}` : ""
@@ -115,6 +157,62 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  }, [firmId, fromDate, toDate, selectedClientId]);
+
+  // Fetch invoices when filters change
+  useEffect(() => {
+    if (firmId) {
+      fetchInvoices();
+    }
+  }, [firmId, fromDate, toDate, selectedClientId, fetchInvoices]);
+
+  // Delete invoice handler
+  const handleDeleteInvoice = (invoice: Invoice) => {
+    confirmDialog({
+      message: `¿Está seguro que desea eliminar la factura ${invoice.ncf}?`,
+      header: "Confirmar eliminación",
+      icon: "pi pi-exclamation-triangle",
+      acceptClassName:
+        "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg ml-2",
+      rejectClassName:
+        "bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg",
+      accept: async () => {
+        try {
+          const response = await fetch(`/api/invoices/${invoice.id}`, {
+            method: "DELETE",
+          });
+
+          if (!response.ok) {
+            const data: ErrorResponse = await response.json();
+            toast.current?.show({
+              severity: "error",
+              summary: "Error",
+              detail: data.error || "Error al eliminar la factura",
+              life: 3000,
+            });
+            return;
+          }
+
+          toast.current?.show({
+            severity: "success",
+            summary: "Éxito",
+            detail: "Factura eliminada correctamente",
+            life: 3000,
+          });
+
+          // Refresh invoices list
+          fetchInvoices();
+        } catch (err) {
+          console.error("Error deleting invoice:", err);
+          toast.current?.show({
+            severity: "error",
+            summary: "Error",
+            detail: "Error de conexión",
+            life: 3000,
+          });
+        }
+      },
+    });
   };
 
   // Export to Excel (606 format)
@@ -161,7 +259,7 @@ export default function DashboardPage() {
   // Export to CSV
   const exportToCSV = () => {
     const rows = invoices.map((inv) => ({
-      Fecha: inv.fecha,
+      Fecha: inv.fecha || "Sin fecha",
       Cliente: inv.client_name,
       RNC: inv.rnc,
       NCF: inv.ncf,
@@ -209,7 +307,21 @@ export default function DashboardPage() {
   };
 
   const dateBodyTemplate = (rowData: Invoice) => {
+    if (!rowData.fecha)
+      return <span className="text-slate-500">Sin fecha</span>;
     return formatDate(rowData.fecha);
+  };
+
+  const actionsBodyTemplate = (rowData: Invoice) => {
+    return (
+      <button
+        onClick={() => handleDeleteInvoice(rowData)}
+        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/30 rounded-lg transition"
+        title="Eliminar factura"
+      >
+        <i className="pi pi-trash text-sm" />
+      </button>
+    );
   };
 
   // Loading state
@@ -231,6 +343,9 @@ export default function DashboardPage() {
         <meta name="description" content="Dashboard de facturación 606" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
+
+      <Toast ref={toast} />
+      <ConfirmDialog />
 
       <main className="min-h-screen bg-slate-950">
         <div className="mx-auto max-w-6xl px-4 py-8">
@@ -254,7 +369,7 @@ export default function DashboardPage() {
                   Uso este mes
                 </p>
                 <p className="mt-1 text-lg font-semibold text-white">
-                  {usageCurrentMonth}{" "}
+                  {usedThisMonth}{" "}
                   <span className="text-slate-500 font-normal">
                     / {planLimit}
                   </span>{" "}
@@ -286,86 +401,101 @@ export default function DashboardPage() {
             </div>
           </header>
 
-          {/* Filters Section */}
+          {/* Client Filter Buttons */}
           <section className="mb-6 rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg">
             <h2 className="mb-4 text-sm font-semibold text-slate-300 uppercase tracking-wide">
-              Filtros
+              Filtrar por Cliente
             </h2>
-            <form onSubmit={handleApplyFilters}>
-              <div className="grid gap-4 md:grid-cols-4 md:items-end">
-                {/* Desde */}
-                <div className="flex flex-col gap-1.5">
-                  <label
-                    htmlFor="fromDate"
-                    className="text-xs font-medium text-slate-500"
-                  >
-                    Desde
-                  </label>
-                  <input
-                    type="date"
-                    id="fromDate"
-                    value={fromDate}
-                    onChange={(e) => setFromDate(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition"
-                  />
-                </div>
+            <div className="flex flex-wrap gap-2">
+              {/* All clients button */}
+              <button
+                onClick={() => setSelectedClientId(null)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
+                  selectedClientId === null
+                    ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
+                    : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
+                }`}
+              >
+                Todos
+              </button>
 
-                {/* Hasta */}
-                <div className="flex flex-col gap-1.5">
-                  <label
-                    htmlFor="toDate"
-                    className="text-xs font-medium text-slate-500"
-                  >
-                    Hasta
-                  </label>
-                  <input
-                    type="date"
-                    id="toDate"
-                    value={toDate}
-                    onChange={(e) => setToDate(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition"
-                  />
+              {loadingClients ? (
+                <div className="flex items-center gap-2 text-slate-400 text-sm">
+                  <Spinner size="sm" />
+                  <span>Cargando clientes...</span>
                 </div>
-
-                {/* Cliente */}
-                <div className="flex flex-col gap-1.5">
-                  <label
-                    htmlFor="clientFilter"
-                    className="text-xs font-medium text-slate-500"
-                  >
-                    Cliente
-                  </label>
-                  <input
-                    type="text"
-                    id="clientFilter"
-                    value={clientFilter}
-                    onChange={(e) => setClientFilter(e.target.value)}
-                    placeholder="Buscar por nombre..."
-                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition"
-                  />
-                </div>
-
-                {/* Aplicar Filtros Button */}
-                <div>
+              ) : (
+                clients.map((client) => (
                   <button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full md:w-auto rounded-xl bg-sky-500 hover:bg-sky-400 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 transition ${
-                      loading ? "opacity-60 cursor-not-allowed" : ""
+                    key={client.id || client.name}
+                    onClick={() => setSelectedClientId(client.id || null)}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
+                      selectedClientId === client.id
+                        ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
+                        : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
                     }`}
                   >
-                    {loading ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Spinner size="sm" />
-                        Buscando...
-                      </span>
-                    ) : (
-                      "Aplicar filtros"
-                    )}
+                    {client.name}
                   </button>
-                </div>
+                ))
+              )}
+            </div>
+          </section>
+
+          {/* Date Filters Section */}
+          <section className="mb-6 rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg">
+            <h2 className="mb-4 text-sm font-semibold text-slate-300 uppercase tracking-wide">
+              Filtrar por Fecha
+            </h2>
+            <div className="grid gap-4 md:grid-cols-3 md:items-end">
+              {/* Desde */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-slate-500">
+                  Desde
+                </label>
+                <Calendar
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.value as Date | null)}
+                  dateFormat="dd/mm/yy"
+                  placeholder="Seleccionar fecha"
+                  showIcon
+                  showButtonBar
+                  className="w-full calendar-dark"
+                  inputClassName="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100"
+                />
               </div>
-            </form>
+
+              {/* Hasta */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-slate-500">
+                  Hasta
+                </label>
+                <Calendar
+                  value={toDate}
+                  onChange={(e) => setToDate(e.value as Date | null)}
+                  dateFormat="dd/mm/yy"
+                  placeholder="Seleccionar fecha"
+                  showIcon
+                  showButtonBar
+                  className="w-full calendar-dark"
+                  inputClassName="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100"
+                />
+              </div>
+
+              {/* Clear Filters Button */}
+              <div>
+                <button
+                  onClick={() => {
+                    setFromDate(null);
+                    setToDate(null);
+                    setSelectedClientId(null);
+                  }}
+                  className="w-full md:w-auto rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 px-5 py-2.5 text-sm font-medium text-slate-300 transition"
+                >
+                  Limpiar filtros
+                </button>
+              </div>
+            </div>
           </section>
 
           {/* Error Alert */}
@@ -508,6 +638,12 @@ export default function DashboardPage() {
                     align="center"
                     style={{ minWidth: "80px" }}
                   />
+                  <Column
+                    header="Acciones"
+                    body={actionsBodyTemplate}
+                    align="center"
+                    style={{ minWidth: "80px" }}
+                  />
                 </DataTable>
               </div>
             )}
@@ -515,7 +651,7 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Custom styles for PrimeReact DataTable dark theme */}
+      {/* Custom styles for PrimeReact DataTable and Calendar dark theme */}
       <style jsx global>{`
         .datatable-dark .p-datatable {
           background: transparent;
@@ -577,6 +713,73 @@ export default function DashboardPage() {
         .datatable-dark .p-sortable-column.p-highlight .p-sortable-column-icon {
           color: #0ea5e9;
         }
+
+        /* Calendar dark theme */
+        .calendar-dark .p-inputtext {
+          background: #0f172a !important;
+          border-color: #334155 !important;
+          color: #e2e8f0 !important;
+        }
+        .calendar-dark .p-datepicker-trigger {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+          color: #94a3b8 !important;
+        }
+        .p-datepicker {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+          color: #e2e8f0 !important;
+        }
+        .p-datepicker .p-datepicker-header {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+          color: #e2e8f0 !important;
+        }
+        .p-datepicker table td > span {
+          color: #e2e8f0 !important;
+        }
+        .p-datepicker table td > span:hover {
+          background: #334155 !important;
+        }
+        .p-datepicker table td.p-datepicker-today > span {
+          background: #0ea5e9 !important;
+          color: white !important;
+        }
+        .p-datepicker .p-datepicker-buttonbar {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        .p-datepicker .p-datepicker-buttonbar .p-button {
+          color: #0ea5e9 !important;
+        }
+
+        /* Confirm dialog dark theme */
+        .p-confirm-dialog {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+          color: #e2e8f0 !important;
+        }
+        .p-confirm-dialog .p-dialog-header {
+          background: #1e293b !important;
+          color: #e2e8f0 !important;
+        }
+        .p-confirm-dialog .p-dialog-content {
+          background: #1e293b !important;
+          color: #e2e8f0 !important;
+        }
+        .p-confirm-dialog .p-dialog-footer {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+        }
+
+        /* Toast dark theme */
+        .p-toast .p-toast-message {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        .p-toast .p-toast-message-content {
+          color: #e2e8f0 !important;
+        }
       `}</style>
     </>
   );
@@ -618,7 +821,7 @@ function formatCurrency(amount: number): string {
 }
 
 function formatDate(dateStr: string): string {
-  if (!dateStr) return "-";
+  if (!dateStr) return "Sin fecha";
   try {
     const date = new Date(dateStr);
     return new Intl.DateTimeFormat("es-DO", {
@@ -629,4 +832,8 @@ function formatDate(dateStr: string): string {
   } catch {
     return dateStr;
   }
+}
+
+function formatDateForAPI(date: Date): string {
+  return date.toISOString().split("T")[0];
 }

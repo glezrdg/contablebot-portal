@@ -61,7 +61,20 @@ export interface Invoice {
 
   raw_ai_dump?: Record<string, unknown>;
   status: "OK" | "REVIEW" | "ERROR" | string;
+  processed_at?: string;
   created_at?: string;
+
+  // Soft delete
+  is_deleted?: boolean;
+  deleted_at?: string;
+}
+
+// Client type for filter buttons
+export interface Client {
+  id: number;
+  firm_id: number;
+  name: string;
+  rnc?: string;
 }
 
 export interface PortalUser {
@@ -90,7 +103,7 @@ export interface MeResponse {
   firmId: number;
   firmName: string;
   email: string;
-  usageCurrentMonth: number;
+  usedThisMonth: number;
   planLimit: number;
   isActive: boolean;
 }
@@ -98,6 +111,14 @@ export interface MeResponse {
 // /api/invoices response
 export interface InvoicesResponse {
   invoices: Invoice[];
+  total?: number;
+  page?: number;
+  limit?: number;
+}
+
+// /api/clients response
+export interface ClientsResponse {
+  clients: Client[];
 }
 
 // JWT Payload
@@ -114,6 +135,6 @@ export interface JWTPayload {
 export interface LoginResponse {
   firmId: number;
   firmName: string;
-  usageCurrentMonth: number;
+  usedThisMonth: number;
   planLimit: number;
 }

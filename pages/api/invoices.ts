@@ -28,7 +28,7 @@ export default async function handler(
   if (!session) return; // Response already sent by requireAuth
 
   // Extract optional query parameters
-  const { from, to, client } = req.query;
+  const { from, to, client, clientId, page, limit } = req.query;
 
   // Build the PostgREST query URL
   const queryParams: string[] = [];
@@ -36,14 +36,29 @@ export default async function handler(
   // Always filter by firm_id from the authenticated session
   queryParams.push(`firm_id=eq.${session.firmId}`);
 
-  // Optional: filter by fecha >= from
+  // Always filter out soft-deleted invoices
+  queryParams.push(`is_deleted=eq.false`);
+
+  // Optional: filter by fecha >= from (YYYY-MM-DD format)
   if (from && typeof from === "string") {
-    queryParams.push(`fecha=gte.${encodeURIComponent(from)}`);
+    // Validate date format and pass directly (YYYY-MM-DD is URL-safe)
+    const fromDate = from.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fromDate)) {
+      queryParams.push(`fecha=gte.${fromDate}`);
+    }
   }
 
-  // Optional: filter by fecha <= to
+  // Optional: filter by fecha <= to (YYYY-MM-DD format)
   if (to && typeof to === "string") {
-    queryParams.push(`fecha=lte.${encodeURIComponent(to)}`);
+    const toDate = to.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(toDate)) {
+      queryParams.push(`fecha=lte.${toDate}`);
+    }
+  }
+
+  // Optional: filter by client_id
+  if (clientId && typeof clientId === "string") {
+    queryParams.push(`client_id=eq.${encodeURIComponent(clientId)}`);
   }
 
   // Optional: filter by client_name (case-insensitive partial match)
@@ -54,8 +69,13 @@ export default async function handler(
     );
   }
 
-  // Add limit
-  queryParams.push("limit=100");
+  // Pagination
+  const pageNum = parseInt(page as string) || 1;
+  const limitNum = parseInt(limit as string) || 50;
+  const offset = (pageNum - 1) * limitNum;
+
+  queryParams.push(`limit=${limitNum}`);
+  queryParams.push(`offset=${offset}`);
 
   // Add ordering by fecha descending for better UX
   queryParams.push("order=fecha.desc");
@@ -64,10 +84,16 @@ export default async function handler(
     "&"
   )}`;
 
+  // Debug log for troubleshooting
+  console.log("[invoices API] PostgREST URL:", postgrestUrl);
+
   try {
     const response = await fetch(postgrestUrl, {
       method: "GET",
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        Prefer: "count=exact", // Get total count for pagination
+      },
     });
 
     if (!response.ok) {
@@ -77,7 +103,22 @@ export default async function handler(
 
     const invoices: Invoice[] = await response.json();
 
-    return res.status(200).json({ invoices });
+    // Parse total count from Content-Range header
+    const contentRange = response.headers.get("content-range");
+    let total = invoices.length;
+    if (contentRange) {
+      const match = contentRange.match(/\/(\d+)/);
+      if (match) {
+        total = parseInt(match[1], 10);
+      }
+    }
+
+    return res.status(200).json({
+      invoices,
+      total,
+      page: pageNum,
+      limit: limitNum,
+    });
   } catch (error) {
     console.error("Error calling PostgREST:", error);
     return res.status(500).json({ error: "Error interno del servidor" });

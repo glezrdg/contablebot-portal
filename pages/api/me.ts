@@ -54,7 +54,7 @@ export default async function handler(
       firmId: firm.id,
       firmName: firm.name,
       email: session.email,
-      usageCurrentMonth: firm.used_this_month,
+      usedThisMonth: firm.used_this_month,
       planLimit: firm.plan_limit,
       isActive: firm.is_active,
     });
