@@ -10,6 +10,7 @@ import Head from "next/head";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Calendar } from "primereact/calendar";
+import { MultiSelect } from "primereact/multiselect";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Toast } from "primereact/toast";
 import * as XLSX from "xlsx";
@@ -21,6 +22,188 @@ import type {
   MeResponse,
   ErrorResponse,
 } from "../types";
+
+// Column definitions for the invoices table
+interface ColumnConfig {
+  field: string;
+  header: string;
+  type: "text" | "currency" | "date" | "status" | "actions";
+  minWidth: string;
+  defaultVisible: boolean;
+}
+
+const ALL_COLUMNS: ColumnConfig[] = [
+  {
+    field: "fecha",
+    header: "Fecha",
+    type: "date",
+    minWidth: "100px",
+    defaultVisible: true,
+  },
+  {
+    field: "client_name",
+    header: "Cliente",
+    type: "text",
+    minWidth: "150px",
+    defaultVisible: true,
+  },
+  {
+    field: "rnc",
+    header: "RNC",
+    type: "text",
+    minWidth: "120px",
+    defaultVisible: true,
+  },
+  {
+    field: "ncf",
+    header: "NCF",
+    type: "text",
+    minWidth: "150px",
+    defaultVisible: true,
+  },
+  {
+    field: "nombre_compania",
+    header: "Nombre Compañía",
+    type: "text",
+    minWidth: "150px",
+    defaultVisible: false,
+  },
+  {
+    field: "materiales",
+    header: "Materiales",
+    type: "text",
+    minWidth: "120px",
+    defaultVisible: false,
+  },
+  {
+    field: "monto_servicio_exento",
+    header: "Servicio Exento",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "monto_bien_exento",
+    header: "Bien Exento",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "total_montos_exentos",
+    header: "Total Exentos",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "monto_servicio_gravado",
+    header: "Servicio Gravado",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "monto_bien_gravado",
+    header: "Bien Gravado",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "total_montos_gravados",
+    header: "Total Gravados",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "itbis_servicios",
+    header: "ITBIS Servicios",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "itbis_compras_bienes",
+    header: "ITBIS Bienes",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "total_facturado_itbis",
+    header: "Total ITBIS",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "itbis_servicios_retenido",
+    header: "ITBIS Retenido",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "retencion_30_itbis",
+    header: "Ret. 30% ITBIS",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "retencion_10",
+    header: "Retención 10%",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "retencion_2",
+    header: "Retención 2%",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "propina",
+    header: "Propina",
+    type: "currency",
+    minWidth: "100px",
+    defaultVisible: false,
+  },
+  {
+    field: "total_facturado",
+    header: "Total Facturado",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: true,
+  },
+  {
+    field: "total_a_cobrar",
+    header: "Total a Cobrar",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: true,
+  },
+  {
+    field: "status",
+    header: "Estado",
+    type: "status",
+    minWidth: "80px",
+    defaultVisible: true,
+  },
+  {
+    field: "actions",
+    header: "Acciones",
+    type: "actions",
+    minWidth: "80px",
+    defaultVisible: true,
+  },
+];
+
+const STORAGE_KEY = "dashboard_visible_columns";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -44,9 +227,53 @@ export default function DashboardPage() {
 
   // Invoices data
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [totalInvoices, setTotalInvoices] = useState<number>(0);
+
   const [loading, setLoading] = useState(false);
   const [loadingMe, setLoadingMe] = useState(true);
   const [error, setError] = useState("");
+
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
+    // Default visible columns
+    return ALL_COLUMNS.filter((col) => col.defaultVisible).map(
+      (col) => col.field
+    );
+  });
+
+  // Load saved column preferences from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setVisibleColumns(parsed);
+          }
+        } catch (e) {
+          console.error("Error parsing saved columns:", e);
+        }
+      }
+    }
+  }, []);
+
+  // Save column preferences to localStorage
+  const handleColumnChange = (selectedColumns: string[]) => {
+    // Always keep actions column visible
+    const columnsToSave = selectedColumns.includes("actions")
+      ? selectedColumns
+      : [...selectedColumns, "actions"];
+    setVisibleColumns(columnsToSave);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(columnsToSave));
+    }
+  };
+
+  // Get column options for MultiSelect (exclude actions)
+  const columnOptions = ALL_COLUMNS.filter(
+    (col) => col.field !== "actions"
+  ).map((col) => ({ label: col.header, value: col.field }));
 
   // Calculate usage percentage
   const usagePercentage =
@@ -67,6 +294,7 @@ export default function DashboardPage() {
         }
 
         const data: MeResponse = await response.json();
+        console.log(data, "data");
         setFirmId(data.firmId);
         setFirmName(data.firmName);
         setUsedThisMonth(data.usedThisMonth);
@@ -142,7 +370,7 @@ export default function DashboardPage() {
       }`;
       const response = await fetch(url);
       const data: InvoicesResponse | ErrorResponse = await response.json();
-
+      console.log(data, "invoices data");
       if (!response.ok) {
         const errorData = data as ErrorResponse;
         setError(errorData.error || "Error al obtener las facturas");
@@ -151,6 +379,7 @@ export default function DashboardPage() {
 
       const invoicesData = data as InvoicesResponse;
       setInvoices(invoicesData.invoices);
+      setTotalInvoices(invoicesData.total || 0);
     } catch (err) {
       console.error("Error fetching invoices:", err);
       setError("Error de conexión. Intente nuevamente.");
@@ -524,12 +753,27 @@ export default function DashboardPage() {
               <div className="flex items-baseline gap-2">
                 <h2 className="text-lg font-semibold text-white">Facturas</h2>
                 <span className="text-sm text-slate-500">
-                  ({invoices.length})
+                  ({totalInvoices} resultados)
                 </span>
               </div>
 
-              {/* Export Buttons */}
-              <div className="flex items-center gap-2">
+              {/* Column Selector + Export Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Column Visibility Selector */}
+                <div className="column-selector">
+                  <MultiSelect
+                    value={visibleColumns.filter((c) => c !== "actions")}
+                    options={columnOptions}
+                    onChange={(e) => handleColumnChange(e.value)}
+                    placeholder="Columnas"
+                    display="chip"
+                    maxSelectedLabels={2}
+                    className="w-64"
+                    panelClassName="column-selector-panel"
+                    itemClassName="column-selector-item"
+                  />
+                </div>
+
                 <button
                   onClick={exportToExcel606}
                   disabled={invoices.length === 0}
@@ -573,7 +817,7 @@ export default function DashboardPage() {
 
             {/* DataTable */}
             {!loading && invoices.length > 0 && (
-              <div className="datatable-dark">
+              <div className="datatable-dark overflow-x-auto">
                 <DataTable
                   value={invoices}
                   paginator
@@ -586,65 +830,50 @@ export default function DashboardPage() {
                   emptyMessage="No hay facturas para mostrar."
                   paginatorClassName="bg-slate-800 border-t border-slate-700"
                   tableStyle={{ minWidth: "50rem" }}
+                  scrollable
+                  scrollHeight="flex"
                 >
-                  <Column
-                    field="fecha"
-                    header="Fecha"
-                    body={dateBodyTemplate}
-                    sortable
-                    style={{ minWidth: "100px" }}
-                  />
-                  <Column
-                    field="client_name"
-                    header="Cliente"
-                    sortable
-                    style={{ minWidth: "150px" }}
-                  />
-                  <Column
-                    field="rnc"
-                    header="RNC"
-                    sortable
-                    style={{ minWidth: "120px" }}
-                  />
-                  <Column
-                    field="ncf"
-                    header="NCF"
-                    sortable
-                    style={{ minWidth: "150px" }}
-                  />
-                  <Column
-                    field="total_facturado"
-                    header="Total Facturado"
-                    body={(rowData) =>
-                      currencyBodyTemplate(rowData, "total_facturado")
-                    }
-                    sortable
-                    align="right"
-                    style={{ minWidth: "130px" }}
-                  />
-                  <Column
-                    field="total_a_cobrar"
-                    header="Total a Cobrar"
-                    body={(rowData) =>
-                      currencyBodyTemplate(rowData, "total_a_cobrar")
-                    }
-                    sortable
-                    align="right"
-                    style={{ minWidth: "130px" }}
-                  />
-                  <Column
-                    field="status"
-                    header="Estado"
-                    body={statusBodyTemplate}
-                    align="center"
-                    style={{ minWidth: "80px" }}
-                  />
-                  <Column
-                    header="Acciones"
-                    body={actionsBodyTemplate}
-                    align="center"
-                    style={{ minWidth: "80px" }}
-                  />
+                  {ALL_COLUMNS.filter((col) =>
+                    visibleColumns.includes(col.field)
+                  ).map((col) => {
+                    // Determine body template based on column type
+                    const getBody = () => {
+                      switch (col.type) {
+                        case "date":
+                          return dateBodyTemplate;
+                        case "currency":
+                          return (rowData: Invoice) =>
+                            currencyBodyTemplate(
+                              rowData,
+                              col.field as keyof Invoice
+                            );
+                        case "status":
+                          return statusBodyTemplate;
+                        case "actions":
+                          return actionsBodyTemplate;
+                        default:
+                          return undefined;
+                      }
+                    };
+
+                    return (
+                      <Column
+                        key={col.field}
+                        field={col.field}
+                        header={col.header}
+                        body={getBody()}
+                        sortable={col.type !== "actions"}
+                        align={
+                          col.type === "currency"
+                            ? "right"
+                            : col.type === "status" || col.type === "actions"
+                            ? "center"
+                            : undefined
+                        }
+                        style={{ minWidth: col.minWidth }}
+                      />
+                    );
+                  })}
                 </DataTable>
               </div>
             )}
@@ -657,15 +886,23 @@ export default function DashboardPage() {
         .datatable-dark .p-datatable {
           background: transparent;
         }
-        .datatable-dark .p-datatable-header,
+        .datatable-dark .p-datatable-header {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+        }
         .datatable-dark .p-datatable-thead > tr > th {
-          background: #1e293b;
-          color: #94a3b8;
-          border-color: #334155;
+          background: #1e293b !important;
+          color: #94a3b8 !important;
+          border: 1px solid #334155 !important;
           font-weight: 600;
           font-size: 0.75rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+          padding: 0.75rem 1rem !important;
+          white-space: nowrap;
+        }
+        .datatable-dark .p-datatable-thead > tr {
+          background: #1e293b !important;
         }
         .datatable-dark .p-datatable-tbody > tr {
           background: #0f172a;
@@ -713,6 +950,92 @@ export default function DashboardPage() {
         }
         .datatable-dark .p-sortable-column.p-highlight .p-sortable-column-icon {
           color: #0ea5e9;
+        }
+        .datatable-dark .p-sortable-column:not(.p-highlight):hover {
+          background: #334155 !important;
+          color: #e2e8f0 !important;
+        }
+
+        /* MultiSelect Column Selector dark theme */
+        .column-selector .p-multiselect {
+          background: #0f172a;
+          border: 1px solid #334155;
+          border-radius: 0.75rem;
+          color: #e2e8f0;
+        }
+        .column-selector .p-multiselect:hover {
+          border-color: #475569;
+        }
+        .column-selector .p-multiselect:focus,
+        .column-selector .p-multiselect.p-focus {
+          border-color: #0ea5e9;
+          box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+        }
+        .column-selector .p-multiselect-label {
+          color: #94a3b8;
+          padding: 0.5rem 0.75rem;
+        }
+        .column-selector .p-multiselect-trigger {
+          background: transparent;
+          color: #94a3b8;
+        }
+        .column-selector .p-multiselect-token {
+          background: #334155;
+          color: #e2e8f0;
+          border-radius: 0.5rem;
+          padding: 0.25rem 0.5rem;
+          margin: 0.125rem;
+        }
+        .column-selector .p-multiselect-token-icon {
+          color: #94a3b8;
+        }
+        .column-selector-panel {
+          background: #1e293b !important;
+          border: 1px solid #334155 !important;
+          border-radius: 0.75rem !important;
+        }
+        .column-selector-panel .p-multiselect-header {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+          color: #e2e8f0 !important;
+          padding: 0.75rem !important;
+        }
+        .column-selector-panel .p-multiselect-filter-container .p-inputtext {
+          background: #0f172a !important;
+          border-color: #334155 !important;
+          color: #e2e8f0 !important;
+        }
+        .column-selector-panel .p-multiselect-items {
+          background: #1e293b !important;
+          padding: 0.5rem !important;
+        }
+        .column-selector-panel .p-multiselect-item {
+          color: #e2e8f0 !important;
+          padding: 0.625rem 0.75rem !important;
+          border-radius: 0.375rem !important;
+          margin: 0.125rem 0 !important;
+        }
+        .column-selector-panel .p-multiselect-item:hover {
+          background: #334155 !important;
+        }
+        .column-selector-panel .p-multiselect-item.p-highlight {
+          background: rgba(14, 165, 233, 0.2) !important;
+          color: #0ea5e9 !important;
+        }
+        .column-selector-panel .p-checkbox .p-checkbox-box {
+          background: #0f172a !important;
+          border-color: #475569 !important;
+        }
+        .column-selector-panel .p-checkbox .p-checkbox-box.p-highlight {
+          background: #0ea5e9 !important;
+          border-color: #0ea5e9 !important;
+        }
+        .column-selector-panel .p-multiselect-close {
+          color: #94a3b8 !important;
+        }
+        .column-selector-panel .p-multiselect-close:hover {
+          background: #334155 !important;
+          color: #e2e8f0 !important;
         }
 
         /* Calendar dark theme */
