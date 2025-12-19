@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  contablebot-portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: contablebot-portal
+    restart: unless-stopped
+    env_file:
+      - .env.portal
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.contablebot-portal.rule=Host(`contablebot.hackstak.io`)"
+      - "traefik.http.routers.contablebot-portal.entrypoints=websecure"
+      - "traefik.http.routers.contablebot-portal.tls.certresolver=le"
+      - "traefik.http.services.contablebot-portal.loadbalancer.server.port=3000"
+
+networks:
+  web:
+    external: true
