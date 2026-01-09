@@ -342,7 +342,7 @@ export default function DashboardPage() {
     } catch (err) {
       console.error("Logout error:", err);
     }
-    router.replace("/login");
+    router.replace("/");
   };
 
   // Fetch invoices with filters
@@ -365,9 +365,8 @@ export default function DashboardPage() {
         params.set("clientId", selectedClientId.toString());
       }
 
-      const url = `/api/invoices${
-        params.toString() ? `?${params.toString()}` : ""
-      }`;
+      const url = `/api/invoices${params.toString() ? `?${params.toString()}` : ""
+        }`;
       const response = await fetch(url);
       const data: InvoicesResponse | ErrorResponse = await response.json();
       console.log(data, "invoices data");
@@ -525,11 +524,10 @@ export default function DashboardPage() {
       rowData.status.toLowerCase() === "processed";
     return (
       <span
-        className={`inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-          isOk
-            ? "bg-emerald-100 text-emerald-700"
-            : "bg-slate-200 text-slate-700"
-        }`}
+        className={`inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-semibold ${isOk
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-slate-200 text-slate-700"
+          }`}
       >
         {isOk ? "OK" : rowData.status}
       </span>
@@ -609,13 +607,12 @@ export default function DashboardPage() {
                 </p>
                 <div className="mt-3 h-2 w-full rounded-full bg-slate-800">
                   <div
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      usagePercentage >= 90
-                        ? "bg-red-500"
-                        : usagePercentage >= 70
+                    className={`h-2 rounded-full transition-all duration-300 ${usagePercentage >= 90
+                      ? "bg-red-500"
+                      : usagePercentage >= 70
                         ? "bg-amber-500"
                         : "bg-sky-500"
-                    }`}
+                      }`}
                     style={{ width: `${usagePercentage}%` }}
                   />
                 </div>
@@ -640,11 +637,10 @@ export default function DashboardPage() {
               {/* All clients button */}
               <button
                 onClick={() => setSelectedClientId(null)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
-                  selectedClientId === null
-                    ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
-                    : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
-                }`}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition ${selectedClientId === null
+                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
+                  }`}
               >
                 Todos
               </button>
@@ -659,11 +655,10 @@ export default function DashboardPage() {
                   <button
                     key={client.id || client.name}
                     onClick={() => setSelectedClientId(client.id || null)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
-                      selectedClientId === client.id
-                        ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
-                        : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
-                    }`}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition ${selectedClientId === client.id
+                      ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
+                      }`}
                   >
                     {client.name}
                   </button>
@@ -867,8 +862,8 @@ export default function DashboardPage() {
                           col.type === "currency"
                             ? "right"
                             : col.type === "status" || col.type === "actions"
-                            ? "center"
-                            : undefined
+                              ? "center"
+                              : undefined
                         }
                         style={{ minWidth: col.minWidth }}
                       />
