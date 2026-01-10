@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { FileText, Check, ArrowLeft, ArrowRight, Loader2, Gift } from "lucide-react"
 import { WHOP_PLANS, type PlanKey } from "@/lib/whop"
+import { WhopCheckout } from "@/components/WhopCheckout"
 
 const planOrder: PlanKey[] = ["starter", "business", "pro", "ultra", "enterprise"]
 
@@ -240,12 +241,12 @@ function RegistroContent() {
               </div>
 
               <div className="bg-card border border-border rounded-xl overflow-hidden">
-                {/* <WhopCheckout
-                  planId={selectedPlan}
+                <WhopCheckout
+                  planId={WHOP_PLANS[selectedPlan].id}
                   email={formData.email}
                   onComplete={handleCheckoutComplete}
                   returnUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/register/complete`}
-                /> */}
+                />
               </div>
 
               <p className="text-center text-xs text-muted-foreground mt-6">

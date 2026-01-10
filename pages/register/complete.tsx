@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { FileText, CheckCircle2, Loader2, XCircle } from "lucide-react"
+import { FileText, CheckCircle2, Loader2, XCircle, AlertCircle } from "lucide-react"
 import { WHOP_PLANS, type PlanKey } from "@/lib/whop"
 
 function CompleteContent() {
@@ -13,6 +13,7 @@ function CompleteContent() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [message, setMessage] = useState("")
   const [planName, setPlanName] = useState("")
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
 
   useEffect(() => {
     const completeRegistration = async () => {
@@ -37,7 +38,18 @@ function CompleteContent() {
 
         // If we have a receipt_id (from embedded checkout) or membership_id (from redirect)
         if (receiptId || membershipId) {
-          // Verify the payment and create/update user
+          // Retrieve pending registration data from sessionStorage
+          const pendingRegistrationStr = sessionStorage.getItem("pendingRegistration")
+
+          if (!pendingRegistrationStr) {
+            setStatus("error")
+            setMessage("No se encontraron datos de registro. Por favor intenta de nuevo.")
+            return
+          }
+
+          const pendingRegistration = JSON.parse(pendingRegistrationStr)
+
+          // Verify the payment and create user account
           const response = await fetch("/api/verify-whop-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -45,8 +57,14 @@ function CompleteContent() {
               receiptId,
               membershipId,
               plan: planKey,
+              email: pendingRegistration.email,
+              password: pendingRegistration.password,
+              name: pendingRegistration.name,
             }),
           })
+
+          // Clear session storage after sending
+          sessionStorage.removeItem("pendingRegistration")
 
           if (response.ok) {
             const data = await response.json()
@@ -58,9 +76,21 @@ function CompleteContent() {
               router.push("/dashboard")
             }, 3000)
           } else {
-            const error = await response.json()
+            const errorData = await response.json()
             setStatus("error")
-            setMessage(error.message || "Error al verificar el pago")
+
+            // API returns error in "error" field, not "message"
+            const errorMessage = errorData.error || errorData.message || "Error al verificar el pago"
+            setMessage(errorMessage)
+
+            // Add helpful details based on status code
+            if (response.status === 409) {
+              setErrorDetails("Esta cuenta ya existe. Puedes iniciar sesión en su lugar.")
+            } else if (response.status === 404) {
+              setErrorDetails("No se pudo verificar la membresía con Whop. Por favor contacta soporte.")
+            } else if (response.status >= 500) {
+              setErrorDetails("Error del servidor. Por favor contacta soporte si el problema persiste.")
+            }
           }
         } else {
           // No payment info, show error
@@ -70,7 +100,8 @@ function CompleteContent() {
       } catch (error) {
         console.error("Error completing registration:", error)
         setStatus("error")
-        setMessage("Error al procesar el registro. Por favor contacta soporte.")
+        setMessage("Error al procesar el registro.")
+        setErrorDetails("Ocurrió un error inesperado. Por favor contacta soporte.")
       }
     }
 
@@ -112,13 +143,28 @@ function CompleteContent() {
           <div className="space-y-4">
             <XCircle className="w-16 h-16 text-destructive mx-auto" />
             <h1 className="text-2xl font-bold text-foreground">Error en el registro</h1>
-            <p className="text-muted-foreground">{message}</p>
-            <div className="flex gap-3 justify-center mt-4">
+
+            {/* Main error message */}
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+              <p className="text-destructive font-medium">{message}</p>
+            </div>
+
+            {/* Additional error details if available */}
+            {errorDetails && (
+              <div className="bg-muted/50 border border-border rounded-lg p-3 flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground text-left">{errorDetails}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-center mt-6">
               <Button variant="outline" asChild>
                 <Link href="/">Volver al inicio</Link>
               </Button>
               <Button asChild>
-                <Link href="/register">Intentar de nuevo</Link>
+                <Link href={message.includes("Ya existe") ? "/login" : "/register"}>
+                  {message.includes("Ya existe") ? "Iniciar sesión" : "Intentar de nuevo"}
+                </Link>
               </Button>
             </div>
           </div>

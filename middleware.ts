@@ -12,8 +12,13 @@ const PROTECTED_API_ROUTES = ["/api/invoices", "/api/me"];
 // Routes that are always public
 const PUBLIC_ROUTES = [
   "/login",
+  "/register",
+  "/register/complete",
   "/setup-account",
   "/api/login",
+  "/api/register",
+  "/api/verify-whop-payment",
+  "/api/webhooks/whop",
   "/api/setup-account",
   "/api/logout",
 ];

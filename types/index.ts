@@ -106,6 +106,7 @@ export interface MeResponse {
   usedThisMonth: number;
   planLimit: number;
   isActive: boolean;
+  manageUrl?: string;
 }
 
 // /api/invoices response

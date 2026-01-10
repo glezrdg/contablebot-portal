@@ -57,6 +57,7 @@ export default async function handler(
       usedThisMonth: firm.used_this_month,
       planLimit: firm.plan_limit,
       isActive: firm.is_active,
+      manageUrl: firm.manage_url || undefined,
     });
   } catch (error) {
     console.error("Error in /api/me:", error);

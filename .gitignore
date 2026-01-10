@@ -40,3 +40,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 Dockerfile
+
+# 3-layer architecture
+.tmp/
+execution/__pycache__/
+execution/*.pyc
+*.pyc
+__pycache__/
+credentials.json
+token.json

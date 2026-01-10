@@ -215,6 +215,7 @@ export default function DashboardPage() {
   const [usedThisMonth, setUsedThisMonth] = useState<number>(0);
   const [planLimit, setPlanLimit] = useState<number>(0);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [manageUrl, setManageUrl] = useState<string | undefined>(undefined);
 
   // Filter state
   const [fromDate, setFromDate] = useState<Date | null>(null);
@@ -300,6 +301,7 @@ export default function DashboardPage() {
         setUsedThisMonth(data.usedThisMonth);
         setPlanLimit(data.planLimit);
         setUserEmail(data.email);
+        setManageUrl(data.manageUrl);
       } catch (err) {
         console.error("Error fetching /api/me:", err);
         router.replace("/login");
@@ -617,6 +619,27 @@ export default function DashboardPage() {
                   />
                 </div>
               </div>
+
+              {/* Manage Subscription button */}
+              {manageUrl ? (
+                <a
+                  href={manageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-xl border border-sky-600 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-400 hover:bg-sky-500/20 hover:text-sky-300 transition"
+                >
+                  Gestionar suscripción
+                </a>
+              ) : (
+                <a
+                  href="https://whop.com/hub"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition"
+                >
+                  Portal de facturación
+                </a>
+              )}
 
               {/* Logout button */}
               <button
