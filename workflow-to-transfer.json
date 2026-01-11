@@ -1,0 +1,1758 @@
+{
+  "name": "ContableBot- 01 - Admin & Commands + Ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2176,
+        96
+      ],
+      "id": "e55e090a-29aa-4058-accd-e49d33358314",
+      "name": "Telegram Trigger",
+      "webhookId": "telegram-command-trigger",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.message?.text || '' }}",
+              "operation": "startsWith",
+              "value2": "/"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1856,
+        80
+      ],
+      "id": "3b91ec6b-fe0f-4cc2-92ff-8aecb512aea6",
+      "name": "Is Command?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ==========================================\n// Parse Command – ContableBot\n// ==========================================\n\n// 1) Tomar el mensaje de Telegram\nconst input = $input.first().json;\n\nconst text = (input.message && input.message.text)\n\t? input.message.text.trim()\n\t: '';\n\nlet command = null;\nlet arg = null;\n\n// Si no hay texto, devolvemos algo básico\nif (!text) {\n\treturn {\n\t\tcommand: null,\n\t\targ: null,\n\t\tclient_rnc_raw: null,\n\t\tclient_rnc_clean: null,\n\t\tclient_rnc_compact: null,\n\t\tclient_rnc_type: null,\n\t\tclient_rnc_valid: false,\n\t\tclient_rnc_error: 'Mensaje vacío',\n\t\tdebug_length: 0,\n\t\ttelegram_id: input.message?.from?.id || null,\n\t\tuser_name: input.message?.from?.first_name || null,\n\t\tlicense_key: null,\n\t};\n}\n\n// 2) Separar comando y argumentos\n//    Ej: \"/client 123-4567890-1\" → command=\"/client\", arg=\"123-4567890-1\"\nconst parts = text.split(/\\s+/);\ncommand = (parts[0] || '').toLowerCase();\narg = parts.slice(1).join(' ') || null;\n\n// ==========================================\n// Inicializar variables comunes\n// ==========================================\nlet client_rnc_raw = null;\nlet client_rnc_clean = null;      // formateado bonito\nlet client_rnc_compact = null;    // solo dígitos (para DB)\nlet client_rnc_type = null;       // 'RNC' | 'CEDULA'\nlet client_rnc_valid = true;\nlet client_rnc_error = null;\n\nlet license_key = null;\n\n// ==========================================\n// 3) Lógica para LICENCIA (/start y /activate)\n//    Queremos soportar todas estas formas:\n//    - /activate CB-XXXX\n//    - /start CB-XXXX\n//    - /start active=CB-XXXX\n//    - /start activate=CB-XXXX\n//    - /start activate_CB-XXXX (deep link ?start=activate_CB-XXXX)\n// ==========================================\nif (command === '/start' || command === '/activate') {\n\tlet payload = arg ? arg.trim() : '';\n\n\t// Nos quedamos solo con la primera \"palabra\" por si acaso\n\tpayload = payload.split(/\\s+/)[0];\n\n\t// Limpiar prefijos comunes\n\t// \"activate_CB-XXXX\" → \"CB-XXXX\"\n\t// \"active=CB-XXXX\"   → \"CB-XXXX\"\n\t// \"activate=CB-XXXX\" → \"CB-XXXX\"\n\tpayload = payload\n\t\t.replace(/^activate_/i, '')\n\t\t.replace(/^active=/i, '')\n\t\t.replace(/^activate=/i, '');\n\n\t// Si después de limpiar queda algo, esa es la licencia\n\tif (payload) {\n\t\tlicense_key = payload;\n\t\targ = license_key;\n\t} else {\n\t\tlicense_key = null;\n\t\targ = null;\n\t}\n\n\t// MUY IMPORTANTE:\n\t// Si vino como /start pero trae una licencia,\n\t// lo tratamos internamente como /activate\n\tif (command === '/start' && license_key) {\n\t\tcommand = '/activate';\n\t}\n}\n\n// ==========================================\n// 4) Lógica especial para /client (RNC / Cédula)\n// ==========================================\nif (command === '/client') {\n\tclient_rnc_raw = arg;\n\n\tif (!arg) {\n\t\tclient_rnc_valid = false;\n\t\tclient_rnc_error =\n\t\t\t'Por favor indica un RNC o cédula. Ejemplos:\\n' +\n\t\t\t'`/client 1-30-12345-4` o `/client 123-4567890-1`';\n\t} else {\n\t\t// 4.1 Normalizar texto base\n\t\tlet normalized = arg.toUpperCase()\n\t\t\t.replace(/[\\u200B-\\u200D\\uFEFF]/g, '')  // zero width\n\t\t\t.replace(/\\u00A0/g, ' ')               // nbsp\n\t\t\t.replace(/[‐–—]/g, '-')                // otros guiones\n\t\t\t.replace(/\\s+/g, ' ')\n\t\t\t.trim();\n\n\t\t// 4.2 Versión solo dígitos\n\t\tconst digits = normalized.replace(/[^0-9]/g, '');\n\n\t\t// 4.3 Determinar tipo según longitud\n\t\tif (digits.length === 9) {\n\t\t\tclient_rnc_type = 'RNC';\n\t\t} else if (digits.length === 11) {\n\t\t\tclient_rnc_type = 'CEDULA';\n\t\t} else {\n\t\t\tclient_rnc_valid = false;\n\t\t\tclient_rnc_error =\n\t\t\t\t'Formato inválido. Usa algo como:\\n' +\n\t\t\t\t'`/client 1-30-12345-4` (RNC 9 dígitos) o `/client 123-4567890-1` (cédula 11 dígitos)';\n\t\t}\n\n\t\t// 4.4 Formateo bonito + valor compacto\n\t\tif (client_rnc_valid) {\n\t\t\tlet pretty;\n\n\t\t\tif (client_rnc_type === 'RNC') {\n\t\t\t\t// 9 dígitos → X-XX-XXXXX-X\n\t\t\t\tpretty = digits.replace(\n\t\t\t\t\t/^(\\d)(\\d{2})(\\d{5})(\\d)$/,\n\t\t\t\t\t'$1-$2-$3-$4'\n\t\t\t\t);\n\t\t\t} else if (client_rnc_type === 'CEDULA') {\n\t\t\t\t// 11 dígitos → XXX-XXXXXXX-X\n\t\t\t\tpretty = digits.replace(\n\t\t\t\t\t/^(\\d{3})(\\d{7})(\\d)$/,\n\t\t\t\t\t'$1-$2-$3'\n\t\t\t\t);\n\t\t\t}\n\n\t\t\tclient_rnc_clean = pretty;\n\t\t\tclient_rnc_compact = digits;\n\n\t\t\t// De aquí en adelante, todos los nodos usan la versión compacta\n\t\t\targ = client_rnc_compact;\n\t\t}\n\t}\n}\n\n// ==========================================\n// 5) Salida\n// ==========================================\nreturn {\n\tcommand,\n\targ,\n\tclient_rnc_raw,\n\tclient_rnc_clean,\n\tclient_rnc_compact,\n\tclient_rnc_type,\n\tclient_rnc_valid,\n\tclient_rnc_error,\n\tdebug_length: (arg || '').length,\n\ttelegram_id: input.message?.from?.id || null,\n\tuser_name: input.message?.from?.first_name || null,\n\tlicense_key,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1648,
+        80
+      ],
+      "id": "e53ab7d5-384a-41bc-837e-e61f46561765",
+      "name": "Parse Command"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.command }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "/activate"
+            },
+            {
+              "value2": "/client",
+              "output": 1
+            },
+            {
+              "value2": "/status",
+              "output": 2
+            },
+            {
+              "value2": "/start",
+              "output": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        64
+      ],
+      "id": "fd61e2a4-8753-4e26-b398-63f80f50c442",
+      "name": "Route Commands"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, name, plan_limit\nFROM public.firms\nWHERE trim(license_key) = trim($1::text)\n  AND is_active IS TRUE\nLIMIT 1;\n",
+        "additionalFields": {
+          "queryParams": "license_key_clean"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -208
+      ],
+      "id": "f6f8dfb0-560e-4bf7-ba95-9249742c0f44",
+      "name": "DB: Check License",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "onSnK6fw0fxgsrMA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ !!$items(\"DB: Check License\").at(0).json.id }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -176
+      ],
+      "id": "db3a91c1-7faf-417b-b24f-ad2f4fed3385",
+      "name": "Valid License?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO users (telegram_id, name, firm_id, role, active_client_name)\nVALUES ($1, $2, $3, 'admin', NULL)\nON CONFLICT (telegram_id)\nDO UPDATE SET firm_id = $3\nRETURNING *;\n",
+        "additionalFields": {
+          "queryParams": "telegram_id, user_name, firm_id"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        -32
+      ],
+      "id": "cd2f58e6-9829-4c4c-949d-144c1e0684d2",
+      "name": "DB: Register User",
+      "credentials": {
+        "postgres": {
+          "id": "onSnK6fw0fxgsrMA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').item.json.telegram_id }}",
+        "text": "=🚀 *Bienvenido a ContableBot*\n\nTe has registrado correctamente como Administrador de:\n🏢 *{{ $json.name }}*\n\n📋 *Instrucciones:*\n1. Escribe `/client [RNC]` para elegir a qué cliente le vas a subir facturas.\n   Ejemplo: `/client 1-30-12345-4`\n2. Envía fotos de las facturas.\n3. Nosotros hacemos el resto.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        -32
+      ],
+      "id": "0c76aeb3-6de7-4af6-860b-0b8bed1c5093",
+      "name": "Msg: Welcome",
+      "webhookId": "6efb5343-6e98-4866-86a0-48aa34a0f137",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').item.json.telegram_id }}",
+        "text": "⛔ *Licencia Inválida*\n\nEsa licencia no existe o la empresa está inactiva. Verifica tu compra en Whop.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        -48
+      ],
+      "id": "fb1a97e0-6d6c-4087-8146-197f8e1a1c5a",
+      "name": "Msg: Invalid",
+      "webhookId": "5ecfc6f9-1463-467b-9e47-68d9aee3b184",
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE users\nSET \n  active_client_rnc  = $1,\n  active_client_name = $1\nWHERE telegram_id = $2\nRETURNING active_client_rnc;\n",
+        "additionalFields": {
+          "queryParams": "arg, telegram_id"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        144
+      ],
+      "id": "3559a053-edde-4d87-ac76-5c3a2b282c2c",
+      "name": "DB: Set Session",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "onSnK6fw0fxgsrMA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').item.json.telegram_id }}",
+        "text": "=📂 *Cliente seleccionado*\n\nAhora trabajando para el RNC: *{{ $json.active_client_rnc }}*\n\n📸 Envía las fotos ahora. Todas se guardarán bajo este cliente.\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        80
+      ],
+      "id": "7cbdb9fc-7d5f-4f58-a110-ecdcdb325a20",
+      "name": "Msg: Session Set",
+      "webhookId": "8a839a60-d267-46b7-81dc-d09620763b0a",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  u.active_client_rnc,\n  f.name AS firm_name,\n  f.usage_current_month,\n  f.plan_limit\nFROM users u\nJOIN firms f ON u.firm_id = f.id\nWHERE u.telegram_id = $1;\n",
+        "additionalFields": {
+          "queryParams": "telegram_id"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        464
+      ],
+      "id": "34e9ef0b-8023-4812-9d1f-5e67183f7087",
+      "name": "DB: Get Status",
+      "credentials": {
+        "postgres": {
+          "id": "onSnK6fw0fxgsrMA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').item.json.telegram_id }}",
+        "text": "=📊 *Estado Actual*\n\n🏢 Empresa: {{ $json.firm_name }}\n📂 Cliente Activo (RNC): *{{ $json.active_client_rnc || \"Ninguno\" }}*\n\n📉 Uso del Mes: {{ $json.usage_current_month }} / {{ $json.plan_limit }} facturas.\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        464
+      ],
+      "id": "2f205ac0-912a-40c4-bf32-15125dd6b388",
+      "name": "Msg: Status",
+      "webhookId": "85e384ef-09a8-477f-a374-91e7abe8fe45",
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5160249e-664a-40f7-9d81-54813bc71bea",
+              "name": "license_key_clean",
+              "value": "={{ ($json.arg ?? '')  .toString()  .replace(/[\\u200B-\\u200D\\uFEFF]/g,'')   // zero-width  .replace(/\\u00A0/g,' ')                // nbsp  .trim()}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        -208
+      ],
+      "id": "048748d7-df42-4f5b-9d06-908ce055718c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e3144fdf-153a-47ea-bec8-e9a6ca6f88e7",
+              "name": "telegram_id",
+              "value": "={{ $items(\"Parse Command\")[0].json.telegram_id }}",
+              "type": "number"
+            },
+            {
+              "id": "35b4daa4-52d9-4215-99f5-59fc212e32f1",
+              "name": "user_name",
+              "value": "={{ $items(\"Parse Command\")[0].json.user_name }}",
+              "type": "string"
+            },
+            {
+              "id": "e7cb82b6-5233-4a16-9a60-a0e483434b4d",
+              "name": "firm_id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "3ecd83f3-b697-4dbe-a665-f41601cccef0",
+              "name": "firm_name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        128,
+        -240
+      ],
+      "id": "95048190-7dbd-4021-831f-92a9349d905e",
+      "name": "Merge User Info"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  COUNT(*) AS user_count\nFROM users\nWHERE firm_id = $1\n  AND is_active IS TRUE;\n",
+        "options": {
+          "queryReplacement": "={{ $item(0).$node[\"DB: Check License\"].json.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        320,
+        -256
+      ],
+      "id": "a15aa9d0-3a55-403e-ab38-75b64431ff3e",
+      "name": "Count Users for Firm",
+      "credentials": {
+        "postgres": {
+          "id": "onSnK6fw0fxgsrMA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a8810f49-2ff3-478a-b7c3-ec0868706032",
+              "leftValue": "={{ Number($node[\"Count Users for Firm\"].json.user_count) }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        -224
+      ],
+      "id": "9f1d9635-cdab-471d-9060-cb1280b4909a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').item.json.telegram_id }}",
+        "text": "=✅ Te has unido a la firma:\n🏢 *{{ $json.name }}*\n\nHas sido registrado como usuario de equipo.\n\n📋 *Instrucciones:*\n1. Escribe `/client [RNC]` para elegir a qué cliente le vas a subir facturas.\n   Ejemplo: `/client 1-30-12345-4`\n2. Envía fotos de las facturas.\n3. Nosotros hacemos el resto.\nYa puedes enviar facturas con este bot.\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        1488,
+        -272
+      ],
+      "id": "c7326311-5794-402c-914f-82670e120592",
+      "name": "Msg: Welcome1",
+      "webhookId": "6efb5343-6e98-4866-86a0-48aa34a0f137",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tomamos los datos de \"Merge User Info\" (solo hay 1 item ahí)\nconst base = $items(\"Merge User Info\")[0].json;\n\nreturn $input.all().map(item => {\n  item.json.telegram_id = base.telegram_id;\n  item.json.user_name   = base.user_name;\n  item.json.firm_id     = base.firm_id;\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -48
+      ],
+      "id": "db5ab335-9698-4eba-8798-a3edaecb92ad",
+      "name": "Attach User Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tomamos los datos de \"Merge User Info\" (solo hay 1 item ahí)\nconst base = $items(\"Merge User Info\")[0].json;\n\nreturn $input.all().map(item => {\n  item.json.telegram_id = base.telegram_id;\n  item.json.user_name   = base.user_name;\n  item.json.firm_id     = base.firm_id;\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -336
+      ],
+      "id": "9a11a1fa-d2d7-425f-a13f-77e4fe4d83e2",
+      "name": "Attach User Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO clients (firm_id, name, rnc)\nSELECT \n  u.firm_id,\n  $1::text AS name,      -- por ahora usamos el mismo RNC como nombre\n  $1::text AS rnc\nFROM users u\nWHERE u.telegram_id = $2\nON CONFLICT (firm_id, rnc)\nDO UPDATE\n   SET name = COALESCE(clients.name, EXCLUDED.name)\nRETURNING id, firm_id, name, rnc;\n",
+        "additionalFields": {
+          "queryParams": "arg, telegram_id"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        48
+      ],
+      "id": "f445d979-1dc2-42ec-a168-98d6af1a232f",
+      "name": "DB: Upsert Client",
+      "credentials": {
+        "postgres": {
+          "id": "onSnK6fw0fxgsrMA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').item.json.telegram_id }}",
+        "text": "=👋 Bienvenido a ContableBot\n\nPara suscribirte gratis: \nEntra a \nhttps://whop.com/hackstak/contable-bot-606-plans/\nLuego revisa tu correo electronico! \nAhi encontraras la llave y las instrucciones. \n\nActivacion Manual: \n/activate \"TextoDeLlave\"\nEjemplo:\n/activate CB-ABC12345",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        656
+      ],
+      "id": "f09fc66d-8490-4609-b34c-68abf8dff50f",
+      "name": "Msg: Status1",
+      "webhookId": "85e384ef-09a8-477f-a374-91e7abe8fe45",
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "94c40620-5e3a-4446-b1d1-3eb9beaa6a79",
+              "leftValue": "={{ $json.client_rnc_valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -656,
+        160
+      ],
+      "id": "92864301-c252-468f-932d-e54ebe1ef083",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "94c40620-5e3a-4446-b1d1-3eb9beaa6a79",
+              "leftValue": "={{ $json.client_rnc_valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -848,
+        64
+      ],
+      "id": "f3cbf43c-88e7-46d9-b995-a375a9b497e4",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').item.json.telegram_id }}",
+        "text": "=📂 RNC Erroneo\n\nPusiste  RNC: *{{ $json.client_rnc_error }}*\n\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        272
+      ],
+      "id": "24425030-3983-4851-a6c6-11f09b9bb25b",
+      "name": "Msg: Session Set1",
+      "webhookId": "8a839a60-d267-46b7-81dc-d09620763b0a",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO users (telegram_id, name, firm_id, role, active_client_name)\nVALUES ($1, $2, $3, 'staff', NULL)\nON CONFLICT (telegram_id)\nDO UPDATE SET firm_id = $3\nRETURNING *;\n",
+        "additionalFields": {
+          "queryParams": "telegram_id, user_name, firm_id"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -336
+      ],
+      "id": "c1ae5b06-9640-45d4-8558-2dfd94e6a362",
+      "name": "DB: Register Staff",
+      "credentials": {
+        "postgres": {
+          "id": "onSnK6fw0fxgsrMA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  u.telegram_id       AS user_id,       -- usamos telegram_id como identificador\n  u.telegram_id,\n  u.firm_id,\n  u.role,\n  u.active_client_rnc,\n  c.id                AS client_id,\n  c.name              AS client_name,\n  f.license_key,\n  f.used_this_month,\n  f.plan_limit\nFROM users u\nJOIN firms f \n  ON u.firm_id = f.id\nLEFT JOIN clients c\n  ON c.firm_id = u.firm_id\n AND c.rnc     = u.active_client_rnc\nWHERE u.telegram_id = $1::bigint\n  AND u.is_active = TRUE;\n",
+        "options": {
+          "queryReplacement": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+        }
+      },
+      "id": "8bc00c02-16b2-4238-8e4f-159e63078c6a",
+      "name": "Auth & Session Check",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -736,
+        928
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "onSnK6fw0fxgsrMA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "ac396509-b2bf-4774-bdf8-cc0ef890175a",
+              "leftValue": "={{ $json[\"firm_id\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "810da669-e249-4713-8ae2-b668e7d73409",
+              "leftValue": "={{ $json.active_client_rnc }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "80e5c613-a096-4aa8-841a-09c7e6b0af86",
+      "name": "Is Authorized?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "⛔ Acceso denegado o sesion incorrecta. 1. Verifica que estas registrado  2. Asegurate de que estas en una sesion /client [RNC]",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "91d83db7-493c-4134-a635-c821e69e0976",
+      "name": "Reply Error",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        -352,
+        1232
+      ],
+      "webhookId": "54e975a0-2f0a-473d-af64-7ee10402aa5c",
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        192,
+        1024
+      ],
+      "id": "8bd92f46-5a76-4d59-aa26-bcbc314401e4",
+      "name": "Extract from File",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=❌ Eso no es una factura... intentalo de nuevo!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        1248
+      ],
+      "id": "7abbdb83-9f58-4f34-872c-f5cfb082b852",
+      "name": "Send a text message2",
+      "webhookId": "98ab9a6e-7bec-4f45-8f77-c3090f1135c7",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Prueba enviando fotos de facturas ",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        1216
+      ],
+      "id": "2efe47d6-beaa-4263-8176-4673f3d2d86a",
+      "name": "Send a text message4",
+      "webhookId": "562ccc91-be41-44b8-bf35-977679049e27",
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d398ab64-334f-4bfd-86e3-11d1679320aa",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.photo[0] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        1024
+      ],
+      "id": "1677f299-216d-4426-882a-e5831918efb6",
+      "name": "Is a photo?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "274434f1-9b65-4d6f-b012-3034af9893fb",
+              "name": "img64",
+              "value": "={{ ( $json.data|| '')\n     .toString()\n     .replace(/^data:.*;base64,/, '')\n     .replace(/\\s/g, '') }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        1024
+      ],
+      "id": "562ad67e-b031-4ce2-a412-b7d9ab178a5e",
+      "name": "Formateo"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vision.googleapis.com/v1/images:annotate?key=AIzaSyC6ZoxXTQnlD5T6u9o9O_x8M-trvBOZ2u8",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  JSON.stringify({\n    requests: [\n      {\n        image: { content: $json.img64 },\n        features: [{ type: \"TEXT_DETECTION\" }],\n        imageContext: { languageHints: [\"es\", \"en\"] }\n      }\n    ]\n  })\n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        576,
+        1024
+      ],
+      "id": "1e54b205-068f-4c64-a1c0-e41ebcbea0e6",
+      "name": "HTTP Request OCR google Vision"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "af6bcf3d-6052-41d8-8677-b93b018d7077",
+              "leftValue": "={{ ($json.responses[0]) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        1024
+      ],
+      "id": "710f7cc0-26bf-4495-aff0-67b50ca2010e",
+      "name": "Contiene texto del OCR"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -384,
+        1024
+      ],
+      "id": "56da1458-ba88-4ed7-bce2-e1973fd5745f",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "invoices",
+          "mode": "list",
+          "cachedResultName": "invoices"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "firm_id": "={{ $node[\"Auth & Session Check\"].json.firm_id }}",
+            "user_id": "={{ $node[\"Auth & Session Check\"].json.user_db_id }}",
+            "client_name": "={{ $node[\"Auth & Session Check\"].json.client_name }}",
+            "rnc": "={{ $node[\"Auth & Session Check\"].json.active_client_rnc }}",
+            "status": "=pending",
+            "client_id": "={{ $node[\"Auth & Session Check\"].json.client_id }}",
+            "raw_ocr_text": "={{ $json.responses[0].textAnnotations[0].description }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "firm_id",
+              "displayName": "firm_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "client_name",
+              "displayName": "client_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rnc",
+              "displayName": "rnc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nombre_compania",
+              "displayName": "nombre_compania",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ncf",
+              "displayName": "ncf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "materiales",
+              "displayName": "materiales",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "monto_servicio_exento",
+              "displayName": "monto_servicio_exento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "monto_bien_exento",
+              "displayName": "monto_bien_exento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total_montos_exento",
+              "displayName": "total_montos_exento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "monto_servicio_gravado",
+              "displayName": "monto_servicio_gravado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "monto_bien_gravado",
+              "displayName": "monto_bien_gravado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total_montos_gravado",
+              "displayName": "total_montos_gravado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "itbis_servicios",
+              "displayName": "itbis_servicios",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "itbis_bienes",
+              "displayName": "itbis_bienes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total_facturado_itbis",
+              "displayName": "total_facturado_itbis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "itbis_servicios_retenido",
+              "displayName": "itbis_servicios_retenido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retencion_30_itbis",
+              "displayName": "retencion_30_itbis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retencion_10",
+              "displayName": "retencion_10",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retencion_2",
+              "displayName": "retencion_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "propina",
+              "displayName": "propina",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total_facturado",
+              "displayName": "total_facturado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total_a_cobrar",
+              "displayName": "total_a_cobrar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "raw_ai_dump",
+              "displayName": "raw_ai_dump",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "client_id",
+              "displayName": "client_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "raw_ocr_text",
+              "displayName": "raw_ocr_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "dfdd808a-e5b5-42b6-a0a2-e9f814a060d2",
+      "name": "DB: Queue Invoice",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        1152,
+        1024
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "onSnK6fw0fxgsrMA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Factura recibida, se está procesando en segundo plano…",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1424,
+        1040
+      ],
+      "id": "c13ebeba-1641-4111-bf68-416276274a4e",
+      "name": "Send a text message",
+      "webhookId": "98ab9a6e-7bec-4f45-8f77-c3090f1135c7",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "4pJOp9hcOjkYW0GI",
+          "name": "ContableBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d398ab64-334f-4bfd-86e3-11d1679320aa",
+              "leftValue": "={{ $json.message.photo[0] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -944,
+        1088
+      ],
+      "id": "7285d31c-5afd-4a50-91f1-71687d59b445",
+      "name": "Is a photo?1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Command?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is a photo?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Command?": {
+      "main": [
+        [
+          {
+            "node": "Parse Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Command": {
+      "main": [
+        [
+          {
+            "node": "Route Commands",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Commands": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DB: Get Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Msg: Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Check License": {
+      "main": [
+        [
+          {
+            "node": "Valid License?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid License?": {
+      "main": [
+        [
+          {
+            "node": "Merge User Info",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Msg: Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Register User": {
+      "main": [
+        [
+          {
+            "node": "Msg: Welcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Set Session": {
+      "main": [
+        [
+          {
+            "node": "Msg: Session Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Get Status": {
+      "main": [
+        [
+          {
+            "node": "Msg: Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "DB: Check License",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge User Info": {
+      "main": [
+        [
+          {
+            "node": "Count Users for Firm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Count Users for Firm": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Attach User Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Attach User Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach User Fields": {
+      "main": [
+        [
+          {
+            "node": "DB: Register User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach User Fields1": {
+      "main": [
+        [
+          {
+            "node": "DB: Register Staff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Upsert Client": {
+      "main": [
+        [
+          {
+            "node": "DB: Set Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "DB: Set Session",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Msg: Session Set1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "DB: Upsert Client",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Msg: Session Set1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Register Staff": {
+      "main": [
+        [
+          {
+            "node": "Msg: Welcome1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auth & Session Check": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Authorized?": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Formateo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is a photo?": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formateo": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request OCR google Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request OCR google Vision": {
+      "main": [
+        [
+          {
+            "node": "Contiene texto del OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contiene texto del OCR": {
+      "main": [
+        [
+          {
+            "node": "DB: Queue Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Is a photo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Queue Invoice": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is a photo?1": {
+      "main": [
+        [
+          {
+            "node": "Auth & Session Check",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1f0b8175-027f-4cb1-9b0a-9f36a66ee5f2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcd6a4c389ac300c049a1b9db918c48016d4ee3b94f1e9f61f4fa66b8252e2f"
+  },
+  "id": "9hR21OAAvrPkuiI2",
+  "tags": []
+}

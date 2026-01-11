@@ -1,0 +1,603 @@
+import { useState, useEffect } from "react"
+import { useRouter } from "next/router"
+import Head from "next/head"
+import Link from "next/link"
+import {
+  FileText,
+  User,
+  CreditCard,
+  Settings,
+  Bell,
+  Lock,
+  ExternalLink,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  ArrowUp,
+  Zap
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import type { MeResponse } from "@/types"
+import { WHOP_PLANS, type PlanKey } from "@/lib/whop"
+
+export default function ConfiguracionPage() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [userData, setUserData] = useState<MeResponse | null>(null)
+  const [activeTab, setActiveTab] = useState<"perfil" | "suscripcion" | "preferencias">("perfil")
+
+  useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch("/api/me")
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/login")
+          return
+        }
+        throw new Error("Failed to fetch user data")
+      }
+      const data: MeResponse = await response.json()
+      setUserData(data)
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST" })
+      router.push("/login")
+    } catch (error) {
+      console.error("Error logging out:", error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Configuración - Contable Bot</title>
+      </Head>
+
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="border-b border-border bg-card">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-primary-foreground" />
+                </div>
+                <span className="font-semibold text-lg text-foreground">Contable Bot</span>
+              </Link>
+
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="sm" asChild>
+                  <a
+                    href={userData?.manageUrl || "https://whop.com/hub"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Gestionar suscripción
+                  </a>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  Cerrar sesión
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Title */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Configuración</h1>
+            <p className="text-muted-foreground">
+              Ajusta tu perfil, integraciones y preferencias
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Sidebar Navigation */}
+            <div className="lg:col-span-1">
+              <nav className="space-y-1">
+                <button
+                  onClick={() => setActiveTab("perfil")}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                    activeTab === "perfil"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <User className="w-5 h-5" />
+                  <span className="font-medium">Perfil</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab("suscripcion")}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                    activeTab === "suscripcion"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <CreditCard className="w-5 h-5" />
+                  <span className="font-medium">Suscripción</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab("preferencias")}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                    activeTab === "preferencias"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Settings className="w-5 h-5" />
+                  <span className="font-medium">Preferencias</span>
+                </button>
+              </nav>
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              {activeTab === "perfil" && (
+                <PerfilTab userData={userData} onUpdate={fetchUserData} />
+              )}
+
+              {activeTab === "suscripcion" && (
+                <SuscripcionTab userData={userData} />
+              )}
+
+              {activeTab === "preferencias" && (
+                <PreferenciasTab />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// Perfil Tab Component
+function PerfilTab({ userData, onUpdate }: { userData: MeResponse | null; onUpdate: () => void }) {
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-6">
+      <h2 className="text-xl font-semibold text-foreground mb-6">Información del perfil</h2>
+
+      {message && (
+        <div
+          className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
+            message.type === "success"
+              ? "bg-green-500/10 border border-green-500/20 text-green-500"
+              : "bg-destructive/10 border border-destructive/20 text-destructive"
+          }`}
+        >
+          {message.type === "success" ? (
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          )}
+          <p className="text-sm">{message.text}</p>
+        </div>
+      )}
+
+      <div className="space-y-6">
+        {/* Firm Name */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Nombre de la empresa
+          </label>
+          <input
+            type="text"
+            value={userData?.firmName || ""}
+            disabled
+            className="w-full px-4 py-2 bg-muted border border-border rounded-lg text-muted-foreground cursor-not-allowed"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Contacta soporte para cambiar el nombre de tu empresa
+          </p>
+        </div>
+
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Email
+          </label>
+          <input
+            type="email"
+            value={userData?.email || ""}
+            disabled
+            className="w-full px-4 py-2 bg-muted border border-border rounded-lg text-muted-foreground cursor-not-allowed"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            El email no se puede cambiar
+          </p>
+        </div>
+
+        {/* Change Password Section */}
+        <div className="pt-6 border-t border-border">
+          <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+            <Lock className="w-5 h-5" />
+            Cambiar contraseña
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Próximamente: podrás cambiar tu contraseña desde aquí
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Suscripción Tab Component
+function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+
+  return (
+    <div className="space-y-6">
+      {/* Current Plan Card */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <h2 className="text-xl font-semibold text-foreground mb-6">Plan actual</h2>
+
+        <div className="space-y-4">
+          {/* Status Badge */}
+          <div className="flex items-center gap-3">
+            <div
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                userData?.isActive
+                  ? "bg-green-500/10 text-green-500"
+                  : "bg-destructive/10 text-destructive"
+              }`}
+            >
+              {userData?.isActive ? "Activa" : "Inactiva"}
+            </div>
+          </div>
+
+          {/* Usage Stats */}
+          <div className="bg-muted/50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted-foreground">Facturas este mes</span>
+              <span className="text-2xl font-bold text-foreground">
+                {userData?.usedThisMonth || 0} / {userData?.planLimit || 0}
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-primary h-2 rounded-full transition-all"
+                style={{
+                  width: `${Math.min(
+                    ((userData?.usedThisMonth || 0) / (userData?.planLimit || 1)) * 100,
+                    100
+                  )}%`,
+                }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {userData?.planLimit && userData.usedThisMonth
+                ? `${userData.planLimit - userData.usedThisMonth} facturas restantes`
+                : "Gestiona tu límite de facturas"}
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Manage Subscription Button - Always show */}
+            <Button variant="default" className="w-full" asChild>
+              <a
+                href={userData?.manageUrl || "https://whop.com/hub"}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Gestionar en Whop
+                <ExternalLink className="w-4 h-4 ml-2" />
+              </a>
+            </Button>
+
+            {/* Cancel Subscription Button - Show if active */}
+            {userData?.isActive && (
+              <Button
+                variant="outline"
+                className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                onClick={() => setShowCancelConfirm(true)}
+              >
+                Cancelar suscripción
+              </Button>
+            )}
+          </div>
+
+          {!userData?.isActive && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm text-destructive font-medium mb-1">
+                    Suscripción inactiva
+                  </p>
+                  <p className="text-xs text-destructive/80">
+                    Tu suscripción no está activa. Actualiza tu método de pago para continuar.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-lg">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
+              ¿Cancelar suscripción?
+            </h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Para cancelar tu suscripción, serás redirigido a Whop donde podrás gestionar tu
+              cancelación. Tu suscripción permanecerá activa hasta el final del período actual.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowCancelConfirm(false)}
+              >
+                No cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                asChild
+              >
+                <a
+                  href={userData?.manageUrl || "https://whop.com/hub"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ir a Whop
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Subscription Features */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <h3 className="text-lg font-medium text-foreground mb-4">
+          Funciones de tu plan
+        </h3>
+        <ul className="space-y-3">
+          <li className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Extracción con IA</p>
+              <p className="text-xs text-muted-foreground">
+                Procesamiento automático de facturas con Google Vision AI
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Exportación a CSV/Excel</p>
+              <p className="text-xs text-muted-foreground">
+                Descarga tus facturas en formato 606
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Dashboard de análisis</p>
+              <p className="text-xs text-muted-foreground">
+                Visualiza estadísticas de tus facturas
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Soporte por email</p>
+              <p className="text-xs text-muted-foreground">
+                Respuesta en menos de 24 horas
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      {/* Upgrade Plans Section */}
+      {userData?.isActive && (
+        <div className="bg-card border border-border rounded-xl p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <ArrowUp className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-medium text-foreground">
+              Mejora tu plan
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(WHOP_PLANS).map(([key, plan]) => {
+              const isCurrentPlan = plan.invoices === userData?.planLimit
+              const canUpgrade = plan.invoices > (userData?.planLimit || 0)
+
+              if (!canUpgrade) return null
+
+              return (
+                <div
+                  key={key}
+                  className={`border rounded-lg p-4 transition-all ${
+                    isCurrentPlan
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-foreground">{plan.name}</h4>
+                    <div className={`px-2 py-1 rounded text-xs font-medium ${plan.color} text-white`}>
+                      ${plan.price}/mes
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground mb-3">
+                    {plan.subtitle}
+                  </p>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Zap className="w-4 h-4 text-primary" />
+                      <span className="font-medium text-foreground">
+                        {plan.invoices} facturas/mes
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      +{plan.invoices - (userData?.planLimit || 0)} facturas más
+                    </div>
+                  </div>
+
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    asChild
+                  >
+                    <a
+                      href={`https://whop.com/checkout?pass=${plan.id}&email=${userData?.email}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Mejorar a {plan.name}
+                      <ExternalLink className="w-3 h-3 ml-2" />
+                    </a>
+                  </Button>
+                </div>
+              )
+            })}
+          </div>
+
+          <p className="text-xs text-muted-foreground text-center mt-4">
+            Al mejorar tu plan, se aplicará inmediatamente y se prorrateará el costo
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Preferencias Tab Component
+function PreferenciasTab() {
+  const [preferences, setPreferences] = useState({
+    emailNotifications: true,
+    monthlyReports: false,
+    autoExport: false,
+  })
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-6">
+      <h2 className="text-xl font-semibold text-foreground mb-6">Preferencias</h2>
+
+      <div className="space-y-6">
+        {/* Notifications Section */}
+        <div>
+          <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+            <Bell className="w-5 h-5" />
+            Notificaciones
+          </h3>
+          <div className="space-y-4">
+            <label className="flex items-center justify-between p-4 bg-muted/50 rounded-lg cursor-pointer">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Notificaciones por email
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Recibe actualizaciones sobre tus facturas
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={preferences.emailNotifications}
+                onChange={(e) =>
+                  setPreferences({ ...preferences, emailNotifications: e.target.checked })
+                }
+                className="w-5 h-5 text-primary rounded border-border focus:ring-2 focus:ring-primary"
+              />
+            </label>
+
+            <label className="flex items-center justify-between p-4 bg-muted/50 rounded-lg cursor-pointer">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Reportes mensuales
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Resumen automático de tus facturas cada mes
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={preferences.monthlyReports}
+                onChange={(e) =>
+                  setPreferences({ ...preferences, monthlyReports: e.target.checked })
+                }
+                className="w-5 h-5 text-primary rounded border-border focus:ring-2 focus:ring-primary"
+              />
+            </label>
+          </div>
+        </div>
+
+        {/* Export Settings */}
+        <div className="pt-6 border-t border-border">
+          <h3 className="text-lg font-medium text-foreground mb-4">
+            Configuración de exportación
+          </h3>
+          <label className="flex items-center justify-between p-4 bg-muted/50 rounded-lg cursor-pointer">
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Auto-exportar al final del mes
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Genera automáticamente el archivo 606 el último día del mes
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={preferences.autoExport}
+              onChange={(e) =>
+                setPreferences({ ...preferences, autoExport: e.target.checked })
+              }
+              className="w-5 h-5 text-primary rounded border-border focus:ring-2 focus:ring-primary"
+            />
+          </label>
+        </div>
+
+        {/* Save Button */}
+        <div className="pt-6 border-t border-border">
+          <Button className="w-full">
+            Guardar preferencias
+          </Button>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Próximamente: las preferencias se guardarán automáticamente
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
