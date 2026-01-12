@@ -41,11 +41,13 @@ export default function InvoiceUploader({
     if (!selectedFiles) return;
 
     const newFiles: UploadedFile[] = Array.from(selectedFiles)
-      .filter((file) => file.type.startsWith("image/"))
+      .filter((file) => file.type.startsWith("image/") || file.type === "application/pdf")
       .slice(0, 10 - files.length) // Max 10 total
       .map((file) => ({
         file,
-        preview: URL.createObjectURL(file),
+        preview: file.type === "application/pdf"
+          ? "/pdf-icon.svg" // Placeholder for PDF preview
+          : URL.createObjectURL(file),
         status: "pending" as const,
       }));
 
@@ -164,10 +166,10 @@ export default function InvoiceUploader({
 
           <div>
             <p className="text-lg font-medium text-foreground mb-1">
-              Arrastra imágenes aquí o haz click para seleccionar
+              Arrastra archivos aquí o haz click para seleccionar
             </p>
             <p className="text-sm text-muted-foreground">
-              Soporta JPG, PNG, WEBP, GIF (máx. 10 archivos, 10MB cada uno)
+              Soporta JPG, PNG, WEBP, GIF, PDF (máx. 10 archivos, 10MB cada uno)
             </p>
           </div>
         </div>
@@ -175,7 +177,7 @@ export default function InvoiceUploader({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,application/pdf"
           multiple
           onChange={(e) => handleFileSelect(e.target.files)}
           className="hidden"

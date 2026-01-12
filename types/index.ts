@@ -83,7 +83,35 @@ export interface PortalUser {
   firm_id: number;
   email: string;
   password_hash: string;
-  active_client_rnc?: string; // Currently selected client RNC (compact format, digits only)
+  full_name?: string;
+  role: 'admin' | 'user';
+  is_active: boolean;
+  created_by?: number; // User ID of admin who created this user
+  active_client_id?: number; // Currently selected client ID
+  active_client_rnc?: string; // Currently selected client RNC (compact format, digits only) - DEPRECATED
+  last_login_at?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface UserClient {
+  id: number;
+  user_id: number;
+  client_id: number;
+  is_default: boolean;
+  assigned_at: string;
+  assigned_by?: number;
+}
+
+export interface UserAuditLog {
+  id: number;
+  user_id: number;
+  action: string;
+  resource_type?: string;
+  resource_id?: number;
+  metadata?: Record<string, unknown>;
+  ip_address?: string;
+  user_agent?: string;
   created_at: string;
 }
 
@@ -102,15 +130,26 @@ export interface ErrorResponse {
 
 // /api/me response
 export interface MeResponse {
+  userId: number;
   firmId: number;
   firmName: string;
   email: string;
+  fullName?: string;
+  role: 'admin' | 'user';
   usedThisMonth: number;
   planLimit: number;
+  planKey?: string; // 'starter', 'business', 'pro', 'ultra', 'enterprise'
   isActive: boolean;
   manageUrl?: string;
-  activeClientRnc?: string; // Currently selected client RNC (compact format)
+  activeClientId?: number; // Currently selected client ID
+  activeClientRnc?: string; // Currently selected client RNC (compact format) - DEPRECATED
   activeClientName?: string; // Name of active client
+  assignedClients?: Array<{
+    id: number;
+    name: string;
+    rnc: string;
+    isDefault: boolean;
+  }>;
 }
 
 // /api/invoices response
@@ -132,8 +171,45 @@ export interface JWTPayload {
   firmId: number;
   firmName: string;
   email: string;
+  role: 'admin' | 'user';
+  activeClientId?: number; // Currently selected client
+  assignedClientIds?: number[]; // All accessible clients (for permission checking)
   iat?: number;
   exp?: number;
+}
+
+// User management types
+export interface CreateUserRequest {
+  email: string;
+  password: string;
+  fullName?: string;
+  clientIds: number[]; // Clients to assign
+  defaultClientId?: number; // Which client is default
+}
+
+export interface UpdateUserRequest {
+  fullName?: string;
+  isActive?: boolean;
+  clientIds?: number[]; // Update assigned clients
+  defaultClientId?: number;
+}
+
+export interface UsersResponse {
+  users: Array<{
+    id: number;
+    email: string;
+    fullName?: string;
+    role: 'admin' | 'user';
+    isActive: boolean;
+    createdBy?: number;
+    createdAt: string;
+    lastLoginAt?: string;
+    assignedClients: Array<{
+      id: number;
+      name: string;
+      isDefault: boolean;
+    }>;
+  }>;
 }
 
 // Legacy types (kept for backwards compatibility during migration)

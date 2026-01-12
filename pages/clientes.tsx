@@ -121,14 +121,12 @@ export default function ClientesPage() {
         const invoiceCount = data.invoiceCount || 0;
 
         confirmDialog({
-          message: `${client.name} tiene ${invoiceCount} factura${
-            invoiceCount !== 1 ? "s" : ""
-          } asociada${invoiceCount !== 1 ? "s" : ""}. ¿Qué deseas hacer?`,
+          message: `${client.name} tiene ${invoiceCount} factura${invoiceCount !== 1 ? "s" : ""
+            } asociada${invoiceCount !== 1 ? "s" : ""}. ¿Qué deseas hacer?`,
           header: "Cliente con facturas",
           icon: "pi pi-exclamation-triangle",
-          acceptLabel: `Eliminar cliente y ${invoiceCount} factura${
-            invoiceCount !== 1 ? "s" : ""
-          }`,
+          acceptLabel: `Eliminar cliente y ${invoiceCount} factura${invoiceCount !== 1 ? "s" : ""
+            }`,
           rejectLabel: "Cancelar",
           acceptClassName:
             "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg ml-2",

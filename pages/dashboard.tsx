@@ -21,6 +21,7 @@ import InvoiceDataTable from "@/components/InvoiceDataTable";
 import ExportButtons from "@/components/ExportButtons";
 import { BarChart3, Settings, Upload } from "lucide-react";
 import { ALL_COLUMNS } from "@/utils/Invoice-columns";
+import { useProcessing } from "@/contexts/ProcessingContext";
 
 // Column definitions for the invoices table
 
@@ -29,6 +30,7 @@ const STORAGE_KEY = "dashboard_visible_columns";
 export default function DashboardPage() {
   const router = useRouter();
   const toast = useRef<Toast>(null);
+  const { onProcessingComplete } = useProcessing();
 
   // Firm data from /api/me
   const [firmId, setFirmId] = useState<number | null>(null);
@@ -200,15 +202,18 @@ export default function DashboardPage() {
 
   // Handle upload complete
   const handleUploadComplete = (totalUploaded: number) => {
-    fetchInvoices(); // Refresh invoice list
+    // Immediately refresh invoice list to show newly uploaded invoices
+    fetchInvoices();
+
     toast.current?.show({
       severity: "success",
-      summary: "Facturas procesadas",
-      detail: `${totalUploaded} factura${
-        totalUploaded !== 1 ? "s" : ""
-      } procesada${totalUploaded !== 1 ? "s" : ""} exitosamente`,
+      summary: "Facturas subidas",
+      detail: `${totalUploaded} factura${totalUploaded !== 1 ? "s" : ""
+        } subida${totalUploaded !== 1 ? "s" : ""} exitosamente. Procesando...`,
       life: 3000,
     });
+
+    // Note: Processing indicator is now global and will automatically show
   };
 
   // Handle open uploader from card
@@ -232,13 +237,12 @@ export default function DashboardPage() {
       if (toDate) {
         params.set("to", formatDateForAPI(toDate));
       }
-      if (selectedClientId) {
+      if (selectedClientId !== null) {
         params.set("clientId", selectedClientId.toString());
       }
 
-      const url = `/api/invoices${
-        params.toString() ? `?${params.toString()}` : ""
-      }`;
+      const url = `/api/invoices${params.toString() ? `?${params.toString()}` : ""
+        }`;
       const response = await fetch(url);
       const data: InvoicesResponse | ErrorResponse = await response.json();
       console.log(data, "invoices data");
@@ -249,8 +253,14 @@ export default function DashboardPage() {
       }
 
       const invoicesData = data as InvoicesResponse;
-      setInvoices(invoicesData.invoices);
-      setTotalInvoices(invoicesData.total || 0);
+
+      // Filter out pending/processing invoices - only show fully processed ones
+      const completed = invoicesData.invoices.filter(inv =>
+        inv.status === "OK" || inv.status === "REVIEW" || inv.status === "ERROR" || inv.status === "processed"
+      );
+
+      setInvoices(completed);
+      setTotalInvoices(completed.length);
     } catch (err) {
       console.error("Error fetching invoices:", err);
       setError("Error de conexión. Intente nuevamente.");
@@ -265,6 +275,35 @@ export default function DashboardPage() {
       fetchInvoices();
     }
   }, [firmId, fromDate, toDate, selectedClientId, fetchInvoices]);
+
+  // Subscribe to processing completion events
+  useEffect(() => {
+    const unsubscribe = onProcessingComplete(async () => {
+      // Refresh user data to get updated usage count
+      try {
+        const response = await fetch("/api/me");
+        if (response.ok) {
+          const data: MeResponse = await response.json();
+          setUsedThisMonth(data.usedThisMonth);
+        }
+      } catch (error) {
+        console.error("Error refreshing user data:", error);
+      }
+
+      // Refresh invoice list
+      fetchInvoices();
+
+      // Show success toast
+      toast.current?.show({
+        severity: "success",
+        summary: "Procesamiento completo",
+        detail: "Las facturas han sido procesadas exitosamente",
+        life: 3000,
+      });
+    });
+
+    return unsubscribe;
+  }, [onProcessingComplete, fetchInvoices]);
 
   // Edit invoice handler
   const handleEditInvoice = (invoice: Invoice) => {

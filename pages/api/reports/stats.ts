@@ -39,32 +39,49 @@ export default async function handler(
   if (!session) return; // Response already sent by requireAuth
 
   try {
-    const { period = "month", clientId } = req.query;
+    const { period = "month", clientId, from, to } = req.query;
 
-    // Calculate date range based on period
     const now = new Date();
     let startDate: Date;
+    let endDate: Date;
     let lastPeriodStart: Date;
     let lastPeriodEnd: Date;
 
-    switch (period) {
-      case "quarter":
-        // Last 3 months
-        startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-        lastPeriodStart = new Date(now.getFullYear(), now.getMonth() - 6, 1);
-        lastPeriodEnd = new Date(now.getFullYear(), now.getMonth() - 3, 0);
-        break;
-      case "year":
-        // Last 12 months
-        startDate = new Date(now.getFullYear(), now.getMonth() - 12, 1);
-        lastPeriodStart = new Date(now.getFullYear(), now.getMonth() - 24, 1);
-        lastPeriodEnd = new Date(now.getFullYear(), now.getMonth() - 12, 0);
-        break;
-      default: // month
-        // Current month
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        lastPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        lastPeriodEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    // Priority: Use explicit date range if provided, otherwise calculate from period
+    if (from && to) {
+      // Use explicit date range
+      startDate = new Date(from as string);
+      endDate = new Date(to as string);
+
+      // Calculate equivalent period for growth comparison
+      const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      lastPeriodEnd = new Date(startDate);
+      lastPeriodEnd.setDate(lastPeriodEnd.getDate() - 1);
+      lastPeriodStart = new Date(lastPeriodEnd);
+      lastPeriodStart.setDate(lastPeriodStart.getDate() - daysDiff);
+    } else {
+      // Calculate date range based on period (legacy behavior)
+      endDate = now;
+
+      switch (period) {
+        case "quarter":
+          // Last 3 months
+          startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+          lastPeriodStart = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+          lastPeriodEnd = new Date(now.getFullYear(), now.getMonth() - 3, 0);
+          break;
+        case "year":
+          // Last 12 months
+          startDate = new Date(now.getFullYear(), now.getMonth() - 12, 1);
+          lastPeriodStart = new Date(now.getFullYear(), now.getMonth() - 24, 1);
+          lastPeriodEnd = new Date(now.getFullYear(), now.getMonth() - 12, 0);
+          break;
+        default: // month
+          // Current month
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          lastPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          lastPeriodEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+      }
     }
 
     // Build base URL with firm filter
@@ -75,8 +92,8 @@ export default async function handler(
       baseUrl += `&client_id=eq.${clientId}`;
     }
 
-    // Fetch all invoices for the period
-    const invoicesUrl = `${baseUrl}&created_at=gte.${startDate.toISOString().split("T")[0]}`;
+    // Fetch all invoices for the period (filter by fecha, the invoice date)
+    const invoicesUrl = `${baseUrl}&fecha=gte.${startDate.toISOString().split("T")[0]}&fecha=lte.${endDate.toISOString().split("T")[0]}`;
     const invoicesResponse = await fetch(invoicesUrl, {
       headers: { "Content-Type": "application/json" },
     });
@@ -88,7 +105,7 @@ export default async function handler(
     const invoices = await invoicesResponse.json();
 
     // Fetch last period invoices for growth calculation
-    const lastPeriodUrl = `${baseUrl}&created_at=gte.${lastPeriodStart.toISOString().split("T")[0]}&created_at=lte.${lastPeriodEnd.toISOString().split("T")[0]}`;
+    const lastPeriodUrl = `${baseUrl}&fecha=gte.${lastPeriodStart.toISOString().split("T")[0]}&fecha=lte.${lastPeriodEnd.toISOString().split("T")[0]}`;
     const lastPeriodResponse = await fetch(lastPeriodUrl, {
       headers: { "Content-Type": "application/json" },
     });
@@ -138,8 +155,8 @@ export default async function handler(
     ];
 
     invoices.forEach((inv: any) => {
-      // Use created_at for grouping by month
-      const dateStr = inv.created_at || inv.fecha;
+      // Use fecha (invoice date) for grouping by month
+      const dateStr = inv.fecha || inv.created_at;
       if (!dateStr) return;
 
       const date = new Date(dateStr);

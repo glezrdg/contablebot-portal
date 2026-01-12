@@ -8,14 +8,12 @@
 import { useRouter } from "next/router";
 import Link from "next/link";
 import {
-  Settings,
-  LogOut,
-  CreditCard,
   FileText,
   BarChart3,
   TrendingUp,
   Building2,
 } from "lucide-react";
+import ProfileDropdown from "./ProfileDropdown";
 
 interface AdminHeaderProps {
   firmName: string;
@@ -36,23 +34,14 @@ export default function AdminHeader({
 }: AdminHeaderProps) {
   const router = useRouter();
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/logout", { method: "POST", credentials: "include" });
-      router.push("/");
-    } catch (err) {
-      console.error("Error logging out:", err);
-    }
-  };
-
   // Calculate usage percentage
   const usagePercentage =
     planLimit > 0 ? Math.min((usedThisMonth / planLimit) * 100, 100) : 0;
 
   return (
-    <header className="mb-8">
+    <header className="mb-6">
       {/* Top Bar - Logo and Actions */}
-      <div className="flex items-center justify-between mb-6 pb-6 border-b border-border">
+      <div className="flex items-center justify-between mb-4 pb-6 border-b border-border">
         {/* Logo and Brand */}
         <Link href="/dashboard" className="flex items-center gap-3 group">
           <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
@@ -71,11 +60,10 @@ export default function AdminHeader({
           {/* Dashboard Link */}
           <Link
             href="/dashboard"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              router.pathname === "/dashboard"
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/dashboard"
+              ? "bg-primary/20 text-primary"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
           >
             <BarChart3 className="w-4 h-4" />
             <span>Dashboard</span>
@@ -84,11 +72,10 @@ export default function AdminHeader({
           {/* Reports Link */}
           <Link
             href="/reportes"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              router.pathname === "/reportes"
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/reportes"
+              ? "bg-primary/20 text-primary"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
           >
             <TrendingUp className="w-4 h-4" />
             <span>Reportes</span>
@@ -97,60 +84,21 @@ export default function AdminHeader({
           {/* Clients Link */}
           <Link
             href="/clientes"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              router.pathname === "/clientes"
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/clientes"
+              ? "bg-primary/20 text-primary"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
           >
             <Building2 className="w-4 h-4" />
             <span>Clientes</span>
           </Link>
 
-          {/* Settings Link */}
-          <Link
-            href="/configuracion"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              router.pathname === "/configuracion"
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            <span>Configuración</span>
-          </Link>
-
-          {/* Manage Subscription */}
-          {manageUrl ? (
-            <a
-              href={manageUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-primary hover:bg-primary/20 transition-colors border border-primary/20"
-            >
-              <CreditCard className="w-4 h-4" />
-              <span className="hidden lg:inline">Suscripción</span>
-            </a>
-          ) : (
-            <a
-              href="https://whop.com/hub"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            >
-              <CreditCard className="w-4 h-4" />
-              <span className="hidden lg:inline">Whop Hub</span>
-            </a>
-          )}
-
-          {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden lg:inline">Salir</span>
-          </button>
+          {/* Profile Dropdown */}
+          <ProfileDropdown
+            firmName={firmName}
+            userEmail={userEmail}
+            manageUrl={manageUrl}
+          />
         </div>
       </div>
 
@@ -211,29 +159,26 @@ export default function AdminHeader({
                     strokeWidth="6"
                     fill="none"
                     strokeDasharray={`${2 * Math.PI * 28}`}
-                    strokeDashoffset={`${
-                      2 * Math.PI * 28 * (1 - usagePercentage / 100)
-                    }`}
-                    className={`transition-all duration-500 ${
-                      usagePercentage >= 90
-                        ? "text-destructive"
-                        : usagePercentage >= 70
+                    strokeDashoffset={`${2 * Math.PI * 28 * (1 - usagePercentage / 100)
+                      }`}
+                    className={`transition-all duration-500 ${usagePercentage >= 90
+                      ? "text-destructive"
+                      : usagePercentage >= 70
                         ? "text-amber-500"
                         : "text-primary"
-                    }`}
+                      }`}
                     strokeLinecap="round"
                   />
                 </svg>
                 {/* Percentage text */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span
-                    className={`text-xs font-bold ${
-                      usagePercentage >= 90
-                        ? "text-destructive"
-                        : usagePercentage >= 70
+                    className={`text-xs font-bold ${usagePercentage >= 90
+                      ? "text-destructive"
+                      : usagePercentage >= 70
                         ? "text-amber-500"
                         : "text-primary"
-                    }`}
+                      }`}
                   >
                     {Math.round(usagePercentage)}%
                   </span>

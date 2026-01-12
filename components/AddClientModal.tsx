@@ -123,7 +123,7 @@ export default function AddClientModal({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[51]"
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[51]"
         onClick={onClose}
       />
 
@@ -159,10 +159,9 @@ export default function AddClientModal({
                   w-full px-4 py-2 rounded-lg
                   border bg-background
                   focus:outline-none focus:ring-2
-                  ${
-                    rncValidation?.valid
-                      ? "border-green-500 focus:ring-green-500"
-                      : rncValidation?.error
+                  ${rncValidation?.valid
+                    ? "border-green-500 focus:ring-green-500"
+                    : rncValidation?.error
                       ? "border-destructive focus:ring-destructive"
                       : "border-border focus:ring-primary"
                   }

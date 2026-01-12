@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Toast } from "primereact/toast";
 import AdminHeader from "@/components/AdminHeader";
-import ClientFilterButtons from "@/components/ClientFilterButtons";
-import DateFilterSection from "@/components/DateFilterSection";
+import ReportFilterSection from "@/components/ReportFilterSection";
 import InvoiceDataTable from "@/components/InvoiceDataTable";
-import ExportButtons from "@/components/ExportButtons";
+import EditInvoiceModal from "@/components/EditInvoiceModal";
 import {
   TrendingUp,
   TrendingDown,
@@ -13,8 +14,6 @@ import {
   DollarSign,
   Calendar as CalendarIcon,
   Users,
-  Download,
-  Filter,
   ChevronRight,
 } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -26,6 +25,7 @@ import type {
   ErrorResponse,
 } from "@/types";
 import { ALL_COLUMNS } from "@/utils/Invoice-columns";
+import { useProcessing } from "@/contexts/ProcessingContext";
 
 interface ReportStats {
   totalInvoices: number;
@@ -42,24 +42,27 @@ const STORAGE_KEY = "dashboard_visible_columns";
 
 export default function ReportesPage() {
   const router = useRouter();
+  const toast = useRef<Toast>(null);
+  const { onProcessingComplete } = useProcessing();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<MeResponse | null>(null);
   const [stats, setStats] = useState<ReportStats | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
-  const [selectedPeriod, setSelectedPeriod] = useState<
-    "month" | "quarter" | "year"
-  >("month");
-  const [selectedClient, setSelectedClient] = useState<number | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [invoiceToEdit, setInvoiceToEdit] = useState<Invoice | null>(null);
+
+  // Unified filter state - Initialize with current month by default
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [fromDate, setFromDate] = useState<Date | null>(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1); // First day of month
+  });
+  const [toDate, setToDate] = useState<Date | null>(new Date()); // Today
 
   // Invoice list state
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [totalInvoices, setTotalInvoices] = useState<number>(0);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
-  const [fromDate, setFromDate] = useState<Date | null>(null);
-  const [toDate, setToDate] = useState<Date | null>(null);
-  const [selectedClientFilter, setSelectedClientFilter] = useState<
-    number | null
-  >(null);
 
   const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
     // Default visible columns
@@ -77,7 +80,7 @@ export default function ReportesPage() {
     if (userData) {
       fetchReportStats();
     }
-  }, [selectedPeriod, selectedClient, userData]);
+  }, [fromDate, toDate, selectedClientId, userData]);
 
   // Save column preferences to localStorage
   const handleColumnChange = (selectedColumns: string[]) => {
@@ -124,12 +127,16 @@ export default function ReportesPage() {
 
   const fetchReportStats = async () => {
     try {
-      const params = new URLSearchParams({
-        period: selectedPeriod,
-      });
+      const params = new URLSearchParams();
 
-      if (selectedClient !== null) {
-        params.append("clientId", String(selectedClient));
+      if (fromDate) {
+        params.append("from", formatDateForAPI(fromDate));
+      }
+      if (toDate) {
+        params.append("to", formatDateForAPI(toDate));
+      }
+      if (selectedClientId !== null) {
+        params.append("clientId", String(selectedClientId));
       }
 
       const response = await fetch(`/api/reports/stats?${params.toString()}`);
@@ -158,9 +165,13 @@ export default function ReportesPage() {
 
   // Fetch invoices with date filters
   const fetchInvoices = useCallback(async () => {
-    if (!userData) return;
+    if (!userData) {
+      console.log("fetchInvoices: userData is not available yet");
+      return;
+    }
 
     setLoadingInvoices(true);
+    console.log("fetchInvoices called with filters:", { fromDate, toDate, selectedClientId });
 
     try {
       const params = new URLSearchParams();
@@ -171,13 +182,13 @@ export default function ReportesPage() {
       if (toDate) {
         params.set("to", formatDateForAPI(toDate));
       }
-      if (selectedClientFilter) {
-        params.set("clientId", selectedClientFilter.toString());
+      if (selectedClientId !== null) {
+        params.set("clientId", selectedClientId.toString());
       }
 
-      const url = `/api/invoices${
-        params.toString() ? `?${params.toString()}` : ""
-      }`;
+      const url = `/api/invoices${params.toString() ? `?${params.toString()}` : ""
+        }`;
+      console.log("Fetching invoices from:", url);
       const response = await fetch(url);
       const data: InvoicesResponse | ErrorResponse = await response.json();
 
@@ -192,8 +203,16 @@ export default function ReportesPage() {
       }
 
       const invoicesData = data as InvoicesResponse;
-      setInvoices(invoicesData.invoices);
-      setTotalInvoices(invoicesData.total || 0);
+      console.log("Received invoices:", invoicesData.invoices?.length, "invoices");
+
+      // Filter out pending/processing invoices - only show fully processed ones
+      const completed = invoicesData.invoices.filter(inv =>
+        inv.status === "OK" || inv.status === "REVIEW" || inv.status === "ERROR" || inv.status === "processed"
+      );
+      console.log("After filtering pending:", completed.length, "completed invoices");
+
+      setInvoices(completed);
+      setTotalInvoices(completed.length);
     } catch (err) {
       console.error("Error fetching invoices:", err);
       setInvoices([]);
@@ -201,14 +220,153 @@ export default function ReportesPage() {
     } finally {
       setLoadingInvoices(false);
     }
-  }, [userData, fromDate, toDate, selectedClientFilter]);
+  }, [userData, fromDate, toDate, selectedClientId]);
 
   // Fetch invoices when filters change
   useEffect(() => {
-    if (userData) {
-      fetchInvoices();
+    console.log("Invoice fetch effect triggered", { userData: !!userData, fromDate, toDate, selectedClientId });
+    fetchInvoices();
+  }, [fetchInvoices]);
+
+  // Subscribe to processing completion events
+  useEffect(() => {
+    const unsubscribe = onProcessingComplete(async () => {
+      // Refresh user data to get updated usage count
+      await fetchUserData();
+
+      // Refresh report stats
+      await fetchReportStats();
+
+      // Refresh invoice list
+      await fetchInvoices();
+    });
+
+    return unsubscribe;
+  }, [onProcessingComplete, fetchInvoices]);
+
+  // Edit invoice handler
+  const handleEditInvoice = (invoice: Invoice) => {
+    setInvoiceToEdit(invoice);
+    setShowEditModal(true);
+  };
+
+  // Save invoice handler
+  const handleSaveInvoice = async (updatedInvoice: Partial<Invoice>) => {
+    if (!invoiceToEdit) return;
+
+    try {
+      const response = await fetch(`/api/invoices/${invoiceToEdit.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updatedInvoice),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al actualizar la factura");
+      }
+
+      // Refresh data
+      await fetchInvoices();
+      await fetchReportStats();
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Factura actualizada",
+        detail: "Los cambios se han guardado correctamente",
+        life: 3000,
+      });
+
+      setShowEditModal(false);
+      setInvoiceToEdit(null);
+    } catch (err) {
+      console.error("Error updating invoice:", err);
+      throw err; // Re-throw to let the modal handle it
     }
-  }, [userData, fromDate, toDate, selectedClientFilter, fetchInvoices]);
+  };
+
+  // Delete invoice handler
+  const handleDeleteInvoice = (invoice: Invoice) => {
+    confirmDialog({
+      message: `¿Está seguro que desea eliminar la factura ${invoice.ncf}?`,
+      header: "Confirmar eliminación",
+      icon: "pi pi-exclamation-triangle",
+      acceptClassName:
+        "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg ml-2",
+      rejectClassName:
+        "bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg",
+      accept: async () => {
+        try {
+          const response = await fetch(`/api/invoices/${invoice.id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Error al eliminar la factura");
+          }
+
+          // Refresh data
+          await fetchInvoices();
+          await fetchReportStats();
+
+          toast.current?.show({
+            severity: "success",
+            summary: "Factura eliminada",
+            detail: "La factura se ha eliminado correctamente",
+            life: 3000,
+          });
+        } catch (err) {
+          console.error("Error deleting invoice:", err);
+          toast.current?.show({
+            severity: "error",
+            summary: "Error",
+            detail: err instanceof Error ? err.message : "Error al eliminar la factura",
+            life: 5000,
+          });
+        }
+      },
+    });
+  };
+
+  // Export stats report to Excel
+  const exportStatsToExcel = () => {
+    if (!stats) return;
+
+    const rows = [
+      { Métrica: "Total de Facturas", Valor: stats.totalInvoices },
+      {
+        Métrica: "Monto Total",
+        Valor: `$${stats.totalAmount.toLocaleString()}`,
+      },
+      {
+        Métrica: "Monto Promedio",
+        Valor: `$${stats.averageAmount.toLocaleString()}`,
+      },
+      { Métrica: "Crecimiento Mensual", Valor: `${stats.monthlyGrowth}%` },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Estadísticas");
+
+    // Add monthly breakdown sheet
+    if (stats.monthlyBreakdown.length > 0) {
+      const breakdownWs = XLSX.utils.json_to_sheet(stats.monthlyBreakdown);
+      XLSX.utils.book_append_sheet(wb, breakdownWs, "Por Mes");
+    }
+
+    // Add top clients sheet
+    if (stats.topClients.length > 0) {
+      const clientsWs = XLSX.utils.json_to_sheet(stats.topClients);
+      XLSX.utils.book_append_sheet(wb, clientsWs, "Top Clientes");
+    }
+
+    const filename = `reporte_estadisticas_${formatDateForAPI(new Date())}.xlsx`;
+    XLSX.writeFile(wb, filename);
+  };
 
   // Export to Excel (606 format)
   const exportToExcel606 = () => {
@@ -250,8 +408,8 @@ export default function ReportesPage() {
     const parts = ["606"];
 
     // Add client name if filtering by specific client
-    if (selectedClientFilter) {
-      const selectedClient = clients.find((c) => c.id === selectedClientFilter);
+    if (selectedClientId) {
+      const selectedClient = clients.find((c) => c.id === selectedClientId);
       if (selectedClient?.name) {
         parts.push(selectedClient.name.replace(/[^a-zA-Z0-9]/g, "_"));
       }
@@ -269,34 +427,14 @@ export default function ReportesPage() {
     XLSX.writeFile(wb, filename);
   };
 
-  // Export to CSV
-  const exportToCSV = () => {
-    const rows = invoices.map((inv) => ({
-      Fecha: inv.fecha || "Sin fecha",
-      Cliente: inv.client_name,
-      RNC: inv.rnc,
-      NCF: inv.ncf,
-      "Total Facturado": inv.total_facturado,
-      "Total a Cobrar": inv.total_a_cobrar ?? inv.total_facturado,
-      Estado: inv.status,
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Facturas");
-    XLSX.writeFile(
-      wb,
-      `facturas_${new Date().toISOString().slice(0, 10)}.csv`,
-      {
-        bookType: "csv",
-      }
-    );
-  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          <span>Cargando...</span>
+        </div>
       </div>
     );
   }
@@ -310,6 +448,20 @@ export default function ReportesPage() {
           content="Reportes y estadísticas de facturas"
         />
       </Head>
+
+      <Toast ref={toast} />
+      <ConfirmDialog />
+
+      <EditInvoiceModal
+        invoice={invoiceToEdit}
+        visible={showEditModal}
+        onHide={() => {
+          setShowEditModal(false);
+          setInvoiceToEdit(null);
+        }}
+        onSave={handleSaveInvoice}
+        clients={clients}
+      />
 
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -332,75 +484,27 @@ export default function ReportesPage() {
             </p>
           </div>
 
-          {/* Filters Section */}
-          <div className="bg-card border border-border rounded-xl p-6 mb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">
-                  Filtros
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {/* Client Filter */}
-                <select
-                  value={selectedClient!}
-                  onChange={(e) =>
-                    setSelectedClient(Number(e.target.value) || null)
-                  }
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-secondary text-foreground border border-border hover:bg-muted transition-colors"
-                >
-                  <option value="all">Todos los clientes</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.id || null}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Period Filter */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setSelectedPeriod("month")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      selectedPeriod === "month"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    Este mes
-                  </button>
-                  <button
-                    onClick={() => setSelectedPeriod("quarter")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      selectedPeriod === "quarter"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    Trimestre
-                  </button>
-                  <button
-                    onClick={() => setSelectedPeriod("year")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      selectedPeriod === "year"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    Año
-                  </button>
-                </div>
-
-                {/* Export Button */}
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium">
-                  <Download className="w-4 h-4" />
-                  Exportar reporte
-                </button>
-              </div>
-            </div>
-          </div>
+          {/* Unified Filter Section */}
+          <ReportFilterSection
+            clients={clients}
+            selectedClientId={selectedClientId}
+            onClientSelect={setSelectedClientId}
+            fromDate={fromDate}
+            toDate={toDate}
+            onFromDateChange={setFromDate}
+            onToDateChange={setToDate}
+            onClearFilters={() => {
+              setSelectedClientId(null);
+              // Reset to current month default
+              const now = new Date();
+              setFromDate(new Date(now.getFullYear(), now.getMonth(), 1));
+              setToDate(new Date());
+            }}
+            onExportStats={exportStatsToExcel}
+            onExportInvoices={exportToExcel606}
+            statsLoading={!stats}
+            invoiceCount={totalInvoices}
+          />
 
           {/* Stats Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -522,9 +626,8 @@ export default function ReportesPage() {
                         <div
                           className="h-full bg-primary rounded-full transition-all duration-500"
                           style={{
-                            width: `${
-                              (item.count / (stats?.totalInvoices || 1)) * 100
-                            }%`,
+                            width: `${(item.count / (stats?.totalInvoices || 1)) * 100
+                              }%`,
                           }}
                         />
                       </div>
@@ -593,29 +696,9 @@ export default function ReportesPage() {
             </div>
           </div>
 
-          {/* Client Filter */}
-          <ClientFilterButtons
-            clients={clients}
-            selectedClientId={selectedClientFilter}
-            onClientSelect={setSelectedClientFilter}
-          />
-
-          {/* Date Filters Section */}
-          <DateFilterSection
-            fromDate={fromDate}
-            toDate={toDate}
-            onFromDateChange={setFromDate}
-            onToDateChange={setToDate}
-            onClearFilters={() => {
-              setFromDate(null);
-              setToDate(null);
-              setSelectedClientFilter(null);
-            }}
-          />
-
           {/* Facturas Section */}
           <section className="rounded-2xl bg-card border border-border p-5 shadow-lg">
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="mb-4">
               <div className="flex items-baseline gap-2">
                 <h2 className="text-lg font-semibold text-foreground">
                   Facturas
@@ -624,12 +707,6 @@ export default function ReportesPage() {
                   ({totalInvoices} resultados)
                 </span>
               </div>
-
-              <ExportButtons
-                onExportExcel={exportToExcel606}
-                onExportCSV={exportToCSV}
-                disabled={invoices.length === 0}
-              />
             </div>
 
             <InvoiceDataTable
@@ -637,6 +714,8 @@ export default function ReportesPage() {
               loading={loadingInvoices}
               visibleColumns={visibleColumns}
               onColumnChange={handleColumnChange}
+              onEditInvoice={handleEditInvoice}
+              onDeleteInvoice={handleDeleteInvoice}
               emptyMessage="Ajusta los filtros o envía nuevas facturas desde el bot de Telegram."
             />
           </section>
