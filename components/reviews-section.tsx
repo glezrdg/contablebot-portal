@@ -1,4 +1,4 @@
-import { Star } from "lucide-react"
+import { Star } from "lucide-react";
 
 const reviews = [
   {
@@ -20,11 +20,12 @@ const reviews = [
   {
     name: "Ana Martínez",
     role: "Directora Financiera, Retail Plus",
-    content: "El mejor ROI que hemos tenido en herramientas de gestión. El equipo de soporte es excepcional.",
+    content:
+      "El mejor ROI que hemos tenido en herramientas de gestión. El equipo de soporte es excepcional.",
     rating: 5,
     avatar: "AM",
   },
-]
+];
 
 export function ReviewsSection() {
   return (
@@ -35,27 +36,38 @@ export function ReviewsSection() {
             Lo que dicen nuestros clientes
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Miles de profesionales ya confían en Contable Bot para su gestión de facturas.
+            Miles de profesionales ya confían en Contable Bot para su gestión de
+            facturas.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
           {reviews.map((review, index) => (
-            <div key={index} className="bg-card border border-border rounded-xl p-6">
+            <div
+              key={index}
+              className="bg-card border border-border rounded-xl p-6"
+            >
               <div className="flex items-center gap-1 mb-4">
                 {Array.from({ length: review.rating }).map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-green-400 text-green-400" />
+                  <Star
+                    key={i}
+                    className="w-4 h-4 fill-green-400 text-green-400"
+                  />
                 ))}
               </div>
 
               <p className="text-foreground mb-6 leading-relaxed">{`"${review.content}"`}</p>
 
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-medium text-primary">{review.avatar}</span>
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <span className="text-sm font-medium text-primary">
+                    {review.avatar}
+                  </span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{review.name}</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {review.name}
+                  </p>
                   <p className="text-xs text-muted-foreground">{review.role}</p>
                 </div>
               </div>
@@ -64,5 +76,5 @@ export function ReviewsSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

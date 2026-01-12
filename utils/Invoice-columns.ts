@@ -1,0 +1,178 @@
+interface ColumnConfig {
+  field: string;
+  header: string;
+  type: "text" | "currency" | "date" | "status" | "actions";
+  minWidth: string;
+  defaultVisible: boolean;
+}
+
+export const ALL_COLUMNS: ColumnConfig[] = [
+  {
+    field: "fecha",
+    header: "Fecha",
+    type: "date",
+    minWidth: "100px",
+    defaultVisible: true,
+  },
+  {
+    field: "client_name",
+    header: "Cliente",
+    type: "text",
+    minWidth: "150px",
+    defaultVisible: true,
+  },
+  {
+    field: "rnc",
+    header: "RNC",
+    type: "text",
+    minWidth: "120px",
+    defaultVisible: true,
+  },
+  {
+    field: "ncf",
+    header: "NCF",
+    type: "text",
+    minWidth: "150px",
+    defaultVisible: true,
+  },
+  {
+    field: "nombre_compania",
+    header: "Nombre Compañía",
+    type: "text",
+    minWidth: "150px",
+    defaultVisible: false,
+  },
+  {
+    field: "materiales",
+    header: "Materiales",
+    type: "text",
+    minWidth: "120px",
+    defaultVisible: false,
+  },
+  {
+    field: "monto_servicio_exento",
+    header: "Servicio Exento",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "monto_bien_exento",
+    header: "Bien Exento",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "total_montos_exento",
+    header: "Total Exentos",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "monto_servicio_gravado",
+    header: "Servicio Gravado",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "monto_bien_gravado",
+    header: "Bien Gravado",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "total_montos_gravado",
+    header: "Total Gravados",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "itbis_servicios",
+    header: "ITBIS Servicios",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "itbis_bienes",
+    header: "ITBIS Bienes",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "total_facturado_itbis",
+    header: "Total ITBIS",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "itbis_servicios_retenido",
+    header: "ITBIS Retenido",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "retencion_30_itbis",
+    header: "Ret. 30% ITBIS",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "retencion_10",
+    header: "Retención 10%",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "retencion_2",
+    header: "Retención 2%",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: false,
+  },
+  {
+    field: "propina",
+    header: "Propina",
+    type: "currency",
+    minWidth: "100px",
+    defaultVisible: false,
+  },
+  {
+    field: "total_facturado",
+    header: "Total Facturado",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: true,
+  },
+  {
+    field: "total_a_cobrar",
+    header: "Total a Cobrar",
+    type: "currency",
+    minWidth: "130px",
+    defaultVisible: true,
+  },
+  {
+    field: "status",
+    header: "Estado",
+    type: "status",
+    minWidth: "80px",
+    defaultVisible: true,
+  },
+  {
+    field: "actions",
+    header: "Acciones",
+    type: "actions",
+    minWidth: "80px",
+    defaultVisible: true,
+  },
+];

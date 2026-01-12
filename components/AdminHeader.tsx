@@ -1,0 +1,265 @@
+/**
+ * AdminHeader Component
+ *
+ * Reusable header for all admin pages (dashboard, configuracion, etc.)
+ * Shows firm name, user email, usage stats, and navigation buttons.
+ */
+
+import { useRouter } from "next/router";
+import Link from "next/link";
+import {
+  Settings,
+  LogOut,
+  CreditCard,
+  FileText,
+  BarChart3,
+  TrendingUp,
+  Building2,
+} from "lucide-react";
+
+interface AdminHeaderProps {
+  firmName: string;
+  userEmail: string;
+  usedThisMonth: number;
+  planLimit: number;
+  manageUrl?: string;
+  showUserStats?: boolean; // Show bottom bar with user info and usage stats
+}
+
+export default function AdminHeader({
+  firmName,
+  userEmail,
+  usedThisMonth,
+  planLimit,
+  manageUrl,
+  showUserStats = false,
+}: AdminHeaderProps) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
+      router.push("/");
+    } catch (err) {
+      console.error("Error logging out:", err);
+    }
+  };
+
+  // Calculate usage percentage
+  const usagePercentage =
+    planLimit > 0 ? Math.min((usedThisMonth / planLimit) * 100, 100) : 0;
+
+  return (
+    <header className="mb-8">
+      {/* Top Bar - Logo and Actions */}
+      <div className="flex items-center justify-between mb-6 pb-6 border-b border-border">
+        {/* Logo and Brand */}
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+            <FileText className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+              ContableBot
+            </h1>
+            <p className="text-xs text-muted-foreground">Portal de facturas</p>
+          </div>
+        </Link>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          {/* Dashboard Link */}
+          <Link
+            href="/dashboard"
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              router.pathname === "/dashboard"
+                ? "bg-primary/20 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span>Dashboard</span>
+          </Link>
+
+          {/* Reports Link */}
+          <Link
+            href="/reportes"
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              router.pathname === "/reportes"
+                ? "bg-primary/20 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span>Reportes</span>
+          </Link>
+
+          {/* Clients Link */}
+          <Link
+            href="/clientes"
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              router.pathname === "/clientes"
+                ? "bg-primary/20 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>Clientes</span>
+          </Link>
+
+          {/* Settings Link */}
+          <Link
+            href="/configuracion"
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              router.pathname === "/configuracion"
+                ? "bg-primary/20 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+            <span>Configuración</span>
+          </Link>
+
+          {/* Manage Subscription */}
+          {manageUrl ? (
+            <a
+              href={manageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-primary hover:bg-primary/20 transition-colors border border-primary/20"
+            >
+              <CreditCard className="w-4 h-4" />
+              <span className="hidden lg:inline">Suscripción</span>
+            </a>
+          ) : (
+            <a
+              href="https://whop.com/hub"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <CreditCard className="w-4 h-4" />
+              <span className="hidden lg:inline">Whop Hub</span>
+            </a>
+          )}
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden lg:inline">Salir</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Bottom Bar - User Info and Usage Stats (Dashboard only) */}
+      {showUserStats && (
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* User Info */}
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border-2 border-primary/20">
+              <span className="text-lg font-bold text-primary">
+                {firmName.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">
+                {firmName}
+              </h2>
+              <p className="text-sm text-muted-foreground">{userEmail}</p>
+            </div>
+          </div>
+
+          {/* Usage Stats Card */}
+          <div className="bg-gradient-to-br from-card to-card/50 border border-border rounded-xl px-6 py-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between gap-8">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
+                  Uso mensual
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-foreground">
+                    {usedThisMonth}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    / {planLimit}
+                  </span>
+                </div>
+              </div>
+
+              {/* Circular Progress Indicator */}
+              <div className="relative w-16 h-16">
+                {/* Background circle */}
+                <svg className="transform -rotate-90 w-16 h-16">
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="28"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    fill="none"
+                    className="text-secondary"
+                  />
+                  {/* Progress circle */}
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="28"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    fill="none"
+                    strokeDasharray={`${2 * Math.PI * 28}`}
+                    strokeDashoffset={`${
+                      2 * Math.PI * 28 * (1 - usagePercentage / 100)
+                    }`}
+                    className={`transition-all duration-500 ${
+                      usagePercentage >= 90
+                        ? "text-destructive"
+                        : usagePercentage >= 70
+                        ? "text-amber-500"
+                        : "text-primary"
+                    }`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                {/* Percentage text */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span
+                    className={`text-xs font-bold ${
+                      usagePercentage >= 90
+                        ? "text-destructive"
+                        : usagePercentage >= 70
+                        ? "text-amber-500"
+                        : "text-primary"
+                    }`}
+                  >
+                    {Math.round(usagePercentage)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Status message */}
+            {usagePercentage >= 90 && (
+              <p className="text-xs text-destructive mt-2 font-medium">
+                ⚠️ Casi alcanzando el límite
+              </p>
+            )}
+            {usagePercentage >= 70 && usagePercentage < 90 && (
+              <p className="text-xs text-amber-500 mt-2 font-medium">
+                📊 {planLimit - usedThisMonth} facturas restantes
+              </p>
+            )}
+            {usagePercentage < 70 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {planLimit - usedThisMonth} facturas disponibles
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}

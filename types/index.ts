@@ -35,16 +35,16 @@ export interface Invoice {
   // Exento
   monto_servicio_exento?: number;
   monto_bien_exento?: number;
-  total_montos_exentos?: number;
+  total_montos_exento?: number;
 
   // Gravado
   monto_servicio_gravado?: number;
   monto_bien_gravado?: number;
-  total_montos_gravados?: number;
+  total_montos_gravado?: number;
 
   // ITBIS
   itbis_servicios?: number;
-  itbis_compras_bienes?: number;
+  itbis_bienes?: number;
   total_facturado_itbis?: number;
 
   // Retenciones
@@ -60,7 +60,8 @@ export interface Invoice {
   total_a_cobrar?: number;
 
   raw_ai_dump?: Record<string, unknown>;
-  status: "OK" | "REVIEW" | "ERROR" | string;
+  raw_ocr_text?: string; // Raw OCR text from Google Vision
+  status: "OK" | "REVIEW" | "ERROR" | "pending" | string;
   processed_at?: string;
   created_at?: string;
 
@@ -73,8 +74,8 @@ export interface Invoice {
 export interface Client {
   id: number;
   firm_id: number;
-  name: string;
-  rnc?: string;
+  name: string;      // Business/company name (e.g., "Supermercado La Familia")
+  rnc: string;       // Compact RNC for identification (e.g., "123012345") - NOT NULL
 }
 
 export interface PortalUser {
@@ -82,6 +83,7 @@ export interface PortalUser {
   firm_id: number;
   email: string;
   password_hash: string;
+  active_client_rnc?: string; // Currently selected client RNC (compact format, digits only)
   created_at: string;
 }
 
@@ -107,6 +109,8 @@ export interface MeResponse {
   planLimit: number;
   isActive: boolean;
   manageUrl?: string;
+  activeClientRnc?: string; // Currently selected client RNC (compact format)
+  activeClientName?: string; // Name of active client
 }
 
 // /api/invoices response

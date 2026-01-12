@@ -1,0 +1,76 @@
+.datatable-dark .p-datatable {
+          background: transparent;
+        }
+        .datatable-dark .p-datatable-thead > tr > th {
+          font-weight: 600;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          padding: 0.75rem 1rem !important;
+          white-space: nowrap;
+        }
+        .datatable-dark .p-datatable-tbody > tr:nth-child(even) {
+          background: #f2f2f2;
+        }
+        .datatable-dark .p-datatable-tbody > tr:hover {
+          background: #ebebeb !important;
+        }
+        .datatable-dark .p-datatable-tbody > tr > td {
+          border-color: #334155;
+          padding: 0.75rem 1rem;
+        }
+        .datatable-dark
+          .p-paginator
+          .p-paginator-pages
+          .p-paginator-page.p-highlight {
+          background: #0ea5e9;
+          border-color: #0ea5e9;
+          color: white;
+        }
+        .datatable-dark .p-dropdown {
+          background: #ebebeb;
+          border-color: #334155;
+          color: black;
+        }
+        .datatable-dark .p-inputtext {
+          border-color: #334155;
+          color: black;
+        }
+        .datatable-dark .p-sortable-column .p-sortable-column-icon {
+          color: #64748b;
+        }
+        .datatable-dark .p-sortable-column.p-highlight .p-sortable-column-icon {
+          color: #0ea5e9;
+        }
+        .datatable-dark .p-sortable-column:not(.p-highlight):hover {
+          background: #334155 !important;
+          color: #e2e8f0 !important;
+        }
+
+        /* Confirm dialog dark theme */
+        .p-confirm-dialog {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+          color: #e2e8f0 !important;
+        }
+        .p-confirm-dialog .p-dialog-header {
+          background: #1e293b !important;
+          color: #e2e8f0 !important;
+        }
+        .p-confirm-dialog .p-dialog-content {
+          background: #1e293b !important;
+          color: #e2e8f0 !important;
+        }
+        .p-confirm-dialog .p-dialog-footer {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+        }
+
+        /* Toast dark theme */
+        .p-toast .p-toast-message {
+          background: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        .p-toast .p-toast-message-content {
+          color: #e2e8f0 !important;
+        }

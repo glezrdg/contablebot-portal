@@ -6,8 +6,8 @@ import { jwtVerify } from "jose";
 const COOKIE_NAME = "cb_session";
 
 // Routes that require authentication
-const PROTECTED_PAGE_ROUTES = ["/dashboard", "/configuracion"];
-const PROTECTED_API_ROUTES = ["/api/invoices", "/api/me"];
+const PROTECTED_PAGE_ROUTES = ["/dashboard", "/configuracion", "/reportes", "/clientes"];
+const PROTECTED_API_ROUTES = ["/api/invoices", "/api/me", "/api/clients", "/api/active-client"];
 
 // Routes that are always public
 const PUBLIC_ROUTES = [

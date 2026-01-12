@@ -44,15 +44,15 @@ export default async function handler(
     // Validate date format and pass directly (YYYY-MM-DD is URL-safe)
     const fromDate = from.trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(fromDate)) {
-      queryParams.push(`fecha=gte.${fromDate}`);
+      queryParams.push(`created_at=gte.${fromDate}`);
     }
   }
 
-  // Optional: filter by fecha <= to (YYYY-MM-DD format)
+  // Optional: filter by created_at <= to (YYYY-MM-DD format)
   if (to && typeof to === "string") {
     const toDate = to.trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(toDate)) {
-      queryParams.push(`fecha=lte.${toDate}`);
+      queryParams.push(`created_at=lte.${toDate}`);
     }
   }
 
@@ -83,7 +83,7 @@ export default async function handler(
   const postgrestUrl = `${POSTGREST_BASE_URL}/invoices?${queryParams.join(
     "&"
   )}`;
-
+  console.log("Query Params: ", queryParams);
   // Debug log for troubleshooting
   console.log("[invoices API] PostgREST URL:", postgrestUrl);
 

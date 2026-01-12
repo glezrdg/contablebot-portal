@@ -50,6 +50,42 @@ export default async function handler(
 
     const firm = firms[0];
 
+    // Fetch user data to get active_client_rnc
+    // NOTE: Using portal_users table (later we'll migrate from telegram_id-based users table)
+    const userUrl = `${POSTGREST_BASE_URL}/portal_users?id=eq.${session.portalUserId}&select=id,active_client_rnc`;
+    const userResponse = await fetch(userUrl, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+
+    let activeClientRnc: string | undefined;
+    let activeClientName: string | undefined;
+
+    if (userResponse.ok) {
+      const users = await userResponse.json();
+      if (users && users.length > 0) {
+        activeClientRnc = users[0].active_client_rnc || undefined;
+
+        // If user has an active client, fetch client details
+        // Note: client.name contains the RNC value
+        if (activeClientRnc) {
+          const clientUrl = `${POSTGREST_BASE_URL}/clients?firm_id=eq.${firm.id}&name=eq.${activeClientRnc}&select=id,name`;
+          const clientResponse = await fetch(clientUrl, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          });
+
+          if (clientResponse.ok) {
+            const clients = await clientResponse.json();
+            if (clients && clients.length > 0) {
+              // activeClientName will be the same as activeClientRnc since name contains RNC
+              activeClientName = clients[0].name;
+            }
+          }
+        }
+      }
+    }
+
     return res.status(200).json({
       firmId: firm.id,
       firmName: firm.name,
@@ -58,6 +94,8 @@ export default async function handler(
       planLimit: firm.plan_limit,
       isActive: firm.is_active,
       manageUrl: firm.manage_url || undefined,
+      activeClientRnc,
+      activeClientName,
     });
   } catch (error) {
     console.error("Error in /api/me:", error);

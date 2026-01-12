@@ -17,6 +17,7 @@ import {
   Zap
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import AdminHeader from "@/components/AdminHeader"
 import type { MeResponse } from "@/types"
 import { WHOP_PLANS, type PlanKey } from "@/lib/whop"
 
@@ -49,15 +50,6 @@ export default function ConfiguracionPage() {
     }
   }
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/logout", { method: "POST" })
-      router.push("/login")
-    } catch (error) {
-      console.error("Error logging out:", error)
-    }
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -73,37 +65,15 @@ export default function ConfiguracionPage() {
       </Head>
 
       <div className="min-h-screen bg-background">
-        {/* Header */}
-        <header className="border-b border-border bg-card">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-primary-foreground" />
-                </div>
-                <span className="font-semibold text-lg text-foreground">Contable Bot</span>
-              </Link>
-
-              <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild>
-                  <a
-                    href={userData?.manageUrl || "https://whop.com/hub"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Gestionar suscripción
-                  </a>
-                </Button>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  Cerrar sesión
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <AdminHeader
+            firmName={userData?.firmName || ""}
+            userEmail={userData?.email || ""}
+            usedThisMonth={userData?.usedThisMonth || 0}
+            planLimit={userData?.planLimit || 0}
+            manageUrl={userData?.manageUrl}
+          />
           {/* Page Title */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">Configuración</h1>
