@@ -8,7 +8,7 @@ services:
     container_name: contablebot-portal
     restart: unless-stopped
     env_file:
-      - .env.portal
+      - .env.local
     networks:
       - web
     labels:
