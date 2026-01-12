@@ -1,62 +1,27 @@
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/router";
-import Head from "next/head";
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import AdminHeader from "@/components/AdminHeader";
+import DashboardLayout from "@/components/DashboardLayout";
 import AddClientModal from "@/components/AddClientModal";
 import EditClientModal from "@/components/EditClientModal";
-import type { Client, MeResponse, ErrorResponse } from "@/types";
+import type { Client, ErrorResponse } from "@/types";
 import { formatCompactRnc } from "@/lib/rnc-validator";
 import { Plus, Pencil, Trash2, Building2 } from "lucide-react";
 
 export default function ClientesPage() {
-  const router = useRouter();
   const toast = useRef<Toast>(null);
 
-  const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<MeResponse | null>(null);
+  const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [clientToEdit, setClientToEdit] = useState<Client | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch user data
+  // Fetch clients on mount
   useEffect(() => {
-    fetchUserData();
+    fetchClients();
   }, []);
-
-  // Fetch clients when user data is loaded
-  useEffect(() => {
-    if (userData) {
-      fetchClients();
-    }
-  }, [userData]);
-
-  const fetchUserData = async () => {
-    try {
-      const response = await fetch("/api/me");
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/login");
-          return;
-        }
-        throw new Error("Error al cargar datos del usuario");
-      }
-
-      const data: MeResponse = await response.json();
-      setUserData(data);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      toast.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: "No se pudo cargar la información del usuario",
-        life: 3000,
-      });
-    }
-  };
 
   const fetchClients = async () => {
     setLoading(true);
@@ -211,26 +176,15 @@ export default function ClientesPage() {
   });
 
   return (
-    <>
-      <Head>
-        <title>Clientes - ContableBot</title>
-      </Head>
-
+    <DashboardLayout
+      title="Clientes - ContableBot"
+      description="Gestión de clientes"
+    >
       <Toast ref={toast} />
       <ConfirmDialog />
 
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <AdminHeader
-            firmName={userData?.firmName || ""}
-            userEmail={userData?.email || ""}
-            usedThisMonth={userData?.usedThisMonth || 0}
-            planLimit={userData?.planLimit || 0}
-            manageUrl={userData?.manageUrl}
-          />
-
-          {/* Header */}
-          <div className="mb-8">
+      {/* Header */}
+      <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
               <Building2 className="w-8 h-8 text-primary" />
               <h1 className="text-3xl font-bold text-foreground">
@@ -377,8 +331,6 @@ export default function ClientesPage() {
               </div>
             )}
           </div>
-        </div>
-      </div>
 
       {/* Add Client Modal */}
       <AddClientModal
@@ -399,6 +351,6 @@ export default function ClientesPage() {
           onClientUpdated={handleClientUpdated}
         />
       )}
-    </>
+    </DashboardLayout>
   );
 }

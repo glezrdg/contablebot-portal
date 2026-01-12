@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/router";
-import Head from "next/head";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Toast } from "primereact/toast";
 import * as XLSX from "xlsx";
@@ -9,13 +7,12 @@ import type {
   Client,
   InvoicesResponse,
   ClientsResponse,
-  MeResponse,
   ErrorResponse,
 } from "../types";
 import AddClientModal from "@/components/AddClientModal";
 import UploadInvoiceModal from "@/components/UploadInvoiceModal";
 import EditInvoiceModal from "@/components/EditInvoiceModal";
-import AdminHeader from "@/components/AdminHeader";
+import DashboardLayout from "@/components/DashboardLayout";
 import ClientFilterButtons from "@/components/ClientFilterButtons";
 import InvoiceDataTable from "@/components/InvoiceDataTable";
 import ExportButtons from "@/components/ExportButtons";
@@ -28,17 +25,11 @@ import { useProcessing } from "@/contexts/ProcessingContext";
 const STORAGE_KEY = "dashboard_visible_columns";
 
 export default function DashboardPage() {
-  const router = useRouter();
   const toast = useRef<Toast>(null);
   const { onProcessingComplete } = useProcessing();
 
-  // Firm data from /api/me
+  // Firm data - will be removed after full refactor
   const [firmId, setFirmId] = useState<number | null>(null);
-  const [firmName, setFirmName] = useState<string>("");
-  const [usedThisMonth, setUsedThisMonth] = useState<number>(0);
-  const [planLimit, setPlanLimit] = useState<number>(0);
-  const [userEmail, setUserEmail] = useState<string>("");
-  const [manageUrl, setManageUrl] = useState<string | undefined>(undefined);
 
   // Active client state (for invoice uploads)
   const [activeClientRnc, setActiveClientRnc] = useState<string | undefined>(
@@ -72,7 +63,6 @@ export default function DashboardPage() {
   const [totalInvoices, setTotalInvoices] = useState<number>(0);
 
   const [loading, setLoading] = useState(false);
-  const [loadingMe, setLoadingMe] = useState(true);
   const [error, setError] = useState("");
 
   // Column visibility state
@@ -112,40 +102,8 @@ export default function DashboardPage() {
     }
   };
 
-  // Fetch user/firm info on mount
-  useEffect(() => {
-    const fetchMe = async () => {
-      try {
-        const response = await fetch("/api/me");
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            router.replace("/login");
-            return;
-          }
-          throw new Error("Failed to fetch user info");
-        }
-
-        const data: MeResponse = await response.json();
-        console.log(data, "data");
-        setFirmId(data.firmId);
-        setFirmName(data.firmName);
-        setUsedThisMonth(data.usedThisMonth);
-        setPlanLimit(data.planLimit);
-        setUserEmail(data.email);
-        setManageUrl(data.manageUrl);
-        setActiveClientRnc(data.activeClientRnc);
-        setActiveClientName(data.activeClientName);
-      } catch (err) {
-        console.error("Error fetching /api/me:", err);
-        router.replace("/login");
-      } finally {
-        setLoadingMe(false);
-      }
-    };
-
-    fetchMe();
-  }, [router]);
+  // Note: User data is now fetched by DashboardLayout and passed via render prop
+  // We'll initialize state from userData inside the render prop
 
   // Fetch clients for filter buttons
   const fetchClients = useCallback(async () => {
@@ -175,9 +133,13 @@ export default function DashboardPage() {
   // Handle client selection
   // Note: client.rnc contains the compact RNC, client.name contains business name
   const handleClientSelected = (client: Client) => {
+    console.log("[Dashboard] handleClientSelected called with:", client);
+    console.log("[Dashboard] Setting activeClientRnc to:", client.rnc);
+    console.log("[Dashboard] Setting activeClientName to:", client.name);
     setActiveClientRnc(client.rnc);
     setActiveClientName(client.name);
     fetchClients(); // Refresh client list
+    console.log("[Dashboard] Showing toast notification");
     toast.current?.show({
       severity: "success",
       summary: "Cliente seleccionado",
@@ -279,17 +241,6 @@ export default function DashboardPage() {
   // Subscribe to processing completion events
   useEffect(() => {
     const unsubscribe = onProcessingComplete(async () => {
-      // Refresh user data to get updated usage count
-      try {
-        const response = await fetch("/api/me");
-        if (response.ok) {
-          const data: MeResponse = await response.json();
-          setUsedThisMonth(data.usedThisMonth);
-        }
-      } catch (error) {
-        console.error("Error refreshing user data:", error);
-      }
-
       // Refresh invoice list
       fetchInvoices();
 
@@ -482,42 +433,31 @@ export default function DashboardPage() {
     );
   };
 
-  // Loading state
-  if (loadingMe) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          <span>Cargando...</span>
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <>
-      <Head>
-        <title>Dashboard - ContableBot Portal</title>
-        <meta name="description" content="Dashboard de facturación 606" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+    <DashboardLayout
+      title="Dashboard - ContableBot Portal"
+      description="Dashboard de facturación 606"
+      showUserStats={true}
+    >
+      {(userData) => {
+        // Initialize state from userData on first render
+        if (userData && firmId === null) {
+          setFirmId(userData.firmId);
+          setActiveClientRnc(userData.activeClientRnc);
+          setActiveClientName(userData.activeClientName);
 
-      <Toast ref={toast} />
-      <ConfirmDialog />
+          // Auto-select the active client if user has one
+          if (userData.activeClientId) {
+            setSelectedClientId(userData.activeClientId);
+          }
+        }
 
-      <main className="min-h-screen bg-background">
-        <div className="mx-auto max-w-6xl px-4 py-8">
-          {/* Header */}
-          <AdminHeader
-            firmName={firmName}
-            userEmail={userEmail}
-            usedThisMonth={usedThisMonth}
-            planLimit={planLimit}
-            manageUrl={manageUrl}
-            showUserStats={true}
-          />
+        return (
+          <>
+            <Toast ref={toast} />
+            <ConfirmDialog />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div
               onClick={handleOpenUploader}
               className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg"
@@ -580,6 +520,7 @@ export default function DashboardPage() {
             onClientSelected={handleClientSelected}
             onAddClient={() => setShowAddClientModal(true)}
             onUploadComplete={handleUploadComplete}
+            userRole={userData.role}
           />
 
           {/* Edit Invoice Modal */}
@@ -594,29 +535,31 @@ export default function DashboardPage() {
             onSave={handleSaveInvoice}
           />
 
-          {/* Client Filter Buttons */}
-          <ClientFilterButtons
-            clients={clients}
-            selectedClientId={selectedClientId}
-            onClientSelect={setSelectedClientId}
-            onSetActiveClient={(client) => {
-              if (client) {
-                setActiveClientRnc(client.rnc);
-                setActiveClientName(client.name);
-                toast.current?.show({
-                  severity: "success",
-                  summary: "Cliente seleccionado",
-                  detail: `${client.name} establecido como cliente activo`,
-                  life: 3000,
-                });
-              } else {
-                setActiveClientRnc(undefined);
-                setActiveClientName(undefined);
-              }
-            }}
-            activeClientRnc={activeClientRnc}
-            loading={loadingClients}
-          />
+          {/* Client Filter Buttons - Only show for admin users */}
+          {userData.role === 'admin' && (
+            <ClientFilterButtons
+              clients={clients}
+              selectedClientId={selectedClientId}
+              onClientSelect={setSelectedClientId}
+              onSetActiveClient={(client) => {
+                if (client) {
+                  setActiveClientRnc(client.rnc);
+                  setActiveClientName(client.name);
+                  toast.current?.show({
+                    severity: "success",
+                    summary: "Cliente seleccionado",
+                    detail: `${client.name} establecido como cliente activo`,
+                    life: 3000,
+                  });
+                } else {
+                  setActiveClientRnc(undefined);
+                  setActiveClientName(undefined);
+                }
+              }}
+              activeClientRnc={activeClientRnc}
+              loading={loadingClients}
+            />
+          )}
 
           {/* Error Alert */}
           {error && (
@@ -666,9 +609,37 @@ export default function DashboardPage() {
               emptyMessage="Ajusta los filtros o envía nuevas facturas desde el bot de Telegram."
             />
           </section>
-        </div>
-      </main>
-    </>
+
+          {/* Modals */}
+          <AddClientModal
+            isOpen={showAddClientModal}
+            onClose={() => setShowAddClientModal(false)}
+            onClientAdded={handleClientSelected}
+          />
+
+          <UploadInvoiceModal
+            isOpen={showUploadModal}
+            onClose={() => setShowUploadModal(false)}
+            activeClientRnc={activeClientRnc}
+            activeClientName={activeClientName}
+            onClientSelected={handleClientSelected}
+            onOpenAddClient={() => setShowAddClientModal(true)}
+            userRole={userData.role}
+          />
+
+          <EditInvoiceModal
+            isOpen={showEditModal}
+            onClose={() => {
+              setShowEditModal(false);
+              setInvoiceToEdit(null);
+            }}
+            invoice={invoiceToEdit}
+            onSave={handleSaveInvoice}
+          />
+          </>
+        );
+      }}
+    </DashboardLayout>
   );
 }
 

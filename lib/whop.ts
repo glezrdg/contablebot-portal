@@ -35,7 +35,7 @@ export const WHOP_PLANS = {
     ],
   },
   pro: {
-    id: "plan_NOdE4Vm9Koxaw", // Replace with actual Whop plan ID
+    id: "plan_NOdE4Vm9Koxaw",
     name: "Pro",
     subtitle: "Estudios contables / Alto volumen",
     price: 39,

@@ -32,6 +32,7 @@ interface ReportFilterSectionProps {
 
   // State info
   statsLoading?: boolean;
+  isAdmin?: boolean;
   invoiceCount?: number;
 }
 
@@ -48,6 +49,7 @@ export default function ReportFilterSection({
   onExportInvoices,
   statsLoading = false,
   invoiceCount = 0,
+  isAdmin = false,
 }: ReportFilterSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -141,51 +143,49 @@ export default function ReportFilterSection({
       {/* Filter Content - Only show when expanded */}
       {isExpanded && (
         <div className="p-4 sm:p-6 space-y-6 animate-in fade-in slide-in-from-top-2 duration-200">
-        {/* Client Filter Buttons */}
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">
-            Filtrar por cliente
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {/* All clients button */}
-            <button
-              onClick={() => onClientSelect(null)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                selectedClientId === null
+          {/* Client Filter Buttons */}
+          {isAdmin && (<div>
+            <label className="block text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+              Filtrar por cliente
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {/* All clients button */}
+              <button
+                onClick={() => onClientSelect(null)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedClientId === null
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-secondary text-foreground hover:bg-muted border border-border"
-              }`}
-            >
-              Todos los clientes
-            </button>
+                  }`}
+              >
+                Todos los clientes
+              </button>
 
-            {clients.map((client) => (
-              <button
-                key={client.id}
-                onClick={() => onClientSelect(client.id)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  selectedClientId === client.id
+              {clients.map((client) => (
+                <button
+                  key={client.id}
+                  onClick={() => onClientSelect(client.id)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedClientId === client.id
                     ? "bg-primary text-primary-foreground shadow-md"
                     : "bg-secondary text-foreground hover:bg-muted border border-border"
-                }`}
-              >
-                {client.name}
-              </button>
-            ))}
-          </div>
-        </div>
+                    }`}
+                >
+                  {client.name}
+                </button>
+              ))}
+              <div className="border-t border-border" />
+            </div>
+          </div>)}
 
-        {/* Divider */}
-        <div className="border-t border-border" />
+          {/* Divider */}
 
-        {/* Date Filter */}
-        <UnifiedDateFilter
-          fromDate={fromDate}
-          toDate={toDate}
-          onFromDateChange={onFromDateChange}
-          onToDateChange={onToDateChange}
-          onClearFilters={onClearFilters}
-        />
+          {/* Date Filter */}
+          <UnifiedDateFilter
+            fromDate={fromDate}
+            toDate={toDate}
+            onFromDateChange={onFromDateChange}
+            onToDateChange={onToDateChange}
+            onClearFilters={onClearFilters}
+          />
         </div>
       )}
     </section>

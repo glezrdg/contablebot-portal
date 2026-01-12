@@ -39,6 +39,16 @@ export default async function handler(
   // Always filter out soft-deleted invoices
   queryParams.push(`is_deleted=eq.false`);
 
+  // Backend enforcement: Non-admin users can only see their active client's data
+  // Admin users can manually filter by clientId parameter or see all clients
+  if (session.role !== 'admin' && session.activeClientId) {
+    // Non-admin users are restricted to their active client
+    queryParams.push(`client_id=eq.${session.activeClientId}`);
+  } else if (clientId && typeof clientId === "string") {
+    // Admin users can manually filter by clientId
+    queryParams.push(`client_id=eq.${encodeURIComponent(clientId)}`);
+  }
+
   // Optional: filter by fecha >= from (YYYY-MM-DD format)
   if (from && typeof from === "string") {
     // Validate date format and pass directly (YYYY-MM-DD is URL-safe)
@@ -54,11 +64,6 @@ export default async function handler(
     if (/^\d{4}-\d{2}-\d{2}$/.test(toDate)) {
       queryParams.push(`fecha=lte.${toDate}`);
     }
-  }
-
-  // Optional: filter by client_id
-  if (clientId && typeof clientId === "string") {
-    queryParams.push(`client_id=eq.${encodeURIComponent(clientId)}`);
   }
 
   // Optional: filter by client_name (case-insensitive partial match)

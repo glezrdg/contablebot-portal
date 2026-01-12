@@ -187,6 +187,17 @@ export interface CreateUserRequest {
   defaultClientId?: number; // Which client is default
 }
 
+export interface CreateUserResponse {
+  success: true;
+  user: {
+    id: number;
+    email: string;
+    fullName?: string;
+    role: string;
+    isActive: boolean;
+  };
+}
+
 export interface UpdateUserRequest {
   fullName?: string;
   isActive?: boolean;

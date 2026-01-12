@@ -100,12 +100,54 @@ export default async function handler(
         .json({ error: "Cuenta inactiva. Contacte soporte." });
     }
 
-    // Step 4: Sign JWT and set cookie
+    // Step 4: Fetch user's assigned clients
+    const clientsUrl = `${POSTGREST_BASE_URL}/user_clients?user_id=eq.${portalUser.id}&select=client_id,is_default`;
+    const clientsResponse = await fetch(clientsUrl, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+
+    let activeClientId: number | undefined;
+    let assignedClientIds: number[] = [];
+
+    if (clientsResponse.ok) {
+      const userClients = await clientsResponse.json();
+      assignedClientIds = userClients.map((uc: { client_id: number }) => uc.client_id);
+
+      // Find default client or use first assigned
+      const defaultClient = userClients.find((uc: { is_default: boolean }) => uc.is_default);
+      activeClientId = defaultClient?.client_id || userClients[0]?.client_id;
+    }
+
+    // For regular users, verify they have at least one client assigned
+    if (portalUser.role === 'user' && assignedClientIds.length === 0) {
+      return res.status(403).json({
+        error: 'Sin clientes asignados. Contacte al administrador.'
+      });
+    }
+
+    // Step 5: Update last_login_at
+    await fetch(`${POSTGREST_BASE_URL}/portal_users?id=eq.${portalUser.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal",
+      },
+      body: JSON.stringify({
+        last_login_at: new Date().toISOString(),
+        active_client_id: activeClientId,
+      }),
+    });
+
+    // Step 6: Sign JWT with role and client info
     const token = signToken({
       portalUserId: portalUser.id,
       firmId: firm.id,
       firmName: firm.name,
       email: portalUser.email,
+      role: portalUser.role,
+      activeClientId,
+      assignedClientIds,
     });
 
     setAuthCookie(res, token);

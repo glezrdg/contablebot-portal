@@ -87,8 +87,13 @@ export default async function handler(
     // Build base URL with firm filter
     let baseUrl = `${POSTGREST_BASE_URL}/invoices?firm_id=eq.${session.firmId}&is_deleted=eq.false`;
 
-    // Add client filter if specified
-    if (clientId && clientId !== "all") {
+    // Backend enforcement: Non-admin users can only see their active client's data
+    // Admin users can manually filter by clientId parameter or see all clients
+    if (session.role !== 'admin' && session.activeClientId) {
+      // Non-admin users are restricted to their active client
+      baseUrl += `&client_id=eq.${session.activeClientId}`;
+    } else if (clientId && clientId !== "all") {
+      // Admin users can manually filter by clientId
       baseUrl += `&client_id=eq.${clientId}`;
     }
 

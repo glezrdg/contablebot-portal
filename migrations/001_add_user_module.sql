@@ -2,6 +2,9 @@
 -- Date: 2026-01-12
 -- Description: Adds support for multi-user access with roles (admin/user) and client assignments
 
+-- Enable required extension for exclusion constraints
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
 -- ============================================
 -- 1. Add role column to existing portal_users table
 -- ============================================
@@ -48,6 +51,15 @@ CREATE TABLE IF NOT EXISTS user_clients (
 CREATE INDEX IF NOT EXISTS idx_user_clients_user_id ON user_clients(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_clients_client_id ON user_clients(client_id);
 CREATE INDEX IF NOT EXISTS idx_user_clients_default ON user_clients(user_id) WHERE is_default = true;
+
+-- Grant permissions to PostgREST role
+-- NOTE: Using PUBLIC for simplicity - in production, restrict to specific PostgREST role
+GRANT SELECT, INSERT, UPDATE, DELETE ON user_clients TO PUBLIC;
+GRANT USAGE, SELECT ON SEQUENCE user_clients_id_seq TO PUBLIC;
+
+-- Also grant on user_audit_log table
+GRANT SELECT, INSERT ON user_audit_log TO PUBLIC;
+GRANT USAGE, SELECT ON SEQUENCE user_audit_log_id_seq TO PUBLIC;
 
 -- ============================================
 -- 3. Add active_client_id to portal_users

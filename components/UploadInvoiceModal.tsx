@@ -14,9 +14,11 @@ interface UploadInvoiceModalProps {
   onClose: () => void;
   activeClientRnc?: string;
   activeClientName?: string;
-  onClientSelected: (client: Client) => void;
-  onAddClient: () => void;
-  onUploadComplete: (totalUploaded: number) => void;
+  onClientSelected?: (client: Client) => void;
+  onAddClient?: () => void;
+  onOpenAddClient?: () => void;
+  onUploadComplete?: (totalUploaded: number) => void;
+  userRole?: 'admin' | 'user';
 }
 
 export default function UploadInvoiceModal({
@@ -26,8 +28,22 @@ export default function UploadInvoiceModal({
   activeClientName,
   onClientSelected,
   onAddClient,
+  onOpenAddClient,
   onUploadComplete,
+  userRole = 'admin',
 }: UploadInvoiceModalProps) {
+  // Use onOpenAddClient if provided, otherwise fallback to onAddClient
+  const handleAddClient = onOpenAddClient || onAddClient;
+  const isAdmin = userRole === 'admin';
+
+  console.log("[UploadInvoiceModal] Props:", {
+    isOpen,
+    activeClientRnc,
+    activeClientName,
+    userRole,
+    hasOnClientSelected: !!onClientSelected
+  });
+
   if (!isOpen) return null;
 
   return (
@@ -48,7 +64,10 @@ export default function UploadInvoiceModal({
                 Subir Facturas
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Selecciona un cliente y sube las imágenes de las facturas
+                {isAdmin
+                  ? 'Selecciona un cliente y sube las imágenes de las facturas'
+                  : 'Sube las imágenes de las facturas'
+                }
               </p>
             </div>
             <button
@@ -61,23 +80,47 @@ export default function UploadInvoiceModal({
 
           {/* Content */}
           <div className="p-6 space-y-6">
-            {/* Client Selector Section */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-3">
-                Cliente
-              </label>
-              <ClientSelector
-                activeClientRnc={activeClientRnc}
-                activeClientName={activeClientName}
-                onClientSelected={onClientSelected}
-                onAddClient={onAddClient}
-              />
-              {!activeClientRnc && (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Selecciona o crea un cliente para continuar
+            {/* Client Selector Section - Only show for admin users */}
+            {isAdmin ? (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-3">
+                  Cliente
+                </label>
+                <ClientSelector
+                  activeClientRnc={activeClientRnc}
+                  activeClientName={activeClientName}
+                  onClientSelected={(client) => {
+                    console.log("[UploadInvoiceModal] Client selected, calling onClientSelected:", client);
+                    if (onClientSelected) {
+                      onClientSelected(client);
+                    } else {
+                      console.warn("[UploadInvoiceModal] onClientSelected is undefined!");
+                    }
+                  }}
+                  onAddClient={handleAddClient || (() => {})}
+                />
+                {!activeClientRnc && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Selecciona o crea un cliente para continuar
+                  </p>
+                )}
+              </div>
+            ) : (
+              /* For non-admin users, show the pre-selected client */
+              <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Cliente
+                </label>
+                <p className="text-lg font-semibold text-foreground">
+                  {activeClientName || 'Cliente no asignado'}
                 </p>
-              )}
-            </div>
+                {activeClientRnc && (
+                  <p className="text-sm text-muted-foreground">
+                    RNC: {activeClientRnc}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Invoice Uploader Section */}
             {activeClientRnc && (
@@ -88,7 +131,7 @@ export default function UploadInvoiceModal({
                 <InvoiceUploader
                   activeClientName={activeClientName}
                   onUploadComplete={(total) => {
-                    onUploadComplete(total);
+                    onUploadComplete?.(total);
                     onClose();
                   }}
                 />

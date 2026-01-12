@@ -4,6 +4,7 @@ import { PrimeReactProvider } from "primereact/api";
 import { useRouter } from "next/router";
 import ProcessingIndicator from "@/components/ProcessingIndicator";
 import { ProcessingProvider } from "@/contexts/ProcessingContext";
+import { ClientProvider } from "@/contexts/ClientContext";
 
 // PrimeReact styles
 import "primereact/resources/themes/lara-light-blue/theme.css";
@@ -19,10 +20,12 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <PrimeReactProvider>
-      <ProcessingProvider>
-        <Component {...pageProps} />
-        {showProcessingIndicator && <ProcessingIndicator />}
-      </ProcessingProvider>
+      <ClientProvider>
+        <ProcessingProvider>
+          <Component {...pageProps} />
+          {showProcessingIndicator && <ProcessingIndicator />}
+        </ProcessingProvider>
+      </ClientProvider>
     </PrimeReactProvider>
   );
 }

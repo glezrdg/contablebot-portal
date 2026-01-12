@@ -71,8 +71,8 @@ export default async function handler(
 
     const client = clients[0];
 
-    // Update user's active_client_rnc
-    const updateUrl = `${POSTGREST_BASE_URL}/users?firm_id=eq.${session.firmId}`;
+    // Update user's active_client_id in portal_users table
+    const updateUrl = `${POSTGREST_BASE_URL}/portal_users?id=eq.${session.portalUserId}`;
     const updateResponse = await fetch(updateUrl, {
       method: "PATCH",
       headers: {
@@ -80,7 +80,7 @@ export default async function handler(
         Prefer: "return=representation",
       },
       body: JSON.stringify({
-        active_client_rnc: rncValidation.compact,
+        active_client_id: client.id,
       }),
     });
 

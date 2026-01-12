@@ -27,12 +27,7 @@ export async function requireRole(
   const user = requireAuth(req, res);
   if (!user) return null;
 
-  // Admins can access everything
-  if (user.role === 'admin') {
-    return user;
-  }
-
-  // If requiring admin role but user is not admin, deny
+  // Check role requirement
   if (requiredRole === 'admin' && user.role !== 'admin') {
     res.status(403).json({
       error: 'Acceso denegado. Esta función requiere privilegios de administrador.'
@@ -122,8 +117,16 @@ export async function requirePlan(
 
     const currentPlanKey = planEntry?.[0] as PlanKey | undefined;
 
+    console.log('requirePlan check:', {
+      firmWhopPlanId: firm.whop_plan_id,
+      currentPlanKey,
+      requiredPlan,
+      planEntry: planEntry?.[0],
+    });
+
     if (!planMeetsRequirement(currentPlanKey, requiredPlan)) {
       const requiredPlanName = WHOP_PLANS[requiredPlan].name;
+      console.log('Plan requirement not met:', { currentPlanKey, requiredPlan });
       res.status(403).json({
         error: `Esta función requiere el plan ${requiredPlanName} o superior`,
         upgradeRequired: true,

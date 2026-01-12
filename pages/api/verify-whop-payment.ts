@@ -177,6 +177,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       firmId: firm.id,
       firmName: firm.name,
       email,
+      role: 'admin', // First user is always admin
     })
 
     // Set auth cookie

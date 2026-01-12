@@ -7,20 +7,26 @@ import { Dropdown } from "primereact/dropdown";
 import type { Invoice, Client } from "@/types";
 
 interface EditInvoiceModalProps {
-  visible: boolean;
+  visible?: boolean;
+  isOpen?: boolean;
   invoice: Invoice | null;
-  clients: Client[];
-  onHide: () => void;
+  clients?: Client[];
+  onHide?: () => void;
+  onClose?: () => void;
   onSave: (updatedInvoice: Partial<Invoice>) => Promise<void>;
 }
 
 export default function EditInvoiceModal({
   visible,
+  isOpen,
   invoice,
-  clients,
+  clients = [],
   onHide,
+  onClose,
   onSave,
 }: EditInvoiceModalProps) {
+  const isVisible = visible ?? isOpen ?? false;
+  const handleHide = onHide || onClose || (() => {});
   const [formData, setFormData] = useState<Partial<Invoice>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +49,7 @@ export default function EditInvoiceModal({
 
     try {
       await onSave(formData);
-      onHide();
+      handleHide();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar la factura");
     } finally {
@@ -68,7 +74,7 @@ export default function EditInvoiceModal({
   const footer = (
     <div className="flex justify-end gap-2">
       <button
-        onClick={onHide}
+        onClick={handleHide}
         disabled={saving}
         className="px-4 py-2 rounded-lg border border-border bg-secondary hover:bg-muted text-foreground transition disabled:opacity-50"
       >
@@ -86,8 +92,8 @@ export default function EditInvoiceModal({
 
   return (
     <Dialog
-      visible={visible}
-      onHide={onHide}
+      visible={isVisible}
+      onHide={handleHide}
       header="Editar Factura"
       footer={footer}
       className="w-full max-w-4xl"

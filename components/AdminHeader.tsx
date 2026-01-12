@@ -12,8 +12,10 @@ import {
   BarChart3,
   TrendingUp,
   Building2,
+  Users,
 } from "lucide-react";
 import ProfileDropdown from "./ProfileDropdown";
+import ClientSwitcher from "./ClientSwitcher";
 
 interface AdminHeaderProps {
   firmName: string;
@@ -22,6 +24,8 @@ interface AdminHeaderProps {
   planLimit: number;
   manageUrl?: string;
   showUserStats?: boolean; // Show bottom bar with user info and usage stats
+  userRole?: 'admin' | 'user'; // User role for conditional menu items
+  planKey?: string; // Plan key for feature gating
 }
 
 export default function AdminHeader({
@@ -31,8 +35,14 @@ export default function AdminHeader({
   planLimit,
   manageUrl,
   showUserStats = false,
+  userRole = 'admin',
+  planKey,
 }: AdminHeaderProps) {
   const router = useRouter();
+  console.log('Plan key', planKey)
+  // Check if user module should be visible (admin only, Pro+ plan)
+  const showAdminModules = userRole === 'admin' &&
+    (planKey === 'pro' || planKey === 'ultra' || planKey === 'enterprise');
 
   // Calculate usage percentage
   const usagePercentage =
@@ -81,17 +91,34 @@ export default function AdminHeader({
             <span>Reportes</span>
           </Link>
 
-          {/* Clients Link */}
-          <Link
-            href="/clientes"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/clientes"
-              ? "bg-primary/20 text-primary"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-          >
-            <Building2 className="w-4 h-4" />
-            <span>Clientes</span>
-          </Link>
+          {/* Users Link (Admin only, Pro+ plan) */}
+          {showAdminModules && (
+            <>
+              {/* Clients Link */}
+              <Link
+                href="/clientes"
+                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/clientes"
+                  ? "bg-primary/20 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+              >
+                <Building2 className="w-4 h-4" />
+                <span>Clientes</span>
+              </Link>
+              <Link
+                href="/usuarios"
+                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/usuarios"
+                  ? "bg-primary/20 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+              >
+                <Users className="w-4 h-4" />
+                <span>Usuarios</span>
+              </Link></>
+          )}
+
+          {/* Client Switcher */}
+          <ClientSwitcher />
 
           {/* Profile Dropdown */}
           <ProfileDropdown

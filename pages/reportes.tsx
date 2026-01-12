@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/router";
-import Head from "next/head";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Toast } from "primereact/toast";
-import AdminHeader from "@/components/AdminHeader";
+import DashboardLayout from "@/components/DashboardLayout";
 import ReportFilterSection from "@/components/ReportFilterSection";
+import UnifiedDateFilter from "@/components/UnifiedDateFilter";
 import InvoiceDataTable from "@/components/InvoiceDataTable";
 import EditInvoiceModal from "@/components/EditInvoiceModal";
 import {
@@ -18,7 +17,6 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import type {
-  MeResponse,
   Invoice,
   Client,
   InvoicesResponse,
@@ -26,6 +24,7 @@ import type {
 } from "@/types";
 import { ALL_COLUMNS } from "@/utils/Invoice-columns";
 import { useProcessing } from "@/contexts/ProcessingContext";
+import { useRouter } from "next/router";
 
 interface ReportStats {
   totalInvoices: number;
@@ -41,15 +40,13 @@ interface ReportStats {
 const STORAGE_KEY = "dashboard_visible_columns";
 
 export default function ReportesPage() {
-  const router = useRouter();
   const toast = useRef<Toast>(null);
   const { onProcessingComplete } = useProcessing();
-  const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<MeResponse | null>(null);
   const [stats, setStats] = useState<ReportStats | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [invoiceToEdit, setInvoiceToEdit] = useState<Invoice | null>(null);
+  const router = useRouter();
 
   // Unified filter state - Initialize with current month by default
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
@@ -72,15 +69,16 @@ export default function ReportesPage() {
   });
 
   useEffect(() => {
-    fetchUserData();
     fetchClients();
+    fetchReportStats();
   }, []);
 
+  // Note: User data is now fetched by DashboardLayout and passed via render prop
+  // Active client is auto-selected within the render prop function
+
   useEffect(() => {
-    if (userData) {
-      fetchReportStats();
-    }
-  }, [fromDate, toDate, selectedClientId, userData]);
+    fetchReportStats();
+  }, [fromDate, toDate, selectedClientId]);
 
   // Save column preferences to localStorage
   const handleColumnChange = (selectedColumns: string[]) => {
@@ -106,24 +104,6 @@ export default function ReportesPage() {
     }
   };
 
-  const fetchUserData = async () => {
-    try {
-      const response = await fetch("/api/me");
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/login");
-          return;
-        }
-        throw new Error("Failed to fetch user data");
-      }
-      const data: MeResponse = await response.json();
-      setUserData(data);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchReportStats = async () => {
     try {
@@ -165,10 +145,10 @@ export default function ReportesPage() {
 
   // Fetch invoices with date filters
   const fetchInvoices = useCallback(async () => {
-    if (!userData) {
-      console.log("fetchInvoices: userData is not available yet");
-      return;
-    }
+    // if (!userData) {
+    //   console.log("fetchInvoices: userData is not available yet");
+    //   return;
+    // }
 
     setLoadingInvoices(true);
     console.log("fetchInvoices called with filters:", { fromDate, toDate, selectedClientId });
@@ -220,20 +200,16 @@ export default function ReportesPage() {
     } finally {
       setLoadingInvoices(false);
     }
-  }, [userData, fromDate, toDate, selectedClientId]);
+  }, [fromDate, toDate, selectedClientId]);
 
   // Fetch invoices when filters change
   useEffect(() => {
-    console.log("Invoice fetch effect triggered", { userData: !!userData, fromDate, toDate, selectedClientId });
     fetchInvoices();
   }, [fetchInvoices]);
 
   // Subscribe to processing completion events
   useEffect(() => {
     const unsubscribe = onProcessingComplete(async () => {
-      // Refresh user data to get updated usage count
-      await fetchUserData();
-
       // Refresh report stats
       await fetchReportStats();
 
@@ -428,300 +404,295 @@ export default function ReportesPage() {
   };
 
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          <span>Cargando...</span>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen bg-background flex items-center justify-center">
+  //       <div className="flex items-center gap-3 text-muted-foreground">
+  //         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+  //         <span>Cargando...</span>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
-    <>
-      <Head>
-        <title>Reportes - ContableBot Portal</title>
-        <meta
-          name="description"
-          content="Reportes y estadísticas de facturas"
-        />
-      </Head>
+    <DashboardLayout
+      title="Reportes - ContableBot Portal"
+      description="Reportes y estadísticas de facturas"
+    >
+      {(userData) => {
+        // Auto-select the active client on first render
+        if (userData && userData.activeClientId && selectedClientId === null) {
+          setSelectedClientId(userData.activeClientId);
+        }
 
-      <Toast ref={toast} />
-      <ConfirmDialog />
+        return (
+          <>
+            <Toast ref={toast} />
+            <ConfirmDialog />
 
-      <EditInvoiceModal
-        invoice={invoiceToEdit}
-        visible={showEditModal}
-        onHide={() => {
-          setShowEditModal(false);
-          setInvoiceToEdit(null);
-        }}
-        onSave={handleSaveInvoice}
-        clients={clients}
-      />
+            <EditInvoiceModal
+              invoice={invoiceToEdit}
+              visible={showEditModal}
+              onHide={() => {
+                setShowEditModal(false);
+                setInvoiceToEdit(null);
+              }}
+              onSave={handleSaveInvoice}
+              clients={clients}
+            />
 
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <AdminHeader
-            firmName={userData?.firmName || ""}
-            userEmail={userData?.email || ""}
-            usedThisMonth={userData?.usedThisMonth || 0}
-            planLimit={userData?.planLimit || 0}
-            manageUrl={userData?.manageUrl}
-          />
-
-          {/* Page Title */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Reportes
-            </h1>
-            <p className="text-muted-foreground">
-              Análisis y estadísticas de tus facturas procesadas
-            </p>
-          </div>
-
-          {/* Unified Filter Section */}
-          <ReportFilterSection
-            clients={clients}
-            selectedClientId={selectedClientId}
-            onClientSelect={setSelectedClientId}
-            fromDate={fromDate}
-            toDate={toDate}
-            onFromDateChange={setFromDate}
-            onToDateChange={setToDate}
-            onClearFilters={() => {
-              setSelectedClientId(null);
-              // Reset to current month default
-              const now = new Date();
-              setFromDate(new Date(now.getFullYear(), now.getMonth(), 1));
-              setToDate(new Date());
-            }}
-            onExportStats={exportStatsToExcel}
-            onExportInvoices={exportToExcel606}
-            statsLoading={!stats}
-            invoiceCount={totalInvoices}
-          />
-
-          {/* Stats Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Total Invoices */}
-            <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-primary" />
-                </div>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Total
-                </span>
-              </div>
-              <div className="space-y-1">
-                <p className="text-3xl font-bold text-foreground">
-                  {stats?.totalInvoices}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Facturas procesadas
-                </p>
-              </div>
+            {/* Page Title */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Reportes
+              </h1>
+              <p className="text-muted-foreground">
+                Análisis y estadísticas de tus facturas procesadas
+              </p>
             </div>
 
-            {/* Total Amount */}
-            <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-emerald-500" />
-                </div>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Monto
-                </span>
-              </div>
-              <div className="space-y-1">
-                <p className="text-3xl font-bold text-foreground">
-                  ${stats?.totalAmount.toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">Monto total</p>
-              </div>
-            </div>
+            {/* Unified Filter Section - Only show for admin users */}
 
-            {/* This Month */}
-            <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
-                  <CalendarIcon className="w-6 h-6 text-primary" />
-                </div>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Este mes
-                </span>
-              </div>
-              <div className="space-y-1">
-                <p className="text-3xl font-bold text-foreground">
-                  {stats?.thisMonth}
-                </p>
-                <div className="flex items-center gap-2">
-                  {stats && stats.monthlyGrowth > 0 ? (
-                    <>
-                      <TrendingUp className="w-4 h-4 text-emerald-500" />
-                      <p className="text-sm text-emerald-500 font-medium">
-                        +{stats.monthlyGrowth}% vs mes anterior
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <TrendingDown className="w-4 h-4 text-destructive" />
-                      <p className="text-sm text-destructive font-medium">
-                        {stats?.monthlyGrowth}% vs mes anterior
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+            <ReportFilterSection
+              clients={clients}
+              selectedClientId={selectedClientId}
+              onClientSelect={setSelectedClientId}
+              fromDate={fromDate}
+              toDate={toDate}
+              onFromDateChange={setFromDate}
+              onToDateChange={setToDate}
+              onClearFilters={() => {
+                setSelectedClientId(null);
+                // Reset to current month default
+                const now = new Date();
+                setFromDate(new Date(now.getFullYear(), now.getMonth(), 1));
+                setToDate(new Date());
+              }}
+              onExportStats={exportStatsToExcel}
+              onExportInvoices={exportToExcel606}
+              statsLoading={!stats}
+              invoiceCount={totalInvoices}
+              isAdmin={userData?.role === "admin"}
+            />
 
-            {/* Average Amount */}
-            <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-amber-500" />
-                </div>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Promedio
-                </span>
-              </div>
-              <div className="space-y-1">
-                <p className="text-3xl font-bold text-foreground">
-                  ${stats?.averageAmount.toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">Monto promedio</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Monthly Breakdown */}
-            <div className="bg-card border border-border rounded-xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-foreground">
-                  Evolución mensual
-                </h2>
-                <CalendarIcon className="w-5 h-5 text-muted-foreground" />
-              </div>
-
-              <div className="space-y-4">
-                {stats?.monthlyBreakdown.map((item, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-foreground">
-                        {item.month}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {item.count} facturas
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 bg-secondary rounded-full h-2 overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full transition-all duration-500"
-                          style={{
-                            width: `${(item.count / (stats?.totalInvoices || 1)) * 100
-                              }%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-sm font-semibold text-foreground min-w-[100px] text-right">
-                        ${item.amount.toLocaleString()}
-                      </span>
-                    </div>
+            {/* Stats Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {/* Total Invoices */}
+              <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-primary" />
                   </div>
-                ))}
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Total
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-3xl font-bold text-foreground">
+                    {stats?.totalInvoices}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Facturas procesadas
+                  </p>
+                </div>
+              </div>
+
+              {/* Total Amount */}
+              <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                    <DollarSign className="w-6 h-6 text-emerald-500" />
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Monto
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-3xl font-bold text-foreground">
+                    ${stats?.totalAmount.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Monto total</p>
+                </div>
+              </div>
+
+              {/* This Month */}
+              <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+                    <CalendarIcon className="w-6 h-6 text-primary" />
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Este mes
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-3xl font-bold text-foreground">
+                    {stats?.thisMonth}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {stats && stats.monthlyGrowth > 0 ? (
+                      <>
+                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                        <p className="text-sm text-emerald-500 font-medium">
+                          +{stats.monthlyGrowth}% vs mes anterior
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <TrendingDown className="w-4 h-4 text-destructive" />
+                        <p className="text-sm text-destructive font-medium">
+                          {stats?.monthlyGrowth}% vs mes anterior
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Average Amount */}
+              <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-amber-500" />
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Promedio
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-3xl font-bold text-foreground">
+                    ${stats?.averageAmount.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Monto promedio</p>
+                </div>
               </div>
             </div>
 
-            {/* Top Clients */}
-            <div className="bg-card border border-border rounded-xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-foreground">
-                  Clientes principales
-                </h2>
-                <Users className="w-5 h-5 text-muted-foreground" />
-              </div>
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Monthly Breakdown */}
+              <div className="bg-card border border-border rounded-xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Evolución mensual
+                  </h2>
+                  <CalendarIcon className="w-5 h-5 text-muted-foreground" />
+                </div>
 
-              <div className="space-y-3">
-                {stats?.topClients.map((client, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border-2 border-primary/20">
-                        <span className="text-sm font-bold text-primary">
-                          {index + 1}
+                <div className="space-y-4">
+                  {stats?.monthlyBreakdown.map((item, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-foreground">
+                          {item.month}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {item.count} facturas
                         </span>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          {client.name}
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-secondary rounded-full h-2 overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all duration-500"
+                            style={{
+                              width: `${(item.count / (stats?.totalInvoices || 1)) * 100
+                                }%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-sm font-semibold text-foreground min-w-[100px] text-right">
+                          ${item.amount.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Top Clients */}
+              <div className="bg-card border border-border rounded-xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Clientes principales
+                  </h2>
+                  <Users className="w-5 h-5 text-muted-foreground" />
+                </div>
+
+                <div className="space-y-3">
+                  {stats?.topClients.map((client, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border-2 border-primary/20">
+                          <span className="text-sm font-bold text-primary">
+                            {index + 1}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {client.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {client.count} facturas
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-foreground">
+                          ${client.amount.toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {client.count} facturas
+                          {(
+                            (client.amount / (stats?.totalAmount || 1)) *
+                            100
+                          ).toFixed(1)}
+                          %
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-foreground">
-                        ${client.amount.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {(
-                          (client.amount / (stats?.totalAmount || 1)) *
-                          100
-                        ).toFixed(1)}
-                        %
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-secondary hover:bg-muted transition-colors text-sm font-medium text-foreground"
-              >
-                Ver todos los clientes
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Facturas Section */}
-          <section className="rounded-2xl bg-card border border-border p-5 shadow-lg">
-            <div className="mb-4">
-              <div className="flex items-baseline gap-2">
-                <h2 className="text-lg font-semibold text-foreground">
-                  Facturas
-                </h2>
-                <span className="text-sm text-muted-foreground">
-                  ({totalInvoices} resultados)
-                </span>
+                <button
+                  onClick={() => router.push("/dashboard")}
+                  className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-secondary hover:bg-muted transition-colors text-sm font-medium text-foreground"
+                >
+                  Ver todos los clientes
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
-            <InvoiceDataTable
-              invoices={invoices}
-              loading={loadingInvoices}
-              visibleColumns={visibleColumns}
-              onColumnChange={handleColumnChange}
-              onEditInvoice={handleEditInvoice}
-              onDeleteInvoice={handleDeleteInvoice}
-              emptyMessage="Ajusta los filtros o envía nuevas facturas desde el bot de Telegram."
-            />
-          </section>
-        </div>
-      </div>
-    </>
+            {/* Facturas Section */}
+            <section className="rounded-2xl bg-card border border-border p-5 shadow-lg">
+              <div className="mb-4">
+                <div className="flex items-baseline gap-2">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Facturas
+                  </h2>
+                  <span className="text-sm text-muted-foreground">
+                    ({totalInvoices} resultados)
+                  </span>
+                </div>
+              </div>
+
+              <InvoiceDataTable
+                invoices={invoices}
+                loading={loadingInvoices}
+                visibleColumns={visibleColumns}
+                onColumnChange={handleColumnChange}
+                onEditInvoice={handleEditInvoice}
+                onDeleteInvoice={handleDeleteInvoice}
+                emptyMessage="Ajusta los filtros o envía nuevas facturas desde el bot de Telegram."
+              />
+            </section>
+          </>
+        );
+      }}
+    </DashboardLayout>
   );
 }
 

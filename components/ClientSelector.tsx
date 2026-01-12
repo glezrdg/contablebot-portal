@@ -65,7 +65,11 @@ export default function ClientSelector({
         body: JSON.stringify({ rnc: client.rnc }),
       });
 
+      console.log("API response status:", response.status, response.ok);
       if (response.ok) {
+        const data = await response.json();
+        console.log("API response data:", data);
+        console.log("Calling onClientSelected with:", client);
         onClientSelected(client);
       } else {
         const error = await response.json();

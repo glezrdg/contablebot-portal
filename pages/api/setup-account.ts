@@ -166,6 +166,7 @@ export default async function handler(
       firmId: firm.id,
       firmName: firm.name,
       email: portalUser.email,
+      role: 'admin', // First user is always admin
     });
 
     setAuthCookie(res, token);
