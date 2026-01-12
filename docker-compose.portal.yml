@@ -18,6 +18,20 @@ services:
       - "traefik.http.routers.contablebot-portal.tls.certresolver=le"
       - "traefik.http.services.contablebot-portal.loadbalancer.server.port=3000"
 
+  contablebot-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: contablebot-worker
+    restart: unless-stopped
+    command: ["npm", "run", "worker:prod"]
+    env_file:
+      - .env.portal
+    networks:
+      - web
+    labels:
+      - "traefik.enable=false"
+
 networks:
   web:
     external: true

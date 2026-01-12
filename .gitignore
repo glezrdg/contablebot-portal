@@ -50,3 +50,11 @@ __pycache__/
 credentials.json
 token.json
 nul
+
+# Worker documentation (deployment-only)
+WORKER_DEPLOYMENT.md
+WORKER_QUICK_REFERENCE.md
+DATABASE_MIGRATION.sql
+
+# n8n workflow reference
+Worker*.json

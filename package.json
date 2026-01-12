@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "worker": "tsx watch worker/process-invoices.ts",
+    "worker:prod": "tsx worker/process-invoices.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
@@ -40,6 +42,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

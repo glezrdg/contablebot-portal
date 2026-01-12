@@ -25,10 +25,16 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
+
+# IMPORTANTE: Copiar worker y lib para el contenedor worker
+COPY --from=builder /app/worker ./worker
+COPY --from=builder /app/lib ./lib
+
 # NO copiamos next.config.* porque solo se usa en build, no en runtime
 
 EXPOSE 3000
 
-# Asegúrate de tener "start": "next start" en package.json
+# Comando por defecto (portal web)
+# El contenedor worker sobrescribirá con: command: ["npm", "run", "worker:prod"]
 CMD ["npm", "run", "start"]
 
