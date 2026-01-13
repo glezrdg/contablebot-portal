@@ -20,6 +20,9 @@ FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
+# Instalar Ghostscript y GraphicsMagick para procesamiento de PDFs escaneados
+RUN apk add --no-cache ghostscript graphicsmagick
+
 # Copiamos solo lo necesario para correr la app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
