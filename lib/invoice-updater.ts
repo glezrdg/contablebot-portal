@@ -186,7 +186,7 @@ export async function markInvoicesAsError(
 }
 
 /**
- * Update firm usage counters for the current month
+ * Update firm usage counters by incrementing for each processed invoice
  */
 export async function updateFirmUsage(invoices: PendingInvoice[]) {
   if (!POSTGREST_BASE_URL) {
@@ -194,35 +194,30 @@ export async function updateFirmUsage(invoices: PendingInvoice[]) {
     return;
   }
 
-  // Get unique firm IDs
-  const firmIds = [...new Set(invoices.map(inv => inv.firm_id))];
+  // Group invoices by firm_id and count
+  const firmCounts = new Map<number, number>();
+  for (const inv of invoices) {
+    firmCounts.set(inv.firm_id, (firmCounts.get(inv.firm_id) || 0) + 1);
+  }
 
-  for (const firmId of firmIds) {
+  // Increment usage for each firm
+  for (const [firmId, count] of firmCounts) {
     try {
-      // Count processed invoices for this firm this month
-      const startOfMonth = getStartOfMonth();
-      const countUrl = `${POSTGREST_BASE_URL}/invoices?firm_id=eq.${firmId}&status=eq.processed&processed_at=gte.${startOfMonth}&select=id`;
-
-      const countResponse = await fetch(countUrl, {
-        method: 'HEAD',
-        headers: { 'Prefer': 'count=exact' }
-      });
-
-      // Extract count from Content-Range header (e.g., "0-4/5" means 5 total)
-      const contentRange = countResponse.headers.get('Content-Range');
-      const count = contentRange ? parseInt(contentRange.split('/')[1] || '0') : 0;
-
-      console.log(`[Invoice Updater] Firm ${firmId} has processed ${count} invoices this month`);
-
-      // Update firm's used_this_month counter
-      const updateUrl = `${POSTGREST_BASE_URL}/firms?id=eq.${firmId}`;
-      await fetch(updateUrl, {
-        method: 'PATCH',
+      const response = await fetch(`${POSTGREST_BASE_URL}/rpc/increment_firm_usage`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ used_this_month: count })
+        body: JSON.stringify({
+          p_firm_id: firmId,
+          p_increment: count
+        })
       });
 
-      console.log(`[Invoice Updater] Updated firm ${firmId} usage counter to ${count}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`${response.status} ${errorText}`);
+      }
+
+      console.log(`[Invoice Updater] Incremented firm ${firmId} usage by +${count}`);
     } catch (error) {
       console.error(`[Invoice Updater] Failed to update firm ${firmId} usage:`, error);
     }
@@ -243,10 +238,3 @@ function parseDate(dateStr: string): string | null {
   return `${year}-${month}-${day}`;  // Convert to ISO format for PostgreSQL
 }
 
-/**
- * Get start of current month in ISO format
- */
-function getStartOfMonth(): string {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-}
