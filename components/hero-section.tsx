@@ -92,14 +92,14 @@ export function HeroSection() {
                       Total:
                     </span>
                     <span className="text-sm font-medium text-foreground">
-                      €1,250.00
+                      $1,250.00
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-chart-2 rounded-full" />
-                    <span className="text-sm text-muted-foreground">IVA:</span>
+                    <span className="text-sm text-muted-foreground">ITBIS:</span>
                     <span className="text-sm font-medium text-foreground">
-                      €217.50
+                      $217.50
                     </span>
                   </div>
                 </div>

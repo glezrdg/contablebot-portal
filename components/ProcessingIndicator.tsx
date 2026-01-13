@@ -15,57 +15,33 @@ interface ProcessingIndicatorProps {
 }
 
 export default function ProcessingIndicator({ onDismiss }: ProcessingIndicatorProps) {
-  const { setPendingCount: setContextPendingCount, triggerProcessingComplete } = useProcessing();
-  const [pendingCount, setPendingCount] = useState<number>(0);
+  const { pendingCount, checkPending, triggerProcessingComplete } = useProcessing();
   const [previousCount, setPreviousCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Check for pending invoices
-  const checkPendingInvoices = async () => {
-    try {
-      const response = await fetch("/api/invoices/pending");
-      if (response.ok) {
-        const data = await response.json();
-        const newCount = data.count || 0;
+  // Check for pending invoices on mount
+  useEffect(() => {
+    checkPending().finally(() => setLoading(false));
+  }, [checkPending]);
 
-        // Detect processing completion
-        if (previousCount > 0 && newCount === 0) {
-          // Show success animation
-          setShowSuccess(true);
-          triggerProcessingComplete();
+  // Detect when processing completes (count goes from >0 to 0)
+  useEffect(() => {
+    if (previousCount > 0 && pendingCount === 0 && !showSuccess) {
+      // Show success animation
+      setShowSuccess(true);
+      triggerProcessingComplete();
 
-          // Hide success animation after 2 seconds, then hide component
-          setTimeout(() => {
-            setShowSuccess(false);
-            setPendingCount(0);
-            setContextPendingCount(0);
-          }, 2000);
-        } else {
-          setPendingCount(newCount);
-          setContextPendingCount(newCount);
-        }
-
-        setPreviousCount(newCount);
-      }
-    } catch (error) {
-      console.error("Error checking pending invoices:", error);
-    } finally {
-      setLoading(false);
+      // Hide success animation after 2 seconds, then check for more pending
+      setTimeout(async () => {
+        setShowSuccess(false);
+        // Check if there are more pending invoices (e.g., user uploaded more during processing)
+        await checkPending();
+      }, 2000);
     }
-  };
-
-  // Initial check on mount
-  useEffect(() => {
-    checkPendingInvoices();
-  }, []);
-
-  // Poll for updates every 15 seconds
-  useEffect(() => {
-    const interval = setInterval(checkPendingInvoices, 15000);
-    return () => clearInterval(interval);
-  }, [previousCount]);
+    setPreviousCount(pendingCount);
+  }, [pendingCount, previousCount, triggerProcessingComplete, checkPending, showSuccess]);
 
   // Don't show if no pending invoices and not showing success
   if (loading || (pendingCount === 0 && !showSuccess)) {

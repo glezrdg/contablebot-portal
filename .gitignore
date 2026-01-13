@@ -43,6 +43,7 @@ Dockerfile
 
 # 3-layer architecture
 .tmp/
+tmpclaude-*
 execution/__pycache__/
 execution/*.pyc
 *.pyc

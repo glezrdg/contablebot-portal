@@ -13,6 +13,8 @@ interface ProcessingContextValue {
   setPendingCount: (count: number) => void;
   triggerProcessingComplete: () => void;
   onProcessingComplete: (callback: () => void) => () => void;
+  startProcessing: (count: number) => void;
+  checkPending: () => Promise<void>;
 }
 
 const ProcessingContext = createContext<ProcessingContextValue | null>(null);
@@ -59,6 +61,24 @@ export function ProcessingProvider({ children }: { children: ReactNode }) {
     }, 3000);
   }, [callbacks]);
 
+  // Start processing - called immediately when user uploads invoices
+  const startProcessing = useCallback((count: number) => {
+    setPendingCount((prev) => prev + count);
+  }, []);
+
+  // Check pending invoices from API
+  const checkPending = useCallback(async () => {
+    try {
+      const response = await fetch("/api/invoices/pending");
+      if (response.ok) {
+        const data = await response.json();
+        setPendingCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error("Error checking pending invoices:", error);
+    }
+  }, []);
+
   return (
     <ProcessingContext.Provider
       value={{
@@ -67,6 +87,8 @@ export function ProcessingProvider({ children }: { children: ReactNode }) {
         setPendingCount,
         triggerProcessingComplete,
         onProcessingComplete,
+        startProcessing,
+        checkPending,
       }}
     >
       {children}

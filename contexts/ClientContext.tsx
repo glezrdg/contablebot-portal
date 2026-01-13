@@ -35,10 +35,18 @@ export function ClientProvider({ children }: { children: ReactNode }) {
 
   // Fetch user info to get active client and assigned clients
   const fetchClients = useCallback(async () => {
+    // Don't fetch on public pages
+    const isPublicPage = router.pathname === '/' ||
+      router.pathname.startsWith('/login') ||
+      router.pathname.startsWith('/register');
+    if (isPublicPage) {
+      return;
+    }
+
     try {
       const response = await fetch('/api/me');
       if (!response.ok) {
-        // If unauthorized, redirect to login
+        // If unauthorized, redirect to login (but only from protected pages)
         if (response.status === 401) {
           router.push('/login');
           return;
@@ -60,9 +68,11 @@ export function ClientProvider({ children }: { children: ReactNode }) {
 
   // Fetch clients on mount
   useEffect(() => {
-    // Only fetch on authenticated pages
-    const isAuthPage = router.pathname === '/login' || router.pathname === '/';
-    if (!isAuthPage) {
+    // Only fetch on authenticated pages (not public pages)
+    const isPublicPage = router.pathname === '/' ||
+      router.pathname.startsWith('/login') ||
+      router.pathname.startsWith('/register');
+    if (!isPublicPage) {
       fetchClients();
     } else {
       setIsLoading(false);

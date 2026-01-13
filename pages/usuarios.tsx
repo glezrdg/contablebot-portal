@@ -128,11 +128,10 @@ export default function UsuariosPage() {
   const roleBodyTemplate = (rowData: User) => {
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${
-          rowData.role === 'admin'
-            ? 'bg-purple-500/20 text-purple-400'
-            : 'bg-blue-500/20 text-blue-400'
-        }`}
+        className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${rowData.role === 'admin'
+          ? 'bg-orange-500/20 text-orange-400'
+          : 'bg-blue-500/20 text-blue-400'
+          }`}
       >
         {rowData.role === 'admin' && <Shield className="w-3 h-3" />}
         {rowData.role === 'admin' ? 'Administrador' : 'Usuario'}
@@ -143,11 +142,10 @@ export default function UsuariosPage() {
   const statusBodyTemplate = (rowData: User) => {
     return (
       <span
-        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-          rowData.isActive
-            ? 'bg-emerald-500/20 text-emerald-400'
-            : 'bg-gray-500/20 text-gray-400'
-        }`}
+        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${rowData.isActive
+          ? 'bg-emerald-500/20 text-emerald-400'
+          : 'bg-gray-500/20 text-gray-400'
+          }`}
       >
         {rowData.isActive ? 'Activo' : 'Inactivo'}
       </span>
@@ -237,8 +235,8 @@ export default function UsuariosPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-purple-500" />
+            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <Users className="w-6 h-6 text-primary" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-foreground">Usuarios</h1>

@@ -28,7 +28,7 @@ export default async function handler(
   if (!session) return; // Response already sent by requireAuth
 
   // Extract optional query parameters
-  const { from, to, client, clientId, page, limit } = req.query;
+  const { from, to, createdFrom, createdTo, client, clientId, page, limit } = req.query;
 
   // Build the PostgREST query URL
   const queryParams: string[] = [];
@@ -64,6 +64,16 @@ export default async function handler(
     if (/^\d{4}-\d{2}-\d{2}$/.test(toDate)) {
       queryParams.push(`fecha=lte.${toDate}`);
     }
+  }
+
+  // Optional: filter by created_at >= createdFrom (ISO timestamp - for dashboard usage tracking)
+  if (createdFrom && typeof createdFrom === "string") {
+    queryParams.push(`created_at=gte.${encodeURIComponent(createdFrom)}`);
+  }
+
+  // Optional: filter by created_at < createdTo (ISO timestamp)
+  if (createdTo && typeof createdTo === "string") {
+    queryParams.push(`created_at=lt.${encodeURIComponent(createdTo)}`);
   }
 
   // Optional: filter by client_name (case-insensitive partial match)

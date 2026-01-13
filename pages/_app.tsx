@@ -14,9 +14,11 @@ import "primeicons/primeicons.css";
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
-  // Only show ProcessingIndicator on authenticated pages
-  const isAuthPage = router.pathname === "/login" || router.pathname === "/";
-  const showProcessingIndicator = !isAuthPage;
+  // Only show ProcessingIndicator on authenticated dashboard pages (not public pages)
+  const isPublicPage = router.pathname === "/" ||
+    router.pathname.startsWith("/login") ||
+    router.pathname.startsWith("/register");
+  const showProcessingIndicator = !isPublicPage;
 
   return (
     <PrimeReactProvider>

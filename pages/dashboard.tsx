@@ -26,7 +26,7 @@ const STORAGE_KEY = "dashboard_visible_columns";
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
-  const { onProcessingComplete } = useProcessing();
+  const { onProcessingComplete, startProcessing } = useProcessing();
 
   // Firm data - will be removed after full refactor
   const [firmId, setFirmId] = useState<number | null>(null);
@@ -164,7 +164,10 @@ export default function DashboardPage() {
 
   // Handle upload complete
   const handleUploadComplete = (totalUploaded: number) => {
-    // Immediately refresh invoice list to show newly uploaded invoices
+    // Immediately show processing indicator with count
+    startProcessing(totalUploaded);
+
+    // Refresh invoice list to show newly uploaded invoices
     fetchInvoices();
 
     toast.current?.show({
@@ -174,8 +177,6 @@ export default function DashboardPage() {
         } subida${totalUploaded !== 1 ? "s" : ""} exitosamente. Procesando...`,
       life: 3000,
     });
-
-    // Note: Processing indicator is now global and will automatically show
   };
 
   // Handle open uploader from card
@@ -193,11 +194,15 @@ export default function DashboardPage() {
     try {
       const params = new URLSearchParams();
 
+      // Filter by created_at (upload date) for dashboard - tied to usage tracking
       if (fromDate) {
-        params.set("from", formatDateForAPI(fromDate));
+        params.set("createdFrom", fromDate.toISOString());
       }
       if (toDate) {
-        params.set("to", formatDateForAPI(toDate));
+        // Use start of next day to include entire last day
+        const nextDay = new Date(toDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        params.set("createdTo", nextDay.toISOString());
       }
       if (selectedClientId !== null) {
         params.set("clientId", selectedClientId.toString());
@@ -641,10 +646,5 @@ export default function DashboardPage() {
       }}
     </DashboardLayout>
   );
-}
-
-// Helper functions
-function formatDateForAPI(date: Date): string {
-  return date.toISOString().split("T")[0];
 }
 

@@ -421,11 +421,6 @@ export default function ReportesPage() {
       description="Reportes y estadísticas de facturas"
     >
       {(userData) => {
-        // Auto-select the active client on first render
-        if (userData && userData.activeClientId && selectedClientId === null) {
-          setSelectedClientId(userData.activeClientId);
-        }
-
         return (
           <>
             <Toast ref={toast} />
