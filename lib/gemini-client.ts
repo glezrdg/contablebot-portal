@@ -46,10 +46,19 @@ export interface ExtractedInvoiceData {
 }
 
 /**
+ * Result of processing a batch of invoices
+ */
+export interface ProcessBatchResult {
+  extracted: ExtractedInvoiceData[];
+  rawResponse: string;  // Original JSON string from Gemini for debugging
+}
+
+/**
  * Process a batch of invoices through the Gemini API server
  * This uses the same API endpoint that the n8n workflow uses
+ * Returns both extracted data and raw response for storage
  */
-export async function processInvoiceBatch(invoices: PendingInvoice[]): Promise<ExtractedInvoiceData[]> {
+export async function processInvoiceBatch(invoices: PendingInvoice[]): Promise<ProcessBatchResult> {
   console.log(`[Gemini Client] Processing batch of ${invoices.length} invoices`);
 
   // Build the exact prompt that n8n uses
@@ -88,10 +97,14 @@ export async function processInvoiceBatch(invoices: PendingInvoice[]): Promise<E
     throw new Error(`Failed to parse Gemini response: ${e instanceof Error ? e.message : 'Unknown error'}`);
   }
 
-  // Return array of extracted invoices
-  const result = Array.isArray(parsed) ? parsed : [parsed];
-  console.log(`[Gemini Client] Successfully extracted ${result.length} invoices`);
-  return result;
+  // Return array of extracted invoices and raw response
+  const extracted = Array.isArray(parsed) ? parsed : [parsed];
+  console.log(`[Gemini Client] Successfully extracted ${extracted.length} invoices`);
+
+  return {
+    extracted,
+    rawResponse: raw  // Return raw for storage in raw_ai_dump
+  };
 }
 
 /**

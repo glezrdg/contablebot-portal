@@ -31,6 +31,7 @@ let isShuttingDown = false;
 
 /**
  * Process a batch of pending invoices
+ * Supports partial failure - continues processing even if some invoices fail
  */
 async function processPendingInvoices() {
   if (isShuttingDown) {
@@ -40,6 +41,7 @@ async function processPendingInvoices() {
 
   try {
     // 1. Atomically claim invoices (prevents double-processing)
+    // Also claims error invoices eligible for retry (retry_count < 3, processed_at > 10 min ago)
     console.log('[Worker] Claiming pending invoices...');
     const invoices = await claimPendingInvoices(BATCH_SIZE);
 
@@ -48,21 +50,26 @@ async function processPendingInvoices() {
       return;
     }
 
-    console.log(`[Worker] Claimed ${invoices.length} invoices:`, invoices.map(i => i.id));
+    // Log claimed invoices with retry info
+    const claimedInfo = invoices.map(i => {
+      const retryInfo = (i.retry_count || 0) > 0 ? ` (retry ${i.retry_count})` : '';
+      return `${i.id}${retryInfo}`;
+    });
+    console.log(`[Worker] Claimed ${invoices.length} invoices:`, claimedInfo);
 
     // 2. Process with Gemini (with retries)
-    let extracted;
+    let result;
     let attempts = 0;
 
     while (attempts < MAX_RETRIES) {
       try {
-        extracted = await processInvoiceBatch(invoices);
+        result = await processInvoiceBatch(invoices);
         break; // Success
       } catch (error) {
         attempts++;
         if (attempts >= MAX_RETRIES) {
           console.error(`[Worker] Failed after ${MAX_RETRIES} attempts:`, error);
-          // Mark invoices as error
+          // Mark invoices as error (will auto-retry if retry_count < 3)
           await markInvoicesAsError(invoices, error as Error);
           return;
         }
@@ -74,21 +81,41 @@ async function processPendingInvoices() {
       }
     }
 
-    if (!extracted) {
+    if (!result || !result.extracted) {
       console.error('[Worker] No data extracted from Gemini');
       await markInvoicesAsError(invoices, new Error('No data extracted'));
       return;
     }
 
-    // 3. Update database
+    const { extracted } = result;
+
+    // 3. Update database (handles partial failures)
     console.log('[Worker] Updating invoices in database...');
-    await updateInvoices(extracted);
+    const { successful, failed } = await updateInvoices(extracted);
 
-    // 4. Update firm usage counters
-    console.log('[Worker] Updating firm usage counters...');
-    await updateFirmUsage(invoices);
+    // Handle any failed updates
+    if (failed.length > 0) {
+      console.warn(`[Worker] ${failed.length} invoice(s) failed to update:`, failed);
 
-    console.log(`[Worker] Successfully processed ${invoices.length} invoices`);
+      // Mark failed ones as error (without incrementing retry - DB issue, not Gemini issue)
+      const failedInvoices = invoices.filter(inv =>
+        failed.some(f => f.id === inv.id)
+      );
+      if (failedInvoices.length > 0) {
+        await markInvoicesAsError(failedInvoices, new Error('Database update failed'), false);
+      }
+    }
+
+    // 4. Update firm usage counters (only for successful invoices)
+    if (successful.length > 0) {
+      console.log('[Worker] Updating firm usage counters...');
+      const successfulInvoices = invoices.filter(inv => successful.includes(inv.id));
+      await updateFirmUsage(successfulInvoices);
+    }
+
+    // Summary
+    const doubtfulCount = extracted.filter(e => e.FLAG_DUDOSO).length;
+    console.log(`[Worker] Batch complete: ${successful.length}/${invoices.length} successful${doubtfulCount > 0 ? `, ${doubtfulCount} flagged as doubtful` : ''}`);
   } catch (error) {
     // Non-retryable error - log and continue (don't crash the worker)
     console.error('[Worker] Unexpected error in processing loop:', error);
