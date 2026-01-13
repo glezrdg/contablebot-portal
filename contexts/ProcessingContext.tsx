@@ -67,12 +67,16 @@ export function ProcessingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Check pending invoices from API
+  // Uses functional update to avoid overwriting count from startProcessing during race conditions
   const checkPending = useCallback(async () => {
     try {
       const response = await fetch("/api/invoices/pending");
       if (response.ok) {
         const data = await response.json();
-        setPendingCount(data.count || 0);
+        const apiCount = data.count || 0;
+        // Use functional update: take the max of API count and current count
+        // This prevents overwriting a higher count set by startProcessing
+        setPendingCount((current) => Math.max(apiCount, current));
       }
     } catch (error) {
       console.error("Error checking pending invoices:", error);

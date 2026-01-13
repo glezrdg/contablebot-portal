@@ -73,6 +73,7 @@ export default async function handler(
 
     // Update user's active_client_id in portal_users table
     const updateUrl = `${POSTGREST_BASE_URL}/portal_users?id=eq.${session.portalUserId}`;
+    console.log('[active-client] Updating active_client_id:', { url: updateUrl, portalUserId: session.portalUserId, clientId: client.id });
     const updateResponse = await fetch(updateUrl, {
       method: "PATCH",
       headers: {
@@ -95,6 +96,9 @@ export default async function handler(
         .status(500)
         .json({ error: "Error al actualizar el cliente activo" });
     }
+
+    const updatedUsers = await updateResponse.json();
+    console.log('[active-client] Update response:', updatedUsers);
 
     return res.status(200).json({
       ok: true,

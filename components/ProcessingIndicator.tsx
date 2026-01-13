@@ -26,6 +26,17 @@ export default function ProcessingIndicator({ onDismiss }: ProcessingIndicatorPr
     checkPending().finally(() => setLoading(false));
   }, [checkPending]);
 
+  // Poll for pending invoices only while processing (pendingCount > 0)
+  useEffect(() => {
+    if (pendingCount === 0) return;
+
+    const interval = setInterval(() => {
+      checkPending();
+    }, 10000); // Poll every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [pendingCount, checkPending]);
+
   // Detect when processing completes (count goes from >0 to 0)
   useEffect(() => {
     if (previousCount > 0 && pendingCount === 0 && !showSuccess) {
@@ -44,7 +55,8 @@ export default function ProcessingIndicator({ onDismiss }: ProcessingIndicatorPr
   }, [pendingCount, previousCount, triggerProcessingComplete, checkPending, showSuccess]);
 
   // Don't show if no pending invoices and not showing success
-  if (loading || (pendingCount === 0 && !showSuccess)) {
+  // Note: Show immediately if pendingCount > 0 (from startProcessing), even if still loading
+  if ((loading && pendingCount === 0) || (pendingCount === 0 && !showSuccess)) {
     return null;
   }
 

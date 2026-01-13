@@ -189,6 +189,8 @@ export async function markInvoicesAsError(
  * Update firm usage counters by incrementing for each processed invoice
  */
 export async function updateFirmUsage(invoices: PendingInvoice[]) {
+  console.log(`[Invoice Updater] updateFirmUsage called with ${invoices.length} invoices`);
+
   if (!POSTGREST_BASE_URL) {
     console.error('[Invoice Updater] Cannot update firm usage: POSTGREST_BASE_URL not defined');
     return;
@@ -197,13 +199,19 @@ export async function updateFirmUsage(invoices: PendingInvoice[]) {
   // Group invoices by firm_id and count
   const firmCounts = new Map<number, number>();
   for (const inv of invoices) {
+    console.log(`[Invoice Updater] Invoice ${inv.id} has firm_id: ${inv.firm_id}`);
     firmCounts.set(inv.firm_id, (firmCounts.get(inv.firm_id) || 0) + 1);
   }
+
+  console.log(`[Invoice Updater] Firm counts:`, Object.fromEntries(firmCounts));
 
   // Increment usage for each firm
   for (const [firmId, count] of firmCounts) {
     try {
-      const response = await fetch(`${POSTGREST_BASE_URL}/rpc/increment_firm_usage`, {
+      const url = `${POSTGREST_BASE_URL}/rpc/increment_firm_usage`;
+      console.log(`[Invoice Updater] Calling ${url} with firm_id=${firmId}, increment=${count}`);
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -212,9 +220,11 @@ export async function updateFirmUsage(invoices: PendingInvoice[]) {
         })
       });
 
+      const responseText = await response.text();
+      console.log(`[Invoice Updater] Response: ${response.status} ${responseText}`);
+
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`${response.status} ${errorText}`);
+        throw new Error(`${response.status} ${responseText}`);
       }
 
       console.log(`[Invoice Updater] Incremented firm ${firmId} usage by +${count}`);

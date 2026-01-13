@@ -245,6 +245,8 @@ export default async function handler(
   const session = requireAuth(req, res)
   if (!session) return
 
+  console.log('[upload] Session:', { portalUserId: session.portalUserId, firmId: session.firmId, activeClientId: session.activeClientId })
+
   try {
     // Parse multipart form data
     const { files } = await parseForm(req)
@@ -268,17 +270,21 @@ export default async function handler(
 
     // Get user's active client from portal_users table
     const userUrl = `${POSTGREST_BASE_URL}/portal_users?id=eq.${session.portalUserId}&select=active_client_id`
+    console.log('[upload] Fetching user active_client_id:', { url: userUrl, portalUserId: session.portalUserId })
     const userResponse = await fetch(userUrl, {
       method: "GET",
       headers: { Accept: "application/json" },
     })
 
     if (!userResponse.ok) {
+      console.error('[upload] Error fetching user:', userResponse.status)
       return res.status(500).json({ error: "Error al obtener información del usuario" })
     }
 
     const users = await userResponse.json()
+    console.log('[upload] User data from DB:', users)
     if (!users || users.length === 0 || !users[0].active_client_id) {
+      console.error('[upload] No active_client_id found:', { users, portalUserId: session.portalUserId })
       return res.status(400).json({
         error: "Debes seleccionar un cliente activo antes de subir facturas",
       })
