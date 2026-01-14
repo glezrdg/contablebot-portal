@@ -68,6 +68,13 @@ export interface Invoice {
   // Soft delete
   is_deleted?: boolean;
   deleted_at?: string;
+
+  // Quality tracking
+  flag_dudoso?: boolean;
+  razon_duda?: string;
+  error_message?: string;
+  retry_count?: number;
+  qa_feedback?: string; // Feedback from QA review for re-processing
 }
 
 // Client type for filter buttons

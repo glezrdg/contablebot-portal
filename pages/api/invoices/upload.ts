@@ -36,8 +36,8 @@ interface UploadResponse {
 function parseForm(req: NextApiRequest): Promise<{ fields: Fields; files: Files }> {
   return new Promise((resolve, reject) => {
     const form = new IncomingForm({
-      maxFileSize: 10 * 1024 * 1024, // 10MB
-      maxFiles: 10, // Max 10 files per upload
+      maxFileSize: 5 * 1024 * 1024, // 5MB per file
+      maxFiles: 20, // Max 20 files per upload
       keepExtensions: true,
     })
 
@@ -65,22 +65,21 @@ function validateFile(file: FormidableFile): { valid: boolean; error?: string } 
     "image/jpg",
     "image/png",
     "image/webp",
-    "image/gif",
     "application/pdf",
   ]
 
   if (!file.mimetype || !validMimeTypes.includes(file.mimetype)) {
     return {
       valid: false,
-      error: "Tipo de archivo inválido. Solo se aceptan imágenes (JPG, PNG, WEBP, GIF) y PDFs",
+      error: "Tipo de archivo inválido. Solo se aceptan imágenes (JPG, PNG, WEBP) y PDFs",
     }
   }
 
-  const maxSize = 10 * 1024 * 1024 // 10MB
+  const maxSize = 5 * 1024 * 1024 // 5MB
   if (file.size > maxSize) {
     return {
       valid: false,
-      error: "Archivo muy grande. El tamaño máximo es 10MB",
+      error: "Archivo muy grande. El tamaño máximo es 5MB",
     }
   }
 
@@ -264,8 +263,8 @@ export default async function handler(
       return res.status(400).json({ error: "No se recibieron archivos" })
     }
 
-    if (fileArray.length > 10) {
-      return res.status(400).json({ error: "Máximo 10 archivos por carga" })
+    if (fileArray.length > 20) {
+      return res.status(400).json({ error: "Máximo 20 archivos por carga" })
     }
 
     // Get user's active client from portal_users table

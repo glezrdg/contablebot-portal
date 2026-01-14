@@ -37,21 +37,56 @@ export default function InvoiceUploader({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
+  const MAX_FILES = 20; // 20 files max per upload (supports ~20 concurrent users)
+
   const handleFileSelect = (selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
 
-    const newFiles: UploadedFile[] = Array.from(selectedFiles)
-      .filter((file) => file.type.startsWith("image/") || file.type === "application/pdf")
-      .slice(0, 10 - files.length) // Max 10 total
-      .map((file) => ({
+    const validFiles: UploadedFile[] = [];
+    const errors: string[] = [];
+
+    const validImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
+    Array.from(selectedFiles).forEach((file) => {
+      // Check file type (no GIF)
+      const isValidImage = validImageTypes.includes(file.type);
+      const isPDF = file.type === "application/pdf";
+
+      if (!isValidImage && !isPDF) {
+        errors.push(`${file.name}: Tipo de archivo no soportado. Solo JPG, PNG, WEBP, PDF`);
+        return;
+      }
+
+      // Check file size
+      if (file.size > MAX_FILE_SIZE) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        errors.push(`${file.name}: Archivo muy grande (${sizeMB}MB). Máximo 5MB`);
+        return;
+      }
+
+      // Check max files limit
+      if (files.length + validFiles.length >= MAX_FILES) {
+        errors.push(`${file.name}: Límite de ${MAX_FILES} archivos alcanzado`);
+        return;
+      }
+
+      validFiles.push({
         file,
         preview: file.type === "application/pdf"
-          ? "/pdf-icon.svg" // Placeholder for PDF preview
+          ? "/pdf-icon.svg"
           : URL.createObjectURL(file),
         status: "pending" as const,
-      }));
+      });
+    });
 
-    setFiles([...files, ...newFiles]);
+    if (errors.length > 0) {
+      alert(`Algunos archivos no se pudieron agregar:\n\n${errors.join("\n")}`);
+    }
+
+    if (validFiles.length > 0) {
+      setFiles([...files, ...validFiles]);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -169,7 +204,7 @@ export default function InvoiceUploader({
               Arrastra archivos aquí o haz click para seleccionar
             </p>
             <p className="text-sm text-muted-foreground">
-              Soporta JPG, PNG, WEBP, GIF, PDF (máx. 10 archivos, 10MB cada uno)
+              Soporta JPG, PNG, WEBP, PDF (máx. 20 archivos, 5MB cada uno)
             </p>
           </div>
         </div>

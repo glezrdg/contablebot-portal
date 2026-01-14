@@ -11,6 +11,7 @@ interface PendingInvoice {
   client_name: string;
   rnc: string;
   raw_ocr_text: string;
+  qa_feedback?: string; // Previous QA feedback for re-processing
 }
 
 export interface ExtractedInvoiceData {
@@ -430,12 +431,19 @@ RECUERDA:
 
   // Build body parts (exact format from n8n)
   const bodyParts = invoices.map((inv, index) => {
+    // Include QA feedback if present (for re-processing)
+    const qaSection = inv.qa_feedback
+      ? `\nQA_FEEDBACK (PRESTA ATENCION ESPECIAL A ESTOS PROBLEMAS DETECTADOS PREVIAMENTE):
+${inv.qa_feedback}
+`
+      : '';
+
     return `
 ===== FACTURA ${index + 1} INICIO =====
 ID_INTERNA: ${inv.id}
 FIRM_ID: ${inv.firm_id}
 CLIENTE: ${inv.client_name || ''}
-RNC: ${inv.rnc || ''}
+RNC: ${inv.rnc || ''}${qaSection}
 TEXTO_OCR:
 ${inv.raw_ocr_text}
 ===== FACTURA ${index + 1} FIN =====

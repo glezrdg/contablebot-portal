@@ -3,6 +3,7 @@ import { Column } from "primereact/column";
 import { MultiSelect } from "primereact/multiselect";
 import type { Invoice } from "@/types";
 import { ALL_COLUMNS } from "@/utils/Invoice-columns";
+import { QualityDot } from "./QualityBadge";
 
 interface InvoiceDataTableProps {
   invoices: Invoice[];
@@ -89,6 +90,14 @@ export default function InvoiceDataTable({
     );
   };
 
+  const qualityBodyTemplate = (rowData: Invoice) => {
+    return (
+      <div className="flex items-center justify-center">
+        <QualityDot invoice={rowData} />
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
@@ -159,6 +168,8 @@ export default function InvoiceDataTable({
                     return statusBodyTemplate;
                   case "actions":
                     return actionsBodyTemplate;
+                  case "quality":
+                    return qualityBodyTemplate;
                   default:
                     return undefined;
                 }
@@ -174,7 +185,7 @@ export default function InvoiceDataTable({
                   align={
                     col.type === "currency"
                       ? "right"
-                      : col.type === "status" || col.type === "actions"
+                      : col.type === "status" || col.type === "actions" || col.type === "quality"
                       ? "center"
                       : undefined
                   }

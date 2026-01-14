@@ -244,3 +244,51 @@ npm run dev
 - Components: `components/[ComponentName].tsx`
 - Types: `types/index.ts`
 - Utilities: `lib/[module].ts`
+- Migrations: `migrations/[number]_[name].sql`
+
+## Key System Components
+
+### Invoice Processing Pipeline
+```
+Upload (frontend) → API creates record (status=pending) → Worker claims & processes → Gemini extracts → DB updated (status=processed)
+```
+
+**Key files:**
+- `components/InvoiceUploader.tsx` - Frontend upload UI with validation
+- `pages/api/invoices/upload.ts` - Backend upload handler + OCR
+- `lib/invoice-updater.ts` - Worker database operations (claim, update, error handling)
+- `lib/gemini-client.ts` - AI extraction prompt and API calls
+
+### QA Review System
+```
+Processed invoices → QA Dashboard filters flagged → User reviews → Approve or Re-process with feedback
+```
+
+**Key files:**
+- `pages/dashboard/qa.tsx` - QA review interface
+- `lib/invoice-validator.ts` - Quality score calculation
+
+### Database Functions (PostgREST RPC)
+- `claim_pending_invoices(batch_size)` - Atomically claim invoices for processing
+- `increment_firm_usage(firm_id, increment)` - Update usage counters
+
+**Important:** When modifying PostgreSQL functions, column types must match exactly:
+- `id`: BIGINT (not INTEGER)
+- `firm_id`: INTEGER
+- `user_id`: BIGINT
+- `client_id`: BIGINT
+
+### Upload Limits (Current)
+- Max file size: 5MB
+- Max files per upload: 20
+- Supported formats: JPG, PNG, WEBP, PDF (no GIF)
+
+### Quality Flags
+- `flag_dudoso`: AI detected uncertainty
+- `razon_duda`: Explanation of uncertainty
+- `conf_bien_servicio`: Confidence score (0-1) for goods/services classification
+- `qa_feedback`: Previous validation issues (used for re-processing context)
+
+## Recent Changes
+
+See `CHANGELOG.md` for detailed history of recent modifications.

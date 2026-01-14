@@ -16,9 +16,11 @@ import DashboardLayout from "@/components/DashboardLayout";
 import ClientFilterButtons from "@/components/ClientFilterButtons";
 import InvoiceDataTable from "@/components/InvoiceDataTable";
 import ExportButtons from "@/components/ExportButtons";
-import { BarChart3, Settings, Upload } from "lucide-react";
+import { BarChart3, Settings, Upload, ShieldCheck } from "lucide-react";
 import { ALL_COLUMNS } from "@/utils/Invoice-columns";
 import { useProcessing } from "@/contexts/ProcessingContext";
+import { Dropdown } from "primereact/dropdown";
+import { validateInvoice, getQualityLevel } from "@/lib/invoice-validator";
 
 // Column definitions for the invoices table
 
@@ -53,6 +55,7 @@ export default function DashboardPage() {
     return new Date(now.getFullYear(), now.getMonth() + 1, 0);
   });
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [qualityFilter, setQualityFilter] = useState<string>("all");
 
   // Clients for filter buttons
   const [clients, setClients] = useState<Client[]>([]);
@@ -64,6 +67,28 @@ export default function DashboardPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Quality filter options
+  const qualityFilterOptions = [
+    { label: "Todas las facturas", value: "all" },
+    { label: "Necesitan revision", value: "needsReview" },
+    { label: "Dudosas (IA)", value: "flagged" },
+    { label: "Error matematico", value: "mathError" },
+  ];
+
+  // Filter invoices by quality
+  const filteredInvoices = invoices.filter((inv) => {
+    if (qualityFilter === "all") return true;
+
+    const validation = validateInvoice(inv);
+    const level = getQualityLevel(validation.qualityScore);
+
+    if (qualityFilter === "needsReview") return level !== "good";
+    if (qualityFilter === "flagged") return inv.flag_dudoso === true;
+    if (qualityFilter === "mathError") return !validation.mathValid;
+
+    return true;
+  });
 
   // Column visibility state
   const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
@@ -588,24 +613,35 @@ export default function DashboardPage() {
           <section className="rounded-2xl bg-card border border-border p-5 shadow-lg">
             {/* Section Header */}
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-baseline gap-2">
-                <h2 className="text-lg font-semibold text-foreground">
-                  Facturas
-                </h2>
-                <span className="text-sm text-muted-foreground">
-                  ({totalInvoices} resultados)
-                </span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-baseline gap-2">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Facturas
+                  </h2>
+                  <span className="text-sm text-muted-foreground">
+                    ({filteredInvoices.length}{qualityFilter !== "all" ? ` de ${totalInvoices}` : ""} resultados)
+                  </span>
+                </div>
+
+                {/* Quality Filter */}
+                <Dropdown
+                  value={qualityFilter}
+                  options={qualityFilterOptions}
+                  onChange={(e) => setQualityFilter(e.value)}
+                  placeholder="Filtrar por calidad"
+                  className="w-48"
+                />
               </div>
 
               <ExportButtons
                 onExportExcel={exportToExcel606}
                 onExportCSV={exportToCSV}
-                disabled={invoices.length === 0}
+                disabled={filteredInvoices.length === 0}
               />
             </div>
 
             <InvoiceDataTable
-              invoices={invoices}
+              invoices={filteredInvoices}
               loading={loading}
               visibleColumns={visibleColumns}
               onColumnChange={handleColumnChange}

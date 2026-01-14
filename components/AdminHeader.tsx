@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Building2,
   Users,
+  ShieldCheck,
 } from "lucide-react";
 import ProfileDropdown from "./ProfileDropdown";
 import ClientSwitcher from "./ClientSwitcher";
@@ -115,6 +116,20 @@ export default function AdminHeader({
                 <Users className="w-4 h-4" />
                 <span>Usuarios</span>
               </Link></>
+          )}
+
+          {/* QA Link (Admin only) */}
+          {userRole === 'admin' && (
+            <Link
+              href="/dashboard/qa"
+              className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/dashboard/qa"
+                ? "bg-primary/20 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>QA</span>
+            </Link>
           )}
 
           {/* Client Switcher */}

@@ -1,0 +1,175 @@
+﻿id,firm_id,user_id,client_name,rnc,fecha,nombre_compania,ncf,materiales,monto_servicio_exento,monto_bien_exento,total_montos_exento,monto_servicio_gravado,monto_bien_gravado,total_montos_gravado,itbis_servicios,itbis_bienes,total_facturado_itbis,itbis_servicios_retenido,retencion_30_itbis,retencion_10,retencion_2,propina,total_facturado,total_a_cobrar,status,raw_ai_dump,created_at,client_id,raw_ocr_text,processed_at,is_deleted,deleted_at,processing_started_at,created_by_user_id,updated_by_user_id,flag_dudoso,razon_duda,error_message,retry_count
+1783,1,,Sibaikole SRL,102318131,2025-10-31,FARMACIA MONUMENTAL SRL,B0100030810,"Acido Borico, Ocean Spray Jugos Cranberry",0,125.78,125.78,0,93.31,93.31,0,16.8,16.8,0,0,0,0,0,235.89,235.89,processed,"{""RNC"": ""102318131"", ""FECHA"": ""31/10/2025"", ""PROPINA"": 0, ""TIPO NCF"": ""B01"", ""MATERIALES"": ""Acido Borico, Ocean Spray Jugos Cranberry"", ""RAZON_DUDA"": """", ""id_interna"": ""1783"", ""FLAG_DUDOSO"": false, ""RNC_CLIENTE"": ""132654471"", ""RETENCION 2%"": 0, ""CATEGORIA NCF"": ""CREDITO_FISCAL"", ""RETENCION 10%"": 0, ""TOTAL A COBRAR"": 235.89, ""ITBIS SERVICIOS"": 0, ""TOTAL FACTURADO"": 235.89, ""NOMBRE COMPAÑÍA"": ""FARMACIA MONUMENTAL SRL"", ""CONF_BIEN_SERVICIO"": 1, ""RETENCION 30% ITBIS"": 0, ""ITBIS COMPRAS BIENES"": 16.8, ""MONTO EN BIEN EXENTO"": 125.78, ""MONTO EN BIEN GRAVADO"": 93.31, ""NO. COMPROBANTE FISCAL"": ""B0100030810"", ""TOTAL DE MONTOS EXENTO"": 125.78, ""TOTAL DE MONTOS GRAVADO"": 93.31, ""ITBIS SERVICIOS RETENIDO"": 0, ""MONTO EN SERVICIO EXENTO"": 0, ""TOTAL FACTURADO EN ITBIS"": 16.8, ""MONTO EN SERVICIO GRAVADO"": 0, ""CLASIFICACION_PREDOMINANTE"": ""BIEN""}",2026-01-14 07:33:43.539421+00,1,"FARMACIA MONUMENTAL
+C/ Los Garcias Esq. Los Cocos, Santiago. Rep. Don.
+Tel: (809) 581-1493
+FARMACIA MONUMENTAL SRL
+RNC 102318131
+RES OGII: 23-2009 DEL 06/ABRIL/2009
+COMPROBANTE AUTORIZADO POR DGII
+31/10/2025 17:57:05
+NIF: 1096350000210417
+NCF: 0000000080100030810
+RNC: 132654471
+MAMBARYS SRL
+FACTURA PARA CREDITO FISCAL
+DESCRIPCION
+ITBIS
+VALOR
+1.00 x 132.40
+377
+ACIDO BORICO-ROLDAN-
+TARRO 4 02 (ROLDAN)
+0.00
+132.40 E
+1.00 x 6.62
+377
+ACIDO BORICO-ROLDAN-
+DESC. TARRO 4 OZ (ROL
+0.00-
+6.62- E
+1.00 x 115.02
+33612
+OCEAN SPRAY JUGOS CRA
+NBERRY 15.2 ONZ.
+17.55
+115.02 12
+1.00 x 4.91
+33612
+OCEAN SPRAY JUGOS CRA
+DESC. NBERRY 15.2 ONZ
+0.75-
+4.91- 12
+Subtotal
+16.80
+235.89
+TOTAL
+16.80
+235.89
+Tarjeta Propia
+235.89
+AZUL
+0.00
+CAMBIO
+Total Descuento: 11.53
+VENTA DE CONTADO
+Codigo Cliente: 1001
+Nombre Cliente: MAMBARYS SRL
+Direcion:, TELS:
+AZUL
+Factura: A-01541257
+Telefonos: 809-581-1493, 809-971-7503
+WhatsApp.: 849-410-2031
+* Instagram: fcianonumental
+Facebook.: Farmacia Monumental SRL
+Twiter...: @fcianonumental
+* Email....: farmacianonumental@hotmail.com *
+Nuestro Credito es entre 15 a 30 dias
+Lamentanos no poder despachar con
+facturas vencidas
+Le stendio: JOHAN RAMIREZ
+NIF: 1096350000210417
+P4YF004687
+11
+109635
+V: 3.00 Taurus",2026-01-14 07:36:45.068+00,,,2026-01-14 07:35:30.030115+00,,,,,,0
+1784,1,,Sibaikole SRL,102315345,2025-10-17,CONFECCIONES LOUARDOS SRL,E310000000296,Chacabana M/C 2 Bolsillos,0,0,0,0,1822.5,1822.5,0,328.05,328.05,0,0,0,0,0,2150.55,2150.55,processed,"{""RNC"": ""102315345"", ""FECHA"": ""17/10/2025"", ""PROPINA"": 0, ""TIPO NCF"": ""E31"", ""MATERIALES"": ""Chacabana M/C 2 Bolsillos"", ""RAZON_DUDA"": """", ""id_interna"": ""1784"", ""FLAG_DUDOSO"": false, ""RNC_CLIENTE"": ""132654471"", ""RETENCION 2%"": 0, ""CATEGORIA NCF"": ""CREDITO_FISCAL"", ""RETENCION 10%"": 0, ""TOTAL A COBRAR"": 2150.55, ""ITBIS SERVICIOS"": 0, ""TOTAL FACTURADO"": 2150.55, ""NOMBRE COMPAÑÍA"": ""CONFECCIONES LOUARDOS SRL"", ""CONF_BIEN_SERVICIO"": 1, ""RETENCION 30% ITBIS"": 0, ""ITBIS COMPRAS BIENES"": 328.05, ""MONTO EN BIEN EXENTO"": 0, ""MONTO EN BIEN GRAVADO"": 1822.5, ""NO. COMPROBANTE FISCAL"": ""E310000000296"", ""TOTAL DE MONTOS EXENTO"": 0, ""TOTAL DE MONTOS GRAVADO"": 1822.5, ""ITBIS SERVICIOS RETENIDO"": 0, ""MONTO EN SERVICIO EXENTO"": 0, ""TOTAL FACTURADO EN ITBIS"": 328.05, ""MONTO EN SERVICIO GRAVADO"": 0, ""CLASIFICACION_PREDOMINANTE"": ""BIEN""}",2026-01-14 07:33:43.950834+00,1,"Factura de Crédito Fiscal Electrónica
+e-NCF: E310000000296
+Fecha Vencimiento: 31-12-2026
+Vence: 17-10-2025
+Condición A: Tarjeta
+Louardos
+CONFECCIONES LOUARDOS SRL
+RNC: 102315345
+Dirección: PENETRACION, No. 17, APTO. EL INGCO II, CENTRO
+DE LA CIUDAD (SANTIAGO), Teléfono: 809-575-9779
+Fecha Emisión: 17-10-2025
+RNC Cliente: 132654471
+Nombre: MAMBARYS.
+BUCIONES
+of
+ARDOS
+Dirección: MAMBARYS.
+DESCRIPCION
+7460077876565 - Chacabana M/C 2
+Bolsillos
+Código de Seguridad: JAESYM
+Fecha y Hora Firma: 17-10-2025 14:12:29
+MED
+CANT
+PRECIO
+DESCTO
+ITBIS
+TOTAL
+1
+2,025.000
+202.500
+328.050
+1,822.500 11
+Sub-total
+1
+202.500
+328.050
+1,822.500
+Elementos con 11 están gravados con 18% ITBIS
+ITBIS:
+TOTAL FACTURA:
+328.05
+2,150.55",2026-01-14 07:36:45.064+00,,,2026-01-14 07:35:30.030115+00,,,,,,0
+1785,1,,FUlanito SRL,131498795,2025-10-17,VISTASANA COE,E310000000127,Consulta Primera Vez (ASEGURADO),4000,0,4000,0,0,0,0,0,0,0,0,0,0,0,4000,4000,processed,"{""RNC"": ""131498795"", ""FECHA"": ""17/10/2025"", ""PROPINA"": 0, ""TIPO NCF"": ""E31"", ""MATERIALES"": ""Consulta Primera Vez (ASEGURADO)"", ""RAZON_DUDA"": """", ""id_interna"": ""1785"", ""FLAG_DUDOSO"": false, ""RNC_CLIENTE"": ""132654471"", ""RETENCION 2%"": 0, ""CATEGORIA NCF"": ""CREDITO_FISCAL"", ""RETENCION 10%"": 0, ""TOTAL A COBRAR"": 4000, ""ITBIS SERVICIOS"": 0, ""TOTAL FACTURADO"": 4000, ""NOMBRE COMPAÑÍA"": ""VISTASANA COE"", ""CONF_BIEN_SERVICIO"": 1, ""RETENCION 30% ITBIS"": 0, ""ITBIS COMPRAS BIENES"": 0, ""MONTO EN BIEN EXENTO"": 0, ""MONTO EN BIEN GRAVADO"": 0, ""NO. COMPROBANTE FISCAL"": ""E310000000127"", ""TOTAL DE MONTOS EXENTO"": 4000, ""TOTAL DE MONTOS GRAVADO"": 0, ""ITBIS SERVICIOS RETENIDO"": 0, ""MONTO EN SERVICIO EXENTO"": 4000, ""TOTAL FACTURADO EN ITBIS"": 0, ""MONTO EN SERVICIO GRAVADO"": 0, ""CLASIFICACION_PREDOMINANTE"": ""SERVICIO""}",2026-01-14 07:53:08.686024+00,42,"VISTASANA COE
+Av.27 de Febrero #60, Las Colinas
+Tel. 8095760660, 8095760665
+RNC: 131498795
+Factura de Crédito Fiscal Electrónico
+e-NCF E310000000127
+Fecha vencimiento: 31/12/2026
+Fecha emisión:
+17/10/2025
+Impreso:
+Caja:
+01
+17-oct.-25
+Fact. No.
+67854
+12:48 pm
+Exp:
+21680
+Nombre:
+MAMBARYS SRL
+RNC:
+132654471
+MAMBARYS SRL
+Doctor:
+Dra. Patricia Franco
+Ref. por:
+VISTASANA
+Desc:
+CONSULTA PRIMERA VEZ
+Cantidad
+Descripción
+Unidad
+Precio
+ITBIS
+Valor
+1
+Consulta Primera
+UND
+Vez (ASEGURADO)
+4,000.00 0.00
+4,000.00
+Subtotal:
+4,000.00
+ITBIS:
+0.00
+Monto a Pagar:
+4,000.00
+Avance:
+Tarjeta:
+0.00
+4,000.00
+Devuelta:
+0.00
+Código de seguridad: HrDB2Y
+Fecha de firma digital: 17/10/2025 12:48.31
+Nathaly Sala
+Preparada Por
+Firma Paciente",2026-01-14 07:53:54.528+00,,,2026-01-14 07:53:30.601256+00,,,,,,0

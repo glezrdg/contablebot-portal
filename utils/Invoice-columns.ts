@@ -1,12 +1,19 @@
 interface ColumnConfig {
   field: string;
   header: string;
-  type: "text" | "currency" | "date" | "status" | "actions";
+  type: "text" | "currency" | "date" | "status" | "actions" | "quality";
   minWidth: string;
   defaultVisible: boolean;
 }
 
 export const ALL_COLUMNS: ColumnConfig[] = [
+  {
+    field: "quality",
+    header: "Calidad",
+    type: "quality",
+    minWidth: "70px",
+    defaultVisible: true,
+  },
   {
     field: "fecha",
     header: "Fecha",

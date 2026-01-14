@@ -14,6 +14,7 @@ export interface PendingInvoice {
   rnc: string;
   raw_ocr_text: string;
   retry_count: number;  // Track retry attempts
+  qa_feedback?: string; // Feedback from QA review for re-processing
 }
 
 /**
