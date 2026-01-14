@@ -139,11 +139,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        Prefer: "return=representation",
       },
       body: JSON.stringify({
         email,
         password_hash: passwordHash,
         firm_id: firm.id,
+        role: "admin",
       }),
     })
 
@@ -154,6 +156,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({
         error: "Error creating login credentials. Please contact support."
       })
+    }
+
+    const portalUsers = await portalUserResponse.json()
+    const portalUser = portalUsers[0]
+
+    if (!portalUser || !portalUser.id) {
+      return res.status(500).json({ error: "Failed to create portal user" })
     }
 
     // Create admin user
@@ -171,13 +180,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }),
     })
 
-    // Sign JWT token
+    // Sign JWT token with correct portal user ID
     const token = await signToken({
-      portalUserId: firm.id, // Using firm.id as placeholder
+      portalUserId: portalUser.id,
       firmId: firm.id,
       firmName: firm.name,
       email,
-      role: 'admin', // First user is always admin
+      role: 'admin',
     })
 
     // Set auth cookie
