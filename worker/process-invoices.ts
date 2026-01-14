@@ -109,7 +109,9 @@ async function processPendingInvoices() {
     // 4. Update firm usage counters (only for successful invoices)
     if (successful.length > 0) {
       console.log('[Worker] Updating firm usage counters...');
-      const successfulInvoices = invoices.filter(inv => successful.includes(inv.id));
+      // Convert to numbers for comparison (id_interna from Gemini may be string or number)
+      const successfulIds = successful.map(id => Number(id));
+      const successfulInvoices = invoices.filter(inv => successfulIds.includes(inv.id));
       await updateFirmUsage(successfulInvoices);
     }
 
