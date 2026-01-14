@@ -39,11 +39,18 @@ export default async function handler(
   // Always filter out soft-deleted invoices
   queryParams.push(`is_deleted=eq.false`);
 
-  // Backend enforcement: Non-admin users can only see their active client's data
-  // Admin users can manually filter by clientId parameter or see all clients
-  if (session.role !== 'admin' && session.activeClientId) {
-    // Non-admin users are restricted to their active client
-    queryParams.push(`client_id=eq.${session.activeClientId}`);
+  // Backend enforcement: Non-admin users can only see their assigned clients' data
+  if (session.role !== 'admin') {
+    if (session.activeClientId) {
+      // Non-admin users are restricted to their active client
+      queryParams.push(`client_id=eq.${session.activeClientId}`);
+    } else if (session.assignedClientIds && session.assignedClientIds.length > 0) {
+      // Fallback: use all assigned client IDs
+      queryParams.push(`client_id=in.(${session.assignedClientIds.join(',')})`);
+    } else {
+      // No assigned clients - return empty result
+      return res.status(200).json({ invoices: [], total: 0, page: 1, limit: 50 });
+    }
   } else if (clientId && typeof clientId === "string") {
     // Admin users can manually filter by clientId
     queryParams.push(`client_id=eq.${encodeURIComponent(clientId)}`);

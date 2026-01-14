@@ -42,11 +42,6 @@ export default async function handler(
   const session = requireAuth(req, res);
   if (!session) return;
 
-  // Only admins can access QA dashboard
-  if (session.role !== 'admin') {
-    return res.status(403).json({ error: "Acceso denegado. Solo administradores." });
-  }
-
   // Extract optional query parameters
   const { filter, limit } = req.query;
   const limitNum = parseInt(limit as string) || 100;

@@ -521,7 +521,7 @@ export default function QADashboardPage() {
             {detailInvoice && (
               <div className="space-y-6">
                 {/* Invoice Basic Info */}
-                <div className="grid grid-cols-2 gap-4 p-4 bg-slate-800/50 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 p-4 bg-white border rounded-lg">
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">Cliente</p>
                     <p className="font-medium text-foreground">{detailInvoice.client_name}</p>
@@ -549,10 +549,9 @@ export default function QADashboardPage() {
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">Puntuacion Calidad</p>
                     <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${
-                        detailInvoice.qualityLevel === "good" ? "bg-green-500" :
+                      <div className={`w-3 h-3 rounded-full ${detailInvoice.qualityLevel === "good" ? "bg-green-500" :
                         detailInvoice.qualityLevel === "review" ? "bg-yellow-500" : "bg-red-500"
-                      }`} />
+                        }`} />
                       <span className="font-medium text-foreground">{detailInvoice.validation.qualityScore}%</span>
                     </div>
                   </div>
@@ -606,11 +605,10 @@ export default function QADashboardPage() {
                     <Calculator className="w-4 h-4 text-blue-500" />
                     Validacion Matematica
                   </h3>
-                  <div className={`p-4 rounded-lg border ${
-                    detailInvoice.validation.mathValid
-                      ? "bg-green-500/10 border-green-500/30"
-                      : "bg-red-500/10 border-red-500/30"
-                  }`}>
+                  <div className={`p-4 rounded-lg border ${detailInvoice.validation.mathValid
+                    ? "bg-green-500/10 border-green-500/30"
+                    : "bg-red-500/10 border-red-500/30"
+                    }`}>
                     {detailInvoice.validation.mathValid ? (
                       <p className="text-green-400 flex items-center gap-2">
                         <CheckCircle className="w-4 h-4" />
@@ -640,10 +638,9 @@ export default function QADashboardPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
                       <div
-                        className={`h-full transition-all ${
-                          detailInvoice.validation.confidenceScore >= 0.7 ? "bg-green-500" :
+                        className={`h-full transition-all ${detailInvoice.validation.confidenceScore >= 0.7 ? "bg-green-500" :
                           detailInvoice.validation.confidenceScore >= 0.5 ? "bg-yellow-500" : "bg-red-500"
-                        }`}
+                          }`}
                         style={{ width: `${detailInvoice.validation.confidenceScore * 100}%` }}
                       />
                     </div>

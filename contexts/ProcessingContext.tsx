@@ -5,7 +5,7 @@
  * Allows pages to subscribe to processing completion events to refresh their data.
  */
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
 interface ProcessingContextValue {
   pendingCount: number;
@@ -13,7 +13,6 @@ interface ProcessingContextValue {
   setPendingCount: (count: number) => void;
   triggerProcessingComplete: () => void;
   onProcessingComplete: (callback: () => void) => () => void;
-  startProcessing: (count: number) => void;
   checkPending: () => Promise<void>;
 }
 
@@ -61,22 +60,14 @@ export function ProcessingProvider({ children }: { children: ReactNode }) {
     }, 3000);
   }, [callbacks]);
 
-  // Start processing - called immediately when user uploads invoices
-  const startProcessing = useCallback((count: number) => {
-    setPendingCount((prev) => prev + count);
-  }, []);
-
   // Check pending invoices from API
-  // Uses functional update to avoid overwriting count from startProcessing during race conditions
+  // Direct set allows count to decrease when invoices finish processing
   const checkPending = useCallback(async () => {
     try {
       const response = await fetch("/api/invoices/pending");
       if (response.ok) {
         const data = await response.json();
-        const apiCount = data.count || 0;
-        // Use functional update: take the max of API count and current count
-        // This prevents overwriting a higher count set by startProcessing
-        setPendingCount((current) => Math.max(apiCount, current));
+        setPendingCount(data.count || 0);
       }
     } catch (error) {
       console.error("Error checking pending invoices:", error);
@@ -91,7 +82,6 @@ export function ProcessingProvider({ children }: { children: ReactNode }) {
         setPendingCount,
         triggerProcessingComplete,
         onProcessingComplete,
-        startProcessing,
         checkPending,
       }}
     >

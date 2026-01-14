@@ -5,14 +5,14 @@
  * Wraps content with AdminHeader and handles user data fetching.
  */
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AdminHeader from '@/components/AdminHeader';
 import type { MeResponse } from '@/types';
 
 interface DashboardLayoutProps {
-  children: ReactNode | ((userData: MeResponse) => ReactNode);
+  children: ReactNode | ((userData: MeResponse, refreshUserData: () => Promise<void>) => ReactNode);
   title?: string;
   description?: string;
   showUserStats?: boolean;
@@ -31,6 +31,19 @@ export default function DashboardLayout({
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<MeResponse | null>(null);
+
+  // Refresh user data - can be called by children to update usage, etc.
+  const refreshUserData = useCallback(async () => {
+    try {
+      const response = await fetch('/api/me');
+      if (response.ok) {
+        const data: MeResponse = await response.json();
+        setUserData(data);
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchUserData();
@@ -117,7 +130,7 @@ export default function DashboardLayout({
             planKey={userData.planKey}
           />
 
-          {typeof children === 'function' ? children(userData) : children}
+          {typeof children === 'function' ? children(userData, refreshUserData) : children}
         </div>
       </div>
     </>

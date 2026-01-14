@@ -93,16 +93,6 @@ export default function AdminHeader({
           </Link>
 
           {/* Clients Link */}
-          <Link
-            href="/clientes"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/clientes"
-              ? "bg-primary/20 text-primary"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-          >
-            <Building2 className="w-4 h-4" />
-            <span>Clientes</span>
-          </Link>
           {/* Users Link (Admin only, Pro+ plan) */}
           {showAdminModules && (
             <>
@@ -117,19 +107,31 @@ export default function AdminHeader({
                 <span>Usuarios</span>
               </Link></>
           )}
+          <Link
+            href="/dashboard/qa"
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/dashboard/qa"
+              ? "bg-primary/20 text-primary"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>QA</span>
+          </Link>
 
           {/* QA Link (Admin only) */}
           {userRole === 'admin' && (
-            <Link
-              href="/dashboard/qa"
-              className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/dashboard/qa"
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>QA</span>
-            </Link>
+            <>
+              <Link
+                href="/clientes"
+                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/clientes"
+                  ? "bg-primary/20 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+              >
+                <Building2 className="w-4 h-4" />
+                <span>Clientes</span>
+              </Link>
+            </>
           )}
 
           {/* Client Switcher */}

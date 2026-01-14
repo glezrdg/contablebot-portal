@@ -130,6 +130,17 @@ export default async function handler(
       }
     }
 
+    // Auto-set activeClientId for non-admin users who don't have one
+    // This ensures non-admin users are always filtered to their assigned clients
+    if (role !== 'admin' && !activeClientId && assignedClients.length > 0) {
+      const defaultClient = assignedClients.find(c => c.isDefault);
+      const clientToUse = defaultClient || assignedClients[0];
+      activeClientId = clientToUse.id;
+      activeClientName = clientToUse.name;
+      activeClientRnc = clientToUse.rnc;
+      console.log('[/api/me] Auto-set activeClientId for non-admin user:', activeClientId);
+    }
+
     // Determine plan key from whop_plan_id
     const { WHOP_PLANS } = await import('../../lib/whop');
     const planEntry = firm.whop_plan_id

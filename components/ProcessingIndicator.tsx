@@ -17,13 +17,12 @@ interface ProcessingIndicatorProps {
 export default function ProcessingIndicator({ onDismiss }: ProcessingIndicatorProps) {
   const { pendingCount, checkPending, triggerProcessingComplete } = useProcessing();
   const [previousCount, setPreviousCount] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Check for pending invoices on mount
   useEffect(() => {
-    checkPending().finally(() => setLoading(false));
+    checkPending();
   }, [checkPending]);
 
   // Poll for pending invoices only while processing (pendingCount > 0)
@@ -55,8 +54,7 @@ export default function ProcessingIndicator({ onDismiss }: ProcessingIndicatorPr
   }, [pendingCount, previousCount, triggerProcessingComplete, checkPending, showSuccess]);
 
   // Don't show if no pending invoices and not showing success
-  // Note: Show immediately if pendingCount > 0 (from startProcessing), even if still loading
-  if ((loading && pendingCount === 0) || (pendingCount === 0 && !showSuccess)) {
+  if (pendingCount === 0 && !showSuccess) {
     return null;
   }
 

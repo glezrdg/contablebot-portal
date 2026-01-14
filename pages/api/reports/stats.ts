@@ -87,11 +87,29 @@ export default async function handler(
     // Build base URL with firm filter
     let baseUrl = `${POSTGREST_BASE_URL}/invoices?firm_id=eq.${session.firmId}&is_deleted=eq.false`;
 
-    // Backend enforcement: Non-admin users can only see their active client's data
-    // Admin users can manually filter by clientId parameter or see all clients
-    if (session.role !== 'admin' && session.activeClientId) {
-      // Non-admin users are restricted to their active client
-      baseUrl += `&client_id=eq.${session.activeClientId}`;
+    // Backend enforcement: Non-admin users can only see their assigned clients' data
+    if (session.role !== 'admin') {
+      if (session.activeClientId) {
+        // Non-admin users are restricted to their active client
+        baseUrl += `&client_id=eq.${session.activeClientId}`;
+      } else if (session.assignedClientIds && session.assignedClientIds.length > 0) {
+        // Fallback: use all assigned client IDs
+        baseUrl += `&client_id=in.(${session.assignedClientIds.join(',')})`;
+      } else {
+        // No assigned clients - return empty stats
+        return res.status(200).json({
+          stats: {
+            totalInvoices: 0,
+            totalAmount: 0,
+            averageAmount: 0,
+            thisMonth: 0,
+            lastMonth: 0,
+            monthlyGrowth: 0,
+            topClients: [],
+            monthlyBreakdown: []
+          }
+        });
+      }
     } else if (clientId && clientId !== "all") {
       // Admin users can manually filter by clientId
       baseUrl += `&client_id=eq.${clientId}`;

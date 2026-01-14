@@ -28,7 +28,8 @@ const STORAGE_KEY = "dashboard_visible_columns";
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
-  const { onProcessingComplete, startProcessing } = useProcessing();
+  const refreshUserDataRef = useRef<(() => Promise<void>) | null>(null);
+  const { onProcessingComplete, checkPending } = useProcessing();
 
   // Firm data - will be removed after full refactor
   const [firmId, setFirmId] = useState<number | null>(null);
@@ -189,8 +190,8 @@ export default function DashboardPage() {
 
   // Handle upload complete
   const handleUploadComplete = (totalUploaded: number) => {
-    // Immediately show processing indicator with count
-    startProcessing(totalUploaded);
+    // Immediately check for pending invoices - this shows the ProcessingIndicator
+    checkPending();
 
     // Refresh invoice list to show newly uploaded invoices
     fetchInvoices();
@@ -273,6 +274,11 @@ export default function DashboardPage() {
     const unsubscribe = onProcessingComplete(async () => {
       // Refresh invoice list
       fetchInvoices();
+
+      // Refresh user data (usage counter)
+      if (refreshUserDataRef.current) {
+        await refreshUserDataRef.current();
+      }
 
       // Show success toast
       toast.current?.show({
@@ -469,7 +475,7 @@ export default function DashboardPage() {
       description="Dashboard de facturación 606"
       showUserStats={true}
     >
-      {(userData) => {
+      {(userData, refreshUserData) => {
         // Initialize state from userData on first render
         if (userData && firmId === null) {
           setFirmId(userData.firmId);
@@ -480,6 +486,11 @@ export default function DashboardPage() {
           if (userData.activeClientId) {
             setSelectedClientId(userData.activeClientId);
           }
+
+          // Store refreshUserData for use in callbacks
+          if (!refreshUserDataRef.current) {
+            refreshUserDataRef.current = refreshUserData;
+          }
         }
 
         return (
@@ -488,195 +499,169 @@ export default function DashboardPage() {
             <ConfirmDialog />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div
-              onClick={handleOpenUploader}
-              className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg"
-            >
-              <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
-                <Upload className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">
-                Subir Factura
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Arrastra o selecciona una imagen de factura para procesar
-              </p>
-            </div>
-
-            <a
-              href="/reportes"
-              className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg block"
-            >
-              <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
-                <BarChart3 className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">
-                Ver Reportes
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Analiza tus facturas procesadas y genera reportes
-              </p>
-            </a>
-
-            <a
-              href="/configuracion"
-              className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg block"
-            >
-              <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
-                <Settings className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">
-                Configuración
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Ajusta tu perfil, integraciones y preferencias
-              </p>
-            </a>
-          </div>
-
-          {/* Add Client Modal */}
-          <AddClientModal
-            isOpen={showAddClientModal}
-            onClose={() => setShowAddClientModal(false)}
-            onClientAdded={handleClientAdded}
-          />
-
-          {/* Upload Invoice Modal */}
-          <UploadInvoiceModal
-            isOpen={showUploadModal}
-            onClose={() => setShowUploadModal(false)}
-            activeClientRnc={activeClientRnc}
-            activeClientName={activeClientName}
-            onClientSelected={handleClientSelected}
-            onAddClient={() => setShowAddClientModal(true)}
-            onUploadComplete={handleUploadComplete}
-            userRole={userData.role}
-          />
-
-          {/* Edit Invoice Modal */}
-          <EditInvoiceModal
-            visible={showEditModal}
-            invoice={invoiceToEdit}
-            clients={clients}
-            onHide={() => {
-              setShowEditModal(false);
-              setInvoiceToEdit(null);
-            }}
-            onSave={handleSaveInvoice}
-          />
-
-          {/* Client Filter Buttons - Only show for admin users */}
-          {userData.role === 'admin' && (
-            <ClientFilterButtons
-              clients={clients}
-              selectedClientId={selectedClientId}
-              onClientSelect={setSelectedClientId}
-              onSetActiveClient={(client) => {
-                if (client) {
-                  setActiveClientRnc(client.rnc);
-                  setActiveClientName(client.name);
-                  toast.current?.show({
-                    severity: "success",
-                    summary: "Cliente seleccionado",
-                    detail: `${client.name} establecido como cliente activo`,
-                    life: 3000,
-                  });
-                } else {
-                  setActiveClientRnc(undefined);
-                  setActiveClientName(undefined);
-                }
-              }}
-              activeClientRnc={activeClientRnc}
-              loading={loadingClients}
-            />
-          )}
-
-          {/* Error Alert */}
-          {error && (
-            <div className="mb-6 rounded-2xl bg-red-900/30 border border-red-800 p-4 flex items-start gap-3">
-              <svg
-                className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
+              <div
+                onClick={handleOpenUploader}
+                className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg"
               >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="text-sm text-red-300">{error}</p>
-            </div>
-          )}
+                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                  <Upload className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">
+                  Subir Factura
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Arrastra o selecciona una imagen de factura para procesar
+                </p>
+              </div>
 
-          {/* Facturas Section */}
-          <section className="rounded-2xl bg-card border border-border p-5 shadow-lg">
-            {/* Section Header */}
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex items-baseline gap-2">
-                  <h2 className="text-lg font-semibold text-foreground">
-                    Facturas
-                  </h2>
-                  <span className="text-sm text-muted-foreground">
-                    ({filteredInvoices.length}{qualityFilter !== "all" ? ` de ${totalInvoices}` : ""} resultados)
-                  </span>
+              <a
+                href="/reportes"
+                className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg block"
+              >
+                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                  <BarChart3 className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">
+                  Ver Reportes
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Analiza tus facturas procesadas y genera reportes
+                </p>
+              </a>
+
+              <a
+                href="/configuracion"
+                className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg block"
+              >
+                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                  <Settings className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">
+                  Configuración
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Ajusta tu perfil, integraciones y preferencias
+                </p>
+              </a>
+            </div>
+
+            {/* Add Client Modal */}
+            <AddClientModal
+              isOpen={showAddClientModal}
+              onClose={() => setShowAddClientModal(false)}
+              onClientAdded={handleClientAdded}
+            />
+
+            {/* Upload Invoice Modal */}
+            <UploadInvoiceModal
+              isOpen={showUploadModal}
+              onClose={() => setShowUploadModal(false)}
+              activeClientRnc={activeClientRnc}
+              activeClientName={activeClientName}
+              onClientSelected={handleClientSelected}
+              onAddClient={() => setShowAddClientModal(true)}
+              onUploadComplete={handleUploadComplete}
+              userRole={userData.role}
+            />
+
+            {/* Edit Invoice Modal */}
+            <EditInvoiceModal
+              visible={showEditModal}
+              invoice={invoiceToEdit}
+              clients={clients}
+              onHide={() => {
+                setShowEditModal(false);
+                setInvoiceToEdit(null);
+              }}
+              onSave={handleSaveInvoice}
+            />
+
+            {/* Client Filter Buttons - Only show for admin users */}
+            {userData.role === 'admin' && (
+              <ClientFilterButtons
+                clients={clients}
+                selectedClientId={selectedClientId}
+                onClientSelect={setSelectedClientId}
+                onSetActiveClient={(client) => {
+                  if (client) {
+                    setActiveClientRnc(client.rnc);
+                    setActiveClientName(client.name);
+                    toast.current?.show({
+                      severity: "success",
+                      summary: "Cliente seleccionado",
+                      detail: `${client.name} establecido como cliente activo`,
+                      life: 3000,
+                    });
+                  } else {
+                    setActiveClientRnc(undefined);
+                    setActiveClientName(undefined);
+                  }
+                }}
+                activeClientRnc={activeClientRnc}
+                loading={loadingClients}
+              />
+            )}
+
+            {/* Error Alert */}
+            {error && (
+              <div className="mb-6 rounded-2xl bg-red-900/30 border border-red-800 p-4 flex items-start gap-3">
+                <svg
+                  className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <p className="text-sm text-red-300">{error}</p>
+              </div>
+            )}
+
+            {/* Facturas Section */}
+            <section className="rounded-2xl bg-card border border-border p-5 shadow-lg">
+              {/* Section Header */}
+              <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-baseline gap-2">
+                    <h2 className="text-lg font-semibold text-foreground">
+                      Facturas
+                    </h2>
+                    <span className="text-sm text-muted-foreground">
+                      ({filteredInvoices.length}{qualityFilter !== "all" ? ` de ${totalInvoices}` : ""} resultados)
+                    </span>
+                  </div>
+
+                  {/* Quality Filter */}
+                  <Dropdown
+                    value={qualityFilter}
+                    options={qualityFilterOptions}
+                    onChange={(e) => setQualityFilter(e.value)}
+                    placeholder="Filtrar por calidad"
+                    className="w-48"
+                  />
                 </div>
 
-                {/* Quality Filter */}
-                <Dropdown
-                  value={qualityFilter}
-                  options={qualityFilterOptions}
-                  onChange={(e) => setQualityFilter(e.value)}
-                  placeholder="Filtrar por calidad"
-                  className="w-48"
+                <ExportButtons
+                  onExportExcel={exportToExcel606}
+                  onExportCSV={exportToCSV}
+                  disabled={filteredInvoices.length === 0}
                 />
               </div>
 
-              <ExportButtons
-                onExportExcel={exportToExcel606}
-                onExportCSV={exportToCSV}
-                disabled={filteredInvoices.length === 0}
+              <InvoiceDataTable
+                invoices={filteredInvoices}
+                loading={loading}
+                visibleColumns={visibleColumns}
+                onColumnChange={handleColumnChange}
+                onEditInvoice={handleEditInvoice}
+                onDeleteInvoice={handleDeleteInvoice}
+                emptyMessage="Ajusta los filtros o envía nuevas facturas desde el bot de Telegram."
               />
-            </div>
+            </section>
 
-            <InvoiceDataTable
-              invoices={filteredInvoices}
-              loading={loading}
-              visibleColumns={visibleColumns}
-              onColumnChange={handleColumnChange}
-              onEditInvoice={handleEditInvoice}
-              onDeleteInvoice={handleDeleteInvoice}
-              emptyMessage="Ajusta los filtros o envía nuevas facturas desde el bot de Telegram."
-            />
-          </section>
-
-          {/* Modals */}
-          <AddClientModal
-            isOpen={showAddClientModal}
-            onClose={() => setShowAddClientModal(false)}
-            onClientAdded={handleClientSelected}
-          />
-
-          <UploadInvoiceModal
-            isOpen={showUploadModal}
-            onClose={() => setShowUploadModal(false)}
-            activeClientRnc={activeClientRnc}
-            activeClientName={activeClientName}
-            onClientSelected={handleClientSelected}
-            onOpenAddClient={() => setShowAddClientModal(true)}
-            userRole={userData.role}
-          />
-
-          <EditInvoiceModal
-            isOpen={showEditModal}
-            onClose={() => {
-              setShowEditModal(false);
-              setInvoiceToEdit(null);
-            }}
-            invoice={invoiceToEdit}
-            onSave={handleSaveInvoice}
-          />
           </>
         );
       }}
