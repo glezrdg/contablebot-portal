@@ -56,6 +56,21 @@ export default async function handler(
     `order=processed_at.desc`
   ];
 
+  // Backend enforcement: Non-admin users can only see their assigned clients' data
+  if (session.role !== 'admin') {
+    if (session.activeClientId) {
+      queryParams.push(`client_id=eq.${session.activeClientId}`);
+    } else if (session.assignedClientIds && session.assignedClientIds.length > 0) {
+      queryParams.push(`client_id=in.(${session.assignedClientIds.join(',')})`);
+    } else {
+      // No assigned clients - return empty result
+      return res.status(200).json({
+        invoices: [],
+        stats: { total: 0, flaggedByAI: 0, lowConfidence: 0, mathErrors: 0, missingFields: 0 }
+      });
+    }
+  }
+
   // Optional: filter by flag_dudoso only
   if (filter === 'flagged') {
     queryParams.push('flag_dudoso=eq.true');
