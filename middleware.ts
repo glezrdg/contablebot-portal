@@ -15,12 +15,14 @@ const PUBLIC_ROUTES = [
   "/register",
   "/register/complete",
   "/setup-account",
+  "/recuperar",
   "/api/login",
   "/api/register",
   "/api/verify-whop-payment",
   "/api/webhooks/whop",
   "/api/setup-account",
   "/api/logout",
+  "/api/password-reset",
 ];
 
 export async function middleware(request: NextRequest) {

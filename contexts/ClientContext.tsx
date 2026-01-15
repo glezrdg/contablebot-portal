@@ -38,7 +38,9 @@ export function ClientProvider({ children }: { children: ReactNode }) {
     // Don't fetch on public pages
     const isPublicPage = router.pathname === '/' ||
       router.pathname.startsWith('/login') ||
-      router.pathname.startsWith('/register');
+      router.pathname.startsWith('/register') ||
+      router.pathname.startsWith('/recuperar') ||
+      router.pathname.startsWith('/setup-account');
     if (isPublicPage) {
       return;
     }
@@ -71,7 +73,9 @@ export function ClientProvider({ children }: { children: ReactNode }) {
     // Only fetch on authenticated pages (not public pages)
     const isPublicPage = router.pathname === '/' ||
       router.pathname.startsWith('/login') ||
-      router.pathname.startsWith('/register');
+      router.pathname.startsWith('/register') ||
+      router.pathname.startsWith('/recuperar') ||
+      router.pathname.startsWith('/setup-account');
     if (!isPublicPage) {
       fetchClients();
     } else {

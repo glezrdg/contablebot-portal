@@ -14,7 +14,9 @@ import {
   AlertCircle,
   Loader2,
   ArrowUp,
-  Zap
+  Zap,
+  Eye,
+  EyeOff
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import AdminHeader from "@/components/AdminHeader"
@@ -149,6 +151,77 @@ export default function ConfiguracionPage() {
 function PerfilTab({ userData, onUpdate }: { userData: MeResponse | null; onUpdate: () => void }) {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  })
+  const [changingPassword, setChangingPassword] = useState(false)
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setMessage(null)
+
+    // Validate passwords
+    if (!passwordData.currentPassword) {
+      setMessage({ type: "error", text: "Ingresa tu contraseña actual" })
+      return
+    }
+
+    if (!passwordData.newPassword) {
+      setMessage({ type: "error", text: "Ingresa una nueva contraseña" })
+      return
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setMessage({ type: "error", text: "La nueva contraseña debe tener al menos 8 caracteres" })
+      return
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setMessage({ type: "error", text: "Las contraseñas no coinciden" })
+      return
+    }
+
+    setChangingPassword(true)
+
+    try {
+      const response = await fetch("/api/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Error al cambiar contraseña")
+      }
+
+      setMessage({ type: "success", text: "Contraseña actualizada exitosamente" })
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      })
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Error al cambiar contraseña",
+      })
+    } finally {
+      setChangingPassword(false)
+    }
+  }
 
   return (
     <div className="bg-card border border-border rounded-xl p-6">
@@ -210,9 +283,120 @@ function PerfilTab({ userData, onUpdate }: { userData: MeResponse | null; onUpda
             <Lock className="w-5 h-5" />
             Cambiar contraseña
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Próximamente: podrás cambiar tu contraseña desde aquí
-          </p>
+
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            {/* Current Password */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Contraseña actual
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword.current ? "text" : "password"}
+                  value={passwordData.currentPassword}
+                  onChange={(e) =>
+                    setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                  }
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground pr-12 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Ingresa tu contraseña actual"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword({ ...showPassword, current: !showPassword.current })
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword.current ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* New Password */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Nueva contraseña
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword.new ? "text" : "password"}
+                  value={passwordData.newPassword}
+                  onChange={(e) =>
+                    setPasswordData({ ...passwordData, newPassword: e.target.value })
+                  }
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground pr-12 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Mínimo 8 caracteres"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword({ ...showPassword, new: !showPassword.new })
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword.new ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Confirmar nueva contraseña
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword.confirm ? "text" : "password"}
+                  value={passwordData.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                  }
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground pr-12 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Repite la nueva contraseña"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword({ ...showPassword, confirm: !showPassword.confirm })
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword.confirm ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={changingPassword}
+              className="w-full"
+            >
+              {changingPassword ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Actualizando...
+                </>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4 mr-2" />
+                  Cambiar contraseña
+                </>
+              )}
+            </Button>
+          </form>
         </div>
       </div>
     </div>

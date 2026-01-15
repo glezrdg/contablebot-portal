@@ -17,7 +17,9 @@ export default function App({ Component, pageProps }: AppProps) {
   // Only show ProcessingIndicator on authenticated dashboard pages (not public pages)
   const isPublicPage = router.pathname === "/" ||
     router.pathname.startsWith("/login") ||
-    router.pathname.startsWith("/register");
+    router.pathname.startsWith("/register") ||
+    router.pathname.startsWith("/recuperar") ||
+    router.pathname.startsWith("/setup-account");
   const showProcessingIndicator = !isPublicPage;
 
   return (
