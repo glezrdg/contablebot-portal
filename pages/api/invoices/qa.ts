@@ -43,8 +43,9 @@ export default async function handler(
   if (!session) return;
 
   // Extract optional query parameters
-  const { filter, limit } = req.query;
+  const { filter, limit, clientId } = req.query;
   const limitNum = parseInt(limit as string) || 100;
+  const clientIdNum = clientId ? parseInt(clientId as string) : null;
 
   // Build PostgREST query - fetch recent processed invoices
   const queryParams: string[] = [
@@ -69,6 +70,9 @@ export default async function handler(
         stats: { total: 0, flaggedByAI: 0, lowConfidence: 0, mathErrors: 0, missingFields: 0 }
       });
     }
+  } else if (clientIdNum) {
+    // Admin user with client filter applied
+    queryParams.push(`client_id=eq.${clientIdNum}`);
   }
 
   // Optional: filter by flag_dudoso only

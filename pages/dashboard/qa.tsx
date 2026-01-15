@@ -1,15 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Toast } from "primereact/toast";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
 import DashboardLayout from "@/components/DashboardLayout";
-import type { Invoice, ErrorResponse } from "@/types";
+import type { Invoice, Client } from "@/types";
 import { validateInvoice, getQualityLevel, type ValidationResult } from "@/lib/invoice-validator";
-import { ShieldCheck, AlertTriangle, CheckCircle, XCircle, RefreshCw, Eye, Calculator, FileWarning, AlertOctagon } from "lucide-react";
+import { ShieldCheck, AlertTriangle, CheckCircle, XCircle, RefreshCw, Eye, Calculator, FileWarning, AlertOctagon, X, Trash2 } from "lucide-react";
 
 interface QAInvoice extends Invoice {
   validation: ValidationResult;
@@ -40,12 +37,24 @@ export default function QADashboardPage() {
   const [selectedInvoices, setSelectedInvoices] = useState<QAInvoice[]>([]);
   const [detailInvoice, setDetailInvoice] = useState<QAInvoice | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Confirmation modals
+  const [confirmReprocess, setConfirmReprocess] = useState<{ show: boolean; invoice?: QAInvoice; bulk?: boolean }>({ show: false });
+  const [confirmDelete, setConfirmDelete] = useState<{ show: boolean; invoice?: QAInvoice }>({ show: false });
+  const [confirmBulkApprove, setConfirmBulkApprove] = useState(false);
 
   // Fetch QA invoices
   const fetchQAInvoices = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/invoices/qa?filter=${filter}`);
+      const queryParams = new URLSearchParams({ filter });
+      if (selectedClientId) {
+        queryParams.set('clientId', selectedClientId.toString());
+      }
+      const response = await fetch(`/api/invoices/qa?${queryParams.toString()}`);
       const data = await response.json();
 
       if (!response.ok) {
@@ -72,7 +81,21 @@ export default function QADashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, [filter, selectedClientId]);
+
+  // Fetch clients for admin filter
+  const fetchClients = useCallback(async () => {
+    try {
+      const response = await fetch('/api/clients');
+      if (!response.ok) {
+        throw new Error('Error al cargar clientes');
+      }
+      const data = await response.json();
+      setClients(data.clients || []);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchQAInvoices();
@@ -110,167 +133,151 @@ export default function QADashboardPage() {
   };
 
   // Re-process invoice (reset to pending)
-  const handleReprocess = async (invoice: QAInvoice) => {
-    confirmDialog({
-      message: `Esto enviara la factura ${invoice.ncf} a reprocesar. Continuar?`,
-      header: "Confirmar reprocesamiento",
-      icon: "pi pi-refresh",
-      accept: async () => {
-        try {
-          const response = await fetch(`/api/invoices/${invoice.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              status: "pending",
-              flag_dudoso: false,
-              razon_duda: null,
-              error_message: null,
-              retry_count: 0,
-            }),
-          });
+  const handleReprocess = (invoice: QAInvoice) => {
+    setConfirmReprocess({ show: true, invoice, bulk: false });
+  };
 
-          if (!response.ok) {
-            throw new Error("Error al reprocesar factura");
-          }
+  const executeReprocess = async (invoice: QAInvoice) => {
+    try {
+      const response = await fetch(`/api/invoices/${invoice.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "pending",
+          flag_dudoso: false,
+          razon_duda: null,
+          error_message: null,
+          retry_count: 0,
+        }),
+      });
 
-          toast.current?.show({
-            severity: "info",
-            summary: "Reprocesando",
-            detail: `Factura ${invoice.ncf} enviada a reprocesar`,
-            life: 3000,
-          });
+      if (!response.ok) {
+        throw new Error("Error al reprocesar factura");
+      }
 
-          fetchQAInvoices();
-        } catch (error) {
-          toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: "No se pudo reprocesar la factura",
-            life: 3000,
-          });
-        }
-      },
-    });
+      toast.current?.show({
+        severity: "info",
+        summary: "Reprocesando",
+        detail: `Factura ${invoice.ncf} enviada a reprocesar`,
+        life: 3000,
+      });
+
+      fetchQAInvoices();
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "No se pudo reprocesar la factura",
+        life: 3000,
+      });
+    }
   };
 
   // Delete invoice
-  const handleDelete = async (invoice: QAInvoice) => {
-    confirmDialog({
-      message: `Eliminar la factura ${invoice.ncf}?`,
-      header: "Confirmar eliminacion",
-      icon: "pi pi-trash",
-      acceptClassName: "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg ml-2",
-      rejectClassName: "bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg",
-      accept: async () => {
-        try {
-          const response = await fetch(`/api/invoices/${invoice.id}`, {
-            method: "DELETE",
-          });
+  const handleDelete = (invoice: QAInvoice) => {
+    setConfirmDelete({ show: true, invoice });
+  };
 
-          if (!response.ok) {
-            throw new Error("Error al eliminar factura");
-          }
+  const executeDelete = async (invoice: QAInvoice) => {
+    try {
+      const response = await fetch(`/api/invoices/${invoice.id}`, {
+        method: "DELETE",
+      });
 
-          toast.current?.show({
-            severity: "success",
-            summary: "Eliminada",
-            detail: `Factura ${invoice.ncf} eliminada`,
-            life: 3000,
-          });
+      if (!response.ok) {
+        throw new Error("Error al eliminar factura");
+      }
 
-          fetchQAInvoices();
-        } catch (error) {
-          toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: "No se pudo eliminar la factura",
-            life: 3000,
-          });
-        }
-      },
-    });
+      toast.current?.show({
+        severity: "success",
+        summary: "Eliminada",
+        detail: `Factura ${invoice.ncf} eliminada`,
+        life: 3000,
+      });
+
+      fetchQAInvoices();
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "No se pudo eliminar la factura",
+        life: 3000,
+      });
+    }
   };
 
   // Bulk approve selected
-  const handleBulkApprove = async () => {
+  const handleBulkApprove = () => {
     if (selectedInvoices.length === 0) return;
+    setConfirmBulkApprove(true);
+  };
 
-    confirmDialog({
-      message: `Aprobar ${selectedInvoices.length} facturas seleccionadas?`,
-      header: "Confirmar aprobacion masiva",
-      icon: "pi pi-check",
-      accept: async () => {
-        let approved = 0;
-        for (const invoice of selectedInvoices) {
-          try {
-            const response = await fetch(`/api/invoices/${invoice.id}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ status: "OK", flag_dudoso: false }),
-            });
-            if (response.ok) approved++;
-          } catch (error) {
-            console.error(`Error approving invoice ${invoice.id}:`, error);
-          }
-        }
-
-        toast.current?.show({
-          severity: "success",
-          summary: "Aprobacion masiva",
-          detail: `${approved} de ${selectedInvoices.length} facturas aprobadas`,
-          life: 3000,
+  const executeBulkApprove = async () => {
+    let approved = 0;
+    for (const invoice of selectedInvoices) {
+      try {
+        const response = await fetch(`/api/invoices/${invoice.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "OK", flag_dudoso: false }),
         });
+        if (response.ok) approved++;
+      } catch (error) {
+        console.error(`Error approving invoice ${invoice.id}:`, error);
+      }
+    }
 
-        setSelectedInvoices([]);
-        fetchQAInvoices();
-      },
+    toast.current?.show({
+      severity: "success",
+      summary: "Aprobacion masiva",
+      detail: `${approved} de ${selectedInvoices.length} facturas aprobadas`,
+      life: 3000,
     });
+
+    setSelectedInvoices([]);
+    fetchQAInvoices();
   };
 
   // Bulk re-process selected (for dudosas)
-  const handleBulkReprocess = async () => {
+  const handleBulkReprocess = () => {
     if (selectedInvoices.length === 0) return;
+    setConfirmReprocess({ show: true, bulk: true });
+  };
 
-    confirmDialog({
-      message: `Enviar ${selectedInvoices.length} facturas a reprocesar? Se usara el contexto de validacion previo para mejorar el resultado.`,
-      header: "Confirmar reprocesamiento masivo",
-      icon: "pi pi-refresh",
-      accept: async () => {
-        let reprocessed = 0;
-        for (const invoice of selectedInvoices) {
-          try {
-            // Build QA feedback from validation issues
-            const qaFeedback = buildQAFeedback(invoice);
+  const executeBulkReprocess = async () => {
+    let reprocessed = 0;
+    for (const invoice of selectedInvoices) {
+      try {
+        // Build QA feedback from validation issues
+        const qaFeedback = buildQAFeedback(invoice);
 
-            const response = await fetch(`/api/invoices/${invoice.id}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                status: "pending",
-                flag_dudoso: false,
-                razon_duda: null,
-                error_message: null,
-                retry_count: 0,
-                qa_feedback: qaFeedback, // Pass previous validation context
-              }),
-            });
-            if (response.ok) reprocessed++;
-          } catch (error) {
-            console.error(`Error reprocessing invoice ${invoice.id}:`, error);
-          }
-        }
-
-        toast.current?.show({
-          severity: "info",
-          summary: "Reprocesamiento masivo",
-          detail: `${reprocessed} de ${selectedInvoices.length} facturas enviadas a reprocesar`,
-          life: 3000,
+        const response = await fetch(`/api/invoices/${invoice.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: "pending",
+            flag_dudoso: false,
+            razon_duda: null,
+            error_message: null,
+            retry_count: 0,
+            qa_feedback: qaFeedback, // Pass previous validation context
+          }),
         });
+        if (response.ok) reprocessed++;
+      } catch (error) {
+        console.error(`Error reprocessing invoice ${invoice.id}:`, error);
+      }
+    }
 
-        setSelectedInvoices([]);
-        fetchQAInvoices();
-      },
+    toast.current?.show({
+      severity: "info",
+      summary: "Reprocesamiento masivo",
+      detail: `${reprocessed} de ${selectedInvoices.length} facturas enviadas a reprocesar`,
+      life: 3000,
     });
+
+    setSelectedInvoices([]);
+    fetchQAInvoices();
   };
 
   // Build QA feedback string from validation issues
@@ -343,34 +350,34 @@ export default function QADashboardPage() {
   const actionsTemplate = (rowData: QAInvoice) => {
     return (
       <div className="flex items-center gap-1">
-        <Button
-          icon="pi pi-eye"
-          className="p-button-info p-button-sm p-button-text"
+        <button
           onClick={() => openDetailDialog(rowData)}
-          tooltip="Ver detalle"
-          tooltipOptions={{ position: "top" }}
-        />
-        <Button
-          icon="pi pi-check"
-          className="p-button-success p-button-sm p-button-text"
+          className="p-2 text-muted-foreground hover:text-primary hover:bg-muted rounded transition-colors"
+          title="Ver detalle"
+        >
+          <Eye className="w-4 h-4" />
+        </button>
+        <button
           onClick={() => handleApprove(rowData)}
-          tooltip="Aprobar"
-          tooltipOptions={{ position: "top" }}
-        />
-        <Button
-          icon="pi pi-refresh"
-          className="p-button-warning p-button-sm p-button-text"
+          className="p-2 text-muted-foreground hover:text-green-500 hover:bg-muted rounded transition-colors"
+          title="Aprobar"
+        >
+          <CheckCircle className="w-4 h-4" />
+        </button>
+        <button
           onClick={() => handleReprocess(rowData)}
-          tooltip="Reprocesar"
-          tooltipOptions={{ position: "top" }}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-danger p-button-sm p-button-text"
+          className="p-2 text-muted-foreground hover:text-orange-500 hover:bg-muted rounded transition-colors"
+          title="Reprocesar"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
+        <button
           onClick={() => handleDelete(rowData)}
-          tooltip="Eliminar"
-          tooltipOptions={{ position: "top" }}
-        />
+          className="p-2 text-muted-foreground hover:text-red-500 hover:bg-muted rounded transition-colors"
+          title="Eliminar"
+        >
+          <XCircle className="w-4 h-4" />
+        </button>
       </div>
     );
   };
@@ -394,10 +401,16 @@ export default function QADashboardPage() {
       description="Revisar y aprobar facturas"
       showUserStats={false}
     >
-      {() => (
+      {(userData) => {
+        // Set admin status and fetch clients on userData load
+        if (userData && !isAdmin && userData.role === 'admin') {
+          setIsAdmin(true);
+          fetchClients();
+        }
+
+        return (
         <>
           <Toast ref={toast} />
-          <ConfirmDialog />
 
           {/* Header */}
           <div className="mb-6">
@@ -446,19 +459,35 @@ export default function QADashboardPage() {
 
           {/* Filter and Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <Dropdown
                 value={filter}
                 options={filterOptions}
                 onChange={(e) => setFilter(e.value)}
                 className="w-48"
               />
-              <Button
-                icon="pi pi-refresh"
-                label="Actualizar"
-                className="p-button-outlined p-button-sm"
+              {isAdmin && clients.length > 0 && (
+                <Dropdown
+                  value={selectedClientId}
+                  options={[
+                    { label: "Todos los clientes", value: null },
+                    ...clients.map(client => ({
+                      label: client.name,
+                      value: client.id
+                    }))
+                  ]}
+                  onChange={(e) => setSelectedClientId(e.value)}
+                  placeholder="Filtrar por cliente"
+                  className="w-56"
+                />
+              )}
+              <button
                 onClick={fetchQAInvoices}
-              />
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Actualizar
+              </button>
             </div>
 
             {selectedInvoices.length > 0 && (
@@ -466,18 +495,20 @@ export default function QADashboardPage() {
                 <span className="text-sm text-muted-foreground">
                   {selectedInvoices.length} seleccionadas
                 </span>
-                <Button
-                  icon="pi pi-check-circle"
-                  label="Aprobar"
-                  className="p-button-success p-button-sm"
+                <button
                   onClick={handleBulkApprove}
-                />
-                <Button
-                  icon="pi pi-refresh"
-                  label="Reprocesar"
-                  className="p-button-warning p-button-sm"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Aprobar
+                </button>
+                <button
                   onClick={handleBulkReprocess}
-                />
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Reprocesar
+                </button>
               </div>
             )}
           </div>
@@ -511,17 +542,34 @@ export default function QADashboardPage() {
           </div>
 
           {/* Detail Dialog */}
-          <Dialog
-            header="Detalle de Factura"
-            visible={showDetailDialog}
-            style={{ width: "700px" }}
-            onHide={() => setShowDetailDialog(false)}
-            className="qa-detail-dialog"
-          >
-            {detailInvoice && (
-              <div className="space-y-6">
-                {/* Invoice Basic Info */}
-                <div className="grid grid-cols-2 gap-4 p-4 bg-white border rounded-lg">
+          {showDetailDialog && detailInvoice && (
+            <>
+              {/* Backdrop */}
+              <div
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                onClick={() => setShowDetailDialog(false)}
+              />
+
+              {/* Modal */}
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+                <div className="bg-card border border-border rounded-xl shadow-lg">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card z-10">
+                    <h2 className="text-xl font-semibold text-foreground">
+                      Detalle de Factura
+                    </h2>
+                    <button
+                      onClick={() => setShowDetailDialog(false)}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6 space-y-6">
+                    {/* Invoice Basic Info */}
+                    <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 border border-border rounded-lg">
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">Cliente</p>
                     <p className="font-medium text-foreground">{detailInvoice.client_name}</p>
@@ -650,38 +698,191 @@ export default function QADashboardPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">
-                  <Button
-                    icon="pi pi-check"
-                    label="Aprobar"
-                    className="p-button-success"
-                    onClick={() => {
-                      handleApprove(detailInvoice);
-                      setShowDetailDialog(false);
-                    }}
-                  />
-                  <Button
-                    icon="pi pi-refresh"
-                    label="Reprocesar"
-                    className="p-button-warning"
-                    onClick={() => {
-                      handleReprocess(detailInvoice);
-                      setShowDetailDialog(false);
-                    }}
-                  />
-                  <Button
-                    icon="pi pi-times"
-                    label="Cerrar"
-                    className="p-button-secondary"
-                    onClick={() => setShowDetailDialog(false)}
-                  />
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+                      <button
+                        onClick={() => {
+                          handleApprove(detailInvoice);
+                          setShowDetailDialog(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Aprobar
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleReprocess(detailInvoice);
+                          setShowDetailDialog(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Reprocesar
+                      </button>
+                      <button
+                        onClick={() => setShowDetailDialog(false)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        Cerrar
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-          </Dialog>
+            </>
+          )}
+
+          {/* Reprocess Confirmation Modal */}
+          {confirmReprocess.show && (
+            <>
+              <div
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                onClick={() => setConfirmReprocess({ show: false })}
+              />
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
+                <div className="bg-card border border-border rounded-xl shadow-lg">
+                  <div className="flex items-center justify-between p-6 border-b border-border">
+                    <h2 className="text-xl font-semibold text-foreground">
+                      Confirmar reprocesamiento
+                    </h2>
+                    <button
+                      onClick={() => setConfirmReprocess({ show: false })}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-foreground mb-6">
+                      {confirmReprocess.bulk
+                        ? `Enviar ${selectedInvoices.length} facturas a reprocesar? Se usara el contexto de validacion previo para mejorar el resultado.`
+                        : `Esto enviara la factura ${confirmReprocess.invoice?.ncf} a reprocesar. Continuar?`}
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setConfirmReprocess({ show: false })}
+                        className="flex-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (confirmReprocess.bulk) {
+                            await executeBulkReprocess();
+                          } else if (confirmReprocess.invoice) {
+                            await executeReprocess(confirmReprocess.invoice);
+                          }
+                          setConfirmReprocess({ show: false });
+                        }}
+                        className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        Reprocesar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Delete Confirmation Modal */}
+          {confirmDelete.show && confirmDelete.invoice && (
+            <>
+              <div
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                onClick={() => setConfirmDelete({ show: false })}
+              />
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
+                <div className="bg-card border border-border rounded-xl shadow-lg">
+                  <div className="flex items-center justify-between p-6 border-b border-border">
+                    <h2 className="text-xl font-semibold text-foreground">
+                      Confirmar eliminacion
+                    </h2>
+                    <button
+                      onClick={() => setConfirmDelete({ show: false })}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-foreground mb-6">
+                      Eliminar la factura {confirmDelete.invoice.ncf}?
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setConfirmDelete({ show: false })}
+                        className="flex-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await executeDelete(confirmDelete.invoice!);
+                          setConfirmDelete({ show: false });
+                        }}
+                        className="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Bulk Approve Confirmation Modal */}
+          {confirmBulkApprove && (
+            <>
+              <div
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                onClick={() => setConfirmBulkApprove(false)}
+              />
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
+                <div className="bg-card border border-border rounded-xl shadow-lg">
+                  <div className="flex items-center justify-between p-6 border-b border-border">
+                    <h2 className="text-xl font-semibold text-foreground">
+                      Confirmar aprobacion masiva
+                    </h2>
+                    <button
+                      onClick={() => setConfirmBulkApprove(false)}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-foreground mb-6">
+                      Aprobar {selectedInvoices.length} facturas seleccionadas?
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setConfirmBulkApprove(false)}
+                        className="flex-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await executeBulkApprove();
+                          setConfirmBulkApprove(false);
+                        }}
+                        className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        Aprobar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </>
-      )}
+        );
+      }}
     </DashboardLayout>
   );
 }

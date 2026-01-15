@@ -14,6 +14,7 @@ export const WHOP_PLANS = {
     subtitle: "Freelancers / Microempresas",
     price: 9,
     trialDays: 30, // 1 mes gratis
+    users: 1,
     invoices: 150,
     color: "bg-green-500",
     features: ["150 facturas/mes", "Extracción con IA", "Exportación a CSV", "Soporte por email"],
@@ -24,6 +25,7 @@ export const WHOP_PLANS = {
     subtitle: "Pymes en crecimiento",
     price: 19,
     trialDays: 7,
+    users: 1,
     invoices: 500,
     color: "bg-blue-500",
     features: [
@@ -40,6 +42,7 @@ export const WHOP_PLANS = {
     subtitle: "Estudios contables / Alto volumen",
     price: 39,
     trialDays: 3,
+    users: 5,
     invoices: 1500,
     color: "bg-purple-500",
     features: [
@@ -57,6 +60,7 @@ export const WHOP_PLANS = {
     subtitle: "Alto rendimiento",
     price: 69,
     trialDays: 3,
+    users: 15,
     invoices: 3000,
     color: "bg-orange-500",
     features: [
@@ -74,6 +78,7 @@ export const WHOP_PLANS = {
     subtitle: "Máxima capacidad",
     price: 99,
     trialDays: 3,
+    users: 20,
     invoices: 6000,
     color: "bg-red-500",
     features: [
@@ -194,5 +199,107 @@ export async function verifyWhopReceipt(receiptId: string): Promise<{
   } catch (error) {
     console.error("Error verifying Whop receipt:", error)
     return { valid: false }
+  }
+}
+
+// Helper function to compare plans (upgrade vs downgrade)
+export function comparePlans(fromPlanId: string, toPlanId: string): "upgrade" | "downgrade" | "same" {
+  const fromPlan = getPlanByPlanId(fromPlanId)
+  const toPlan = getPlanByPlanId(toPlanId)
+
+  if (!fromPlan || !toPlan) return "same"
+
+  if (toPlan.plan.invoices > fromPlan.plan.invoices) return "upgrade"
+  if (toPlan.plan.invoices < fromPlan.plan.invoices) return "downgrade"
+  return "same"
+}
+
+// Whop SDK wrapper: Update membership plan
+export async function updateWhopMembershipPlan(
+  membershipId: string,
+  newPlanId: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`${WHOP_API_URL}/memberships/${membershipId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        plan_id: newPlanId,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      console.error("Whop API error updating membership:", error)
+      return { success: false, error: `Whop API error: ${response.status}` }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating Whop membership:", error)
+    return { success: false, error: "Failed to communicate with Whop" }
+  }
+}
+
+// Whop SDK wrapper: Cancel membership at period end
+export async function cancelWhopMembership(
+  membershipId: string,
+): Promise<{ success: boolean; effectiveDate?: string; error?: string }> {
+  try {
+    const response = await fetch(`${WHOP_API_URL}/memberships/${membershipId}/cancel`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        cancel_at_period_end: true,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      console.error("Whop API error cancelling membership:", error)
+      return { success: false, error: `Whop API error: ${response.status}` }
+    }
+
+    const data = await response.json()
+
+    return {
+      success: true,
+      effectiveDate: data.renewal_period_end || data.valid_until,
+    }
+  } catch (error) {
+    console.error("Error cancelling Whop membership:", error)
+    return { success: false, error: "Failed to communicate with Whop" }
+  }
+}
+
+// Whop SDK wrapper: Reactivate a cancelled membership
+export async function reactivateWhopMembership(
+  membershipId: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`${WHOP_API_URL}/memberships/${membershipId}/restore`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      console.error("Whop API error reactivating membership:", error)
+      return { success: false, error: `Whop API error: ${response.status}` }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error reactivating Whop membership:", error)
+    return { success: false, error: "Failed to communicate with Whop" }
   }
 }

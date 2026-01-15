@@ -152,7 +152,15 @@ async function handleMembershipInvalid(data: any) {
 
   const firm = firms[0]
 
-  // Deactivate subscription
+  // Check if this was a scheduled cancellation
+  const wasScheduledCancellation = firm.cancel_at_period_end
+  if (wasScheduledCancellation) {
+    console.log(`[Webhook] Firm ${firm.id} deactivated due to scheduled cancellation`)
+  } else {
+    console.log(`[Webhook] Firm ${firm.id} deactivated (payment failure or other reason)`)
+  }
+
+  // Deactivate subscription and clear cancellation flags
   await fetch(`${POSTGREST_BASE_URL}/firms?id=eq.${firm.id}`, {
     method: "PATCH",
     headers: {
@@ -161,10 +169,84 @@ async function handleMembershipInvalid(data: any) {
     },
     body: JSON.stringify({
       is_active: false,
+      cancel_at_period_end: false,
+      cancellation_scheduled_at: null,
+      cancellation_effective_date: null,
     }),
   })
 
   console.log(`[Webhook] Deactivated subscription for firm ${firm.id}`)
+}
+
+async function handleCancellationScheduled(data: any) {
+  console.log("[Webhook] Membership cancellation schedule changed:", data.id)
+
+  const membershipId = data.id
+  const cancelAtPeriodEnd = data.cancel_at_period_end
+  const renewalPeriodEnd = data.renewal_period_end
+
+  // Find firm by membership ID
+  const firmResponse = await fetch(
+    `${POSTGREST_BASE_URL}/firms?whop_membership_id=eq.${membershipId}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    }
+  )
+
+  if (!firmResponse.ok) {
+    console.error("[Webhook] Error fetching firm:", await firmResponse.text())
+    return
+  }
+
+  const firms = await firmResponse.json()
+
+  if (!firms || firms.length === 0) {
+    console.warn(`[Webhook] Firm not found for membership ${membershipId}`)
+    return
+  }
+
+  const firm = firms[0]
+
+  if (cancelAtPeriodEnd) {
+    // User scheduled cancellation
+    console.log(`[Webhook] Firm ${firm.id} scheduled for cancellation at ${renewalPeriodEnd}`)
+
+    await fetch(`${POSTGREST_BASE_URL}/firms?id=eq.${firm.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        cancel_at_period_end: true,
+        cancellation_scheduled_at: new Date().toISOString(),
+        cancellation_effective_date: renewalPeriodEnd,
+      }),
+    })
+
+    console.log(`[Webhook] Updated cancellation state for firm ${firm.id}`)
+  } else {
+    // User reactivated (removed cancellation)
+    console.log(`[Webhook] Firm ${firm.id} reactivated - cancellation removed`)
+
+    await fetch(`${POSTGREST_BASE_URL}/firms?id=eq.${firm.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        cancel_at_period_end: false,
+        cancellation_scheduled_at: null,
+        cancellation_effective_date: null,
+      }),
+    })
+
+    console.log(`[Webhook] Cleared cancellation state for firm ${firm.id}`)
+  }
 }
 
 async function handleMembershipUpdated(data: any) {
@@ -207,6 +289,13 @@ async function handleMembershipUpdated(data: any) {
   const updateData: any = {
     whop_plan_id: planId,
     plan_limit: planLimit,
+    plan_changed_at: new Date().toISOString(),
+  }
+
+  // Store previous plan if we have one and it's different
+  if (firm.whop_plan_id && firm.whop_plan_id !== planId) {
+    updateData.previous_plan_id = firm.whop_plan_id
+    console.log(`[Webhook] Plan changed from ${firm.whop_plan_id} to ${planId}`)
   }
 
   if (manageUrl) {
@@ -268,8 +357,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         break
 
       case "membership_cancel_at_period_end_changed":
-        // Handle scheduled cancellation
-        console.log(`[Webhook] Membership scheduled cancellation: ${webhookData.data.id}`)
+        await handleCancellationScheduled(webhookData.data)
+        break
+
+      case "membership_updated":
+        await handleMembershipUpdated(webhookData.data)
         break
 
       default:

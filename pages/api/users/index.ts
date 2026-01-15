@@ -126,11 +126,38 @@ async function handleCreateUser(
   const planCheck = await requirePlan(req, res, 'pro');
   if (!planCheck) return;
 
-  const { user: session } = planCheck;
+  const { user: session, firm, planKey } = planCheck;
 
   try {
     const { email, password, fullName, clientIds, defaultClientId } = req.body as CreateUserRequest;
     console.log('Creating user with data:', { email, passwordLength: password?.length, fullName, clientIds, defaultClientId });
+
+    // Check user count limit based on plan
+    const { WHOP_PLANS } = await import('@/lib/whop');
+    const planConfig = WHOP_PLANS[planKey];
+    const userLimit = 'users' in planConfig ? planConfig.users : undefined;
+
+    if (userLimit !== undefined) {
+      // Count existing active users in the firm
+      const countUsersUrl = `${POSTGREST_BASE_URL}/portal_users?firm_id=eq.${session.firmId}&is_active=eq.true&select=id`;
+      const countResponse = await fetch(countUsersUrl, {
+        headers: { 'Accept': 'application/json', 'Prefer': 'count=exact' },
+      });
+
+      if (!countResponse.ok) {
+        console.error('Error counting users:', countResponse.status);
+        return res.status(500).json({ error: 'Error al verificar límite de usuarios' });
+      }
+
+      const countHeader = countResponse.headers.get('content-range');
+      const currentUserCount = countHeader ? parseInt(countHeader.split('/')[1]) : 0;
+
+      if (currentUserCount >= userLimit) {
+        return res.status(403).json({
+          error: `Has alcanzado el límite de ${userLimit} usuarios para el plan ${planConfig.name}. Actualiza tu plan para agregar más usuarios.`
+        });
+      }
+    }
 
     // Validate input
     if (!email || typeof email !== 'string' || !email.includes('@')) {

@@ -8,7 +8,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { Settings, LogOut, CreditCard, ChevronDown } from "lucide-react";
+import { Settings, LogOut, CreditCard, ChevronDown, PlayCircle } from "lucide-react";
 
 interface ProfileDropdownProps {
   firmName: string;
@@ -97,6 +97,16 @@ export default function ProfileDropdown({
 
           {/* Menu Items */}
           <div className="py-1">
+            {/* Tutorial */}
+            <Link
+              href="/tutorial"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <PlayCircle className="w-4 h-4 text-muted-foreground" />
+              <span>Tutorial</span>
+            </Link>
+
             {/* Settings */}
             <Link
               href="/configuracion"

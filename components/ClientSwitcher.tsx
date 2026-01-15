@@ -70,7 +70,7 @@ export default function ClientSwitcher() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full sm:w-auto">
       <Dropdown
         value={activeClientId}
         options={assignedClients}
@@ -78,7 +78,7 @@ export default function ClientSwitcher() {
         optionLabel="name"
         optionValue="id"
         placeholder="Seleccionar cliente"
-        className="border border-border bg-secondary hover:bg-muted text-foreground rounded-lg w-48"
+        className="border border-border bg-secondary hover:bg-muted text-foreground rounded-lg w-full sm:w-48"
         disabled={isLoading || switching}
         itemTemplate={clientOptionTemplate}
         valueTemplate={selectedClientTemplate}

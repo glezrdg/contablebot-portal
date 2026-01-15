@@ -7,6 +7,7 @@
 
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { useState } from "react";
 import {
   FileText,
   BarChart3,
@@ -14,9 +15,11 @@ import {
   Building2,
   Users,
   ShieldCheck,
+  Menu,
 } from "lucide-react";
 import ProfileDropdown from "./ProfileDropdown";
 import ClientSwitcher from "./ClientSwitcher";
+import MobileSidenav from "./MobileSidenav";
 
 interface AdminHeaderProps {
   firmName: string;
@@ -40,10 +43,15 @@ export default function AdminHeader({
   planKey,
 }: AdminHeaderProps) {
   const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   console.log('Plan key', planKey)
   // Check if user module should be visible (admin only, Pro+ plan)
   const showAdminModules = userRole === 'admin' &&
     (planKey === 'pro' || planKey === 'ultra' || planKey === 'enterprise');
+
+  // Check if user has Pro+ plan
+  const hasProPlan = planKey === 'pro' || planKey === 'ultra' || planKey === 'enterprise';
 
   // Calculate usage percentage
   const usagePercentage =
@@ -51,10 +59,33 @@ export default function AdminHeader({
 
   return (
     <header className="mb-6">
+      {/* Mobile Sidenav */}
+      <MobileSidenav
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        userData={{
+          firm_name: firmName,
+          email: userEmail,
+          role: userRole,
+          plan: planKey || 'starter',
+        }}
+        isAdmin={userRole === 'admin'}
+        hasProPlan={hasProPlan}
+      />
+
       {/* Top Bar - Logo and Actions */}
       <div className="flex items-center justify-between mb-4 pb-6 border-b border-border">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="md:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+          aria-label="Abrir menú"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+
         {/* Logo and Brand */}
-        <Link href="/dashboard" className="flex items-center gap-3 group">
+        <Link href="/dashboard" className="hidden sm:flex items-center gap-3 group">
           <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
             <FileText className="w-5 h-5 text-primary-foreground" />
           </div>

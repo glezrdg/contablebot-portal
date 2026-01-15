@@ -406,9 +406,168 @@ function PerfilTab({ userData, onUpdate }: { userData: MeResponse | null; onUpda
 // Suscripción Tab Component
 function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [reactivating, setReactivating] = useState(false)
+  const [upgrading, setUpgrading] = useState(false)
+  const [upgradingToPlan, setUpgradingToPlan] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+
+  const handleCancelSubscription = async () => {
+    setCancelling(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch("/api/subscription/cancel", {
+        method: "POST",
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al cancelar suscripción")
+      }
+
+      setMessage({ type: "success", text: data.message })
+      setShowCancelConfirm(false)
+
+      // Reload page to refresh user data
+      setTimeout(() => window.location.reload(), 1500)
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Error al cancelar suscripción",
+      })
+    } finally {
+      setCancelling(false)
+    }
+  }
+
+  const handleReactivate = async () => {
+    setReactivating(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch("/api/subscription/reactivate", {
+        method: "POST",
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al reactivar suscripción")
+      }
+
+      setMessage({ type: "success", text: data.message })
+
+      // Reload page to refresh user data
+      setTimeout(() => window.location.reload(), 1500)
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Error al reactivar suscripción",
+      })
+    } finally {
+      setReactivating(false)
+    }
+  }
+
+  const handleUpgrade = async (planId: string) => {
+    setUpgrading(true)
+    setUpgradingToPlan(planId)
+    setMessage(null)
+
+    try {
+      const response = await fetch("/api/subscription/upgrade", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ planId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al cambiar plan")
+      }
+
+      setMessage({
+        type: "success",
+        text: `Plan actualizado exitosamente a ${data.newPlan.name}`,
+      })
+
+      // Reload page to refresh user data
+      setTimeout(() => window.location.reload(), 1500)
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Error al cambiar plan",
+      })
+    } finally {
+      setUpgrading(false)
+      setUpgradingToPlan(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
+      {/* Success/Error Messages */}
+      {message && (
+        <div
+          className={`p-4 rounded-lg flex items-start gap-3 ${
+            message.type === "success"
+              ? "bg-green-500/10 border border-green-500/20 text-green-500"
+              : "bg-destructive/10 border border-destructive/20 text-destructive"
+          }`}
+        >
+          {message.type === "success" ? (
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          )}
+          <p className="text-sm">{message.text}</p>
+        </div>
+      )}
+
+      {/* Cancellation Banner */}
+      {userData?.cancelAtPeriodEnd && userData?.cancellationEffectiveDate && (
+        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-yellow-500 font-medium mb-1">
+                Suscripción programada para cancelarse
+              </p>
+              <p className="text-xs text-yellow-500/80 mb-3">
+                Tu suscripción se cancelará el{" "}
+                {new Date(userData.cancellationEffectiveDate).toLocaleDateString("es-DO", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+                . Seguirás teniendo acceso hasta esa fecha.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
+                onClick={handleReactivate}
+                disabled={reactivating}
+              >
+                {reactivating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Reactivando...
+                  </>
+                ) : (
+                  "Reactivar suscripción"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Current Plan Card */}
       <div className="bg-card border border-border rounded-xl p-6">
         <h2 className="text-xl font-semibold text-foreground mb-6">Plan actual</h2>
@@ -468,12 +627,13 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
               </a>
             </Button>
 
-            {/* Cancel Subscription Button - Show if active */}
-            {userData?.isActive && (
+            {/* Cancel Subscription Button - Show if active and not already cancelled */}
+            {userData?.isActive && !userData?.cancelAtPeriodEnd && (
               <Button
                 variant="outline"
                 className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 onClick={() => setShowCancelConfirm(true)}
+                disabled={cancelling}
               >
                 Cancelar suscripción
               </Button>
@@ -506,29 +666,32 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
               ¿Cancelar suscripción?
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Para cancelar tu suscripción, serás redirigido a Whop donde podrás gestionar tu
-              cancelación. Tu suscripción permanecerá activa hasta el final del período actual.
+              Tu suscripción se cancelará al final del período actual. Seguirás teniendo acceso
+              a todas las funciones hasta esa fecha.
             </p>
             <div className="flex gap-3">
               <Button
                 variant="outline"
                 className="flex-1"
                 onClick={() => setShowCancelConfirm(false)}
+                disabled={cancelling}
               >
                 No cancelar
               </Button>
               <Button
                 variant="destructive"
                 className="flex-1"
-                asChild
+                onClick={handleCancelSubscription}
+                disabled={cancelling}
               >
-                <a
-                  href={userData?.manageUrl || "https://whop.com/hub"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Ir a Whop
-                </a>
+                {cancelling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Cancelando...
+                  </>
+                ) : (
+                  "Sí, cancelar"
+                )}
               </Button>
             </div>
           </div>
@@ -580,34 +743,45 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
         </ul>
       </div>
 
-      {/* Upgrade Plans Section */}
-      {userData?.isActive && (
+      {/* Change Plans Section */}
+      {userData?.isActive && !userData?.cancelAtPeriodEnd && (
         <div className="bg-card border border-border rounded-xl p-6">
           <div className="flex items-center gap-2 mb-6">
             <ArrowUp className="w-5 h-5 text-primary" />
             <h3 className="text-lg font-medium text-foreground">
-              Mejora tu plan
+              Cambiar plan
             </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(WHOP_PLANS).map(([key, plan]) => {
               const isCurrentPlan = plan.invoices === userData?.planLimit
-              const canUpgrade = plan.invoices > (userData?.planLimit || 0)
+              const isDifferentPlan = plan.invoices !== userData?.planLimit
 
-              if (!canUpgrade) return null
+              if (!isDifferentPlan) return null
+
+              const isUpgrade = plan.invoices > (userData?.planLimit || 0)
+              const isDowngrade = plan.invoices < (userData?.planLimit || 0)
 
               return (
                 <div
                   key={key}
-                  className={`border rounded-lg p-4 transition-all ${
-                    isCurrentPlan
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50"
-                  }`}
+                  className="border rounded-lg p-4 transition-all border-border hover:border-primary/50"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-foreground">{plan.name}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-foreground">{plan.name}</h4>
+                      {isUpgrade && (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-500">
+                          Upgrade
+                        </span>
+                      )}
+                      {isDowngrade && (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-500/10 text-orange-500">
+                          Downgrade
+                        </span>
+                      )}
+                    </div>
                     <div className={`px-2 py-1 rounded text-xs font-medium ${plan.color} text-white`}>
                       ${plan.price}/mes
                     </div>
@@ -625,23 +799,28 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
                       </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      +{plan.invoices - (userData?.planLimit || 0)} facturas más
+                      {isUpgrade && `+${plan.invoices - (userData?.planLimit || 0)} facturas más`}
+                      {isDowngrade && `${plan.invoices - (userData?.planLimit || 0)} facturas (menos)`}
                     </div>
                   </div>
 
                   <Button
                     className="w-full"
                     size="sm"
-                    asChild
+                    onClick={() => handleUpgrade(plan.id)}
+                    disabled={upgrading || userData?.cancelAtPeriodEnd}
                   >
-                    <a
-                      href={`https://whop.com/checkout?pass=${plan.id}&email=${userData?.email}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Mejorar a {plan.name}
-                      <ExternalLink className="w-3 h-3 ml-2" />
-                    </a>
+                    {upgrading && upgradingToPlan === plan.id ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                        Actualizando...
+                      </>
+                    ) : (
+                      <>
+                        Cambiar a {plan.name}
+                        <ArrowUp className="w-3 h-3 ml-2" />
+                      </>
+                    )}
                   </Button>
                 </div>
               )
@@ -649,7 +828,7 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
           </div>
 
           <p className="text-xs text-muted-foreground text-center mt-4">
-            Al mejorar tu plan, se aplicará inmediatamente y se prorrateará el costo
+            Los cambios de plan se aplican inmediatamente y Whop ajusta automáticamente el costo
           </p>
         </div>
       )}

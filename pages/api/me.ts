@@ -164,6 +164,10 @@ export default async function handler(
       activeClientRnc,
       activeClientName,
       assignedClients,
+      // Subscription cancellation state
+      cancelAtPeriodEnd: firm.cancel_at_period_end || false,
+      cancellationScheduledAt: firm.cancellation_scheduled_at || undefined,
+      cancellationEffectiveDate: firm.cancellation_effective_date || undefined,
     });
   } catch (error) {
     console.error("Error in /api/me:", error);

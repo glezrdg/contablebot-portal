@@ -79,7 +79,7 @@ export async function requirePlan(
   req: NextApiRequest,
   res: NextApiResponse,
   requiredPlan: PlanKey
-): Promise<{ user: JWTPayload; firm: Firm } | null> {
+): Promise<{ user: JWTPayload; firm: Firm; planKey: PlanKey } | null> {
   const user = requireAuth(req, res);
   if (!user) return null;
 
@@ -135,7 +135,7 @@ export async function requirePlan(
       return null;
     }
 
-    return { user, firm };
+    return { user, firm, planKey: currentPlanKey || 'starter' };
   } catch (error) {
     console.error('Error in requirePlan:', error);
     res.status(500).json({ error: 'Error al verificar plan' });

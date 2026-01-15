@@ -18,6 +18,13 @@ export interface Firm {
   email?: string;
   is_active: boolean;
   created_at: string;
+  // Subscription cancellation tracking
+  cancel_at_period_end?: boolean;
+  cancellation_scheduled_at?: string;
+  cancellation_effective_date?: string;
+  // Plan change history
+  previous_plan_id?: string;
+  plan_changed_at?: string;
 }
 
 export interface Invoice {
@@ -157,6 +164,10 @@ export interface MeResponse {
     rnc: string;
     isDefault: boolean;
   }>;
+  // Subscription cancellation state
+  cancelAtPeriodEnd?: boolean;
+  cancellationScheduledAt?: string;
+  cancellationEffectiveDate?: string;
 }
 
 // /api/invoices response
