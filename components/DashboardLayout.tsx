@@ -111,11 +111,6 @@ export default function DashboardLayout({
     }
   };
 
-  // Show layout immediately, pages will handle their own loading states
-  if (!userData) {
-    return null;
-  }
-
   return (
     <>
       <Head>
@@ -123,39 +118,49 @@ export default function DashboardLayout({
         <meta name="description" content={description} />
       </Head>
 
-      <div className="min-h-screen page-background flex">
-        {/* Desktop Sidebar - Hidden on mobile */}
-        <div className="hidden lg:block">
-          <Sidebar userRole={userData.role} />
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-h-screen">
-          <div className="w-full px-0 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <AdminHeader
-              firmName={userData.firmName || ''}
-              userEmail={userData.email || ''}
-              usedThisMonth={userData.usedThisMonth || 0}
-              planLimit={userData.planLimit || 0}
-              manageUrl={userData.manageUrl}
-              showUserStats={showUserStats}
-              userRole={userData.role}
-              planKey={userData.planKey}
-            />
-
-            <main
-              className={`
-                px-4 sm:px-0
-                max-w-full overflow-x-hidden
-                transition-all duration-200 ease-in-out
-                ${isPageTransitioning ? 'opacity-70 scale-[0.99]' : 'opacity-100 scale-100'}
-              `}
-            >
-              {typeof children === 'function' ? children(userData, refreshUserData) : children}
-            </main>
+      {!userData ? (
+        // Minimal loading state - shows layout structure without blocking transitions
+        <div className="min-h-screen page-background flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+            <p className="text-sm text-muted-foreground">Cargando...</p>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="min-h-screen page-background flex">
+          {/* Desktop Sidebar - Hidden on mobile */}
+          <div className="hidden lg:block">
+            <Sidebar userRole={userData.role} />
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col min-h-screen">
+            <div className="w-full px-0 sm:px-6 lg:px-8 py-6 sm:py-8">
+              <AdminHeader
+                firmName={userData.firmName || ''}
+                userEmail={userData.email || ''}
+                usedThisMonth={userData.usedThisMonth || 0}
+                planLimit={userData.planLimit || 0}
+                manageUrl={userData.manageUrl}
+                showUserStats={showUserStats}
+                userRole={userData.role}
+                planKey={userData.planKey}
+              />
+
+              <main
+                className={`
+                  px-4 sm:px-0
+                  max-w-full overflow-x-hidden
+                  transition-all duration-200 ease-in-out
+                  ${isPageTransitioning ? 'opacity-70 scale-[0.99]' : 'opacity-100 scale-100'}
+                `}
+              >
+                {typeof children === 'function' ? children(userData, refreshUserData) : children}
+              </main>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
