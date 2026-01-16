@@ -1,9 +1,5 @@
-import { useState, useEffect } from "react"
-import { useRouter } from "next/router"
-import Head from "next/head"
-import Link from "next/link"
+import { useState } from "react"
 import {
-  FileText,
   User,
   CreditCard,
   Settings,
@@ -19,131 +15,81 @@ import {
   EyeOff
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import AdminHeader from "@/components/AdminHeader"
+import DashboardLayout from "@/components/DashboardLayout"
 import type { MeResponse } from "@/types"
-import { WHOP_PLANS, type PlanKey } from "@/lib/whop"
+import { WHOP_PLANS } from "@/lib/whop"
 
 export default function ConfiguracionPage() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [userData, setUserData] = useState<MeResponse | null>(null)
   const [activeTab, setActiveTab] = useState<"perfil" | "suscripcion" | "preferencias">("perfil")
 
-  useEffect(() => {
-    fetchUserData()
-  }, [])
-
-  const fetchUserData = async () => {
-    try {
-      const response = await fetch("/api/me")
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/login")
-          return
-        }
-        throw new Error("Failed to fetch user data")
-      }
-      const data: MeResponse = await response.json()
-      setUserData(data)
-    } catch (error) {
-      console.error("Error fetching user data:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    )
-  }
-
   return (
-    <>
-      <Head>
-        <title>Configuración - Contable Bot</title>
-      </Head>
-
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <AdminHeader
-            firmName={userData?.firmName || ""}
-            userEmail={userData?.email || ""}
-            usedThisMonth={userData?.usedThisMonth || 0}
-            planLimit={userData?.planLimit || 0}
-            manageUrl={userData?.manageUrl}
-          />
+    <DashboardLayout title="Configuración - ContableBot Portal" description="Ajusta tu perfil, integraciones y preferencias">
+      {(userData, refreshUserData) => (
+        <>
           {/* Page Title */}
-          <div className="mb-8">
+          <div className="mb-6">
             <h1 className="text-3xl font-bold text-foreground mb-2">Configuración</h1>
             <p className="text-muted-foreground">
               Ajusta tu perfil, integraciones y preferencias
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Sidebar Navigation */}
-            <div className="lg:col-span-1">
-              <nav className="space-y-1">
-                <button
-                  onClick={() => setActiveTab("perfil")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeTab === "perfil"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <User className="w-5 h-5" />
-                  <span className="font-medium">Perfil</span>
-                </button>
+          {/* Tab Navigation - Horizontal */}
+          <nav className="flex items-center gap-2 mb-6 bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-2 shadow-[var(--glass-shadow)]">
+            <button
+              onClick={() => setActiveTab("perfil")}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                activeTab === "perfil"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-muted-foreground hover:bg-[var(--glass-white)] hover:text-foreground"
+              }`}
+            >
+              <User className="w-4 h-4" />
+              <span>Perfil</span>
+            </button>
 
-                <button
-                  onClick={() => setActiveTab("suscripcion")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeTab === "suscripcion"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <CreditCard className="w-5 h-5" />
-                  <span className="font-medium">Suscripción</span>
-                </button>
+            <button
+              onClick={() => setActiveTab("suscripcion")}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                activeTab === "suscripcion"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-muted-foreground hover:bg-[var(--glass-white)] hover:text-foreground"
+              }`}
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>Suscripción</span>
+            </button>
 
-                <button
-                  onClick={() => setActiveTab("preferencias")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeTab === "preferencias"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <Settings className="w-5 h-5" />
-                  <span className="font-medium">Preferencias</span>
-                </button>
-              </nav>
-            </div>
+            <button
+              onClick={() => setActiveTab("preferencias")}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                activeTab === "preferencias"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-muted-foreground hover:bg-[var(--glass-white)] hover:text-foreground"
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              <span>Preferencias</span>
+            </button>
+          </nav>
 
-            {/* Main Content */}
-            <div className="lg:col-span-3">
-              {activeTab === "perfil" && (
-                <PerfilTab userData={userData} onUpdate={fetchUserData} />
-              )}
+          {/* Main Content */}
+          <div>
+            {activeTab === "perfil" && (
+              <PerfilTab userData={userData} onUpdate={refreshUserData} />
+            )}
 
-              {activeTab === "suscripcion" && (
-                <SuscripcionTab userData={userData} />
-              )}
+            {activeTab === "suscripcion" && (
+              <SuscripcionTab userData={userData} />
+            )}
 
-              {activeTab === "preferencias" && (
-                <PreferenciasTab />
-              )}
-            </div>
+            {activeTab === "preferencias" && (
+              <PreferenciasTab />
+            )}
           </div>
-        </div>
-      </div>
-    </>
+        </>
+      )}
+    </DashboardLayout>
   )
 }
 

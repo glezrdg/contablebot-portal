@@ -12,6 +12,7 @@ interface InvoiceDataTableProps {
   onColumnChange: (columns: string[]) => void;
   onEditInvoice?: (invoice: Invoice) => void;
   onDeleteInvoice?: (invoice: Invoice) => void;
+  onViewInvoice?: (invoice: Invoice) => void;
   showColumnSelector?: boolean;
   emptyMessage?: string;
 }
@@ -23,6 +24,7 @@ export default function InvoiceDataTable({
   onColumnChange,
   onEditInvoice,
   onDeleteInvoice,
+  onViewInvoice,
   showColumnSelector = true,
   emptyMessage = "No hay facturas para mostrar",
 }: InvoiceDataTableProps) {
@@ -154,6 +156,8 @@ export default function InvoiceDataTable({
           tableStyle={{ minWidth: "50rem" }}
           scrollable
           scrollHeight="flex"
+          onRowClick={(e) => onViewInvoice && onViewInvoice(e.data as Invoice)}
+          rowClassName={() => onViewInvoice ? "cursor-pointer" : ""}
         >
           {ALL_COLUMNS.filter((col) => visibleColumns.includes(col.field)).map(
             (col) => {

@@ -102,96 +102,105 @@ export default function UnifiedDateFilter({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Period Preset Buttons */}
+    <div className="space-y-6">
+      {/* Period Preset Buttons - Pill Style with Icons */}
       <div>
-        <label className="block text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+        <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-4 uppercase tracking-widest">
+          <div className="w-1 h-4 bg-primary rounded-full"></div>
           Periodos rápidos
         </label>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => handlePeriodClick("month")}
-            className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            data-state={selectedPeriod === "month" ? "active" : "inactive"}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-3 rounded-full text-sm font-bold transition-all duration-200 ${
               selectedPeriod === "month"
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "bg-secondary text-foreground hover:bg-muted border border-border"
+                ? "bg-[#3B82F6] text-white shadow-md hover:bg-[#2563EB] hover:shadow-lg scale-[1.02]"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
           >
-            <CalendarIcon className="w-4 h-4 inline mr-2" />
+            <CalendarIcon className="w-4 h-4" />
             Este mes
           </button>
           <button
             onClick={() => handlePeriodClick("quarter")}
-            className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            data-state={selectedPeriod === "quarter" ? "active" : "inactive"}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-3 rounded-full text-sm font-bold transition-all duration-200 ${
               selectedPeriod === "quarter"
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "bg-secondary text-foreground hover:bg-muted border border-border"
+                ? "bg-[#3B82F6] text-white shadow-md hover:bg-[#2563EB] hover:shadow-lg scale-[1.02]"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
           >
-            <CalendarIcon className="w-4 h-4 inline mr-2" />
+            <CalendarIcon className="w-4 h-4" />
             Trimestre
           </button>
           <button
             onClick={() => handlePeriodClick("year")}
-            className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            data-state={selectedPeriod === "year" ? "active" : "inactive"}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-3 rounded-full text-sm font-bold transition-all duration-200 ${
               selectedPeriod === "year"
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "bg-secondary text-foreground hover:bg-muted border border-border"
+                ? "bg-[#3B82F6] text-white shadow-md hover:bg-[#2563EB] hover:shadow-lg scale-[1.02]"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
           >
-            <CalendarIcon className="w-4 h-4 inline mr-2" />
+            <CalendarIcon className="w-4 h-4" />
             Año
           </button>
         </div>
       </div>
 
-      {/* Custom Date Range Pickers */}
+      {/* Custom Date Range Pickers - Glassmorphic */}
       <div>
-        <label className="block text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+        <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-4 uppercase tracking-widest">
+          <div className="w-1 h-4 bg-primary rounded-full"></div>
           Rango personalizado
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto] gap-4 items-end">
-          {/* From Date */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
+          {/* From Date - Glassmorphic */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Desde
             </label>
-            <Calendar
-              value={fromDate}
-              onChange={(e) => onFromDateChange(e.value as Date | null)}
-              dateFormat="dd/mm/yy"
-              placeholder="Seleccionar fecha"
-              showIcon
-              showButtonBar
-              className="w-full calendar-dark"
-              inputClassName="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground"
-            />
+            <div className="bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <Calendar
+                value={fromDate}
+                onChange={(e) => onFromDateChange(e.value as Date | null)}
+                dateFormat="dd/mm/yy"
+                placeholder="Seleccionar fecha"
+                showIcon
+                showButtonBar
+                className="w-full calendar-dark"
+                inputClassName="w-full rounded-xl border-0 bg-transparent px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground/50"
+              />
+            </div>
           </div>
 
-          {/* To Date */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
+          {/* To Date - Glassmorphic */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Hasta
             </label>
-            <Calendar
-              value={toDate}
-              onChange={(e) => onToDateChange(e.value as Date | null)}
-              dateFormat="dd/mm/yy"
-              placeholder="Seleccionar fecha"
-              showIcon
-              showButtonBar
-              className="w-full calendar-dark"
-              inputClassName="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground"
-              minDate={fromDate || undefined}
-            />
+            <div className="bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <Calendar
+                value={toDate}
+                onChange={(e) => onToDateChange(e.value as Date | null)}
+                dateFormat="dd/mm/yy"
+                placeholder="Seleccionar fecha"
+                showIcon
+                showButtonBar
+                className="w-full calendar-dark"
+                inputClassName="w-full rounded-xl border-0 bg-transparent px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground/50"
+                minDate={fromDate || undefined}
+              />
+            </div>
           </div>
 
-          {/* Clear Filters Button */}
+          {/* Clear Filters Button - Glassmorphic with Gradient */}
           <button
             onClick={handleClear}
-            className="w-full lg:w-auto rounded-xl border border-border bg-secondary hover:bg-muted px-5 py-2.5 text-sm font-medium text-foreground transition flex items-center justify-center gap-2"
+            className="group w-full lg:w-auto rounded-full bg-gradient-to-r from-destructive/90 to-destructive text-white hover:from-destructive hover:to-destructive/90 px-6 py-3 text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02]"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 group-hover:rotate-90 transition-transform" />
             <span className="lg:hidden">Limpiar filtros</span>
             <span className="hidden lg:inline">Limpiar</span>
           </button>

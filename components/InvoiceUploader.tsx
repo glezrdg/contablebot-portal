@@ -1,7 +1,7 @@
 /**
  * InvoiceUploader Component
  *
- * Multi-image upload UI with drag & drop, preview, and OCR processing.
+ * Multi-image upload UI with drag & drop, camera capture, preview, and OCR processing.
  */
 
 import { useState, useRef } from "react";
@@ -12,6 +12,8 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Camera,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,7 +37,11 @@ export default function InvoiceUploader({
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
   const MAX_FILES = 20; // 20 files max per upload (supports ~20 concurrent users)
@@ -102,6 +108,18 @@ export default function InvoiceUploader({
     setFiles(newFiles);
   };
 
+  const handleCameraCapture = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setShowCamera(false);
+  };
+
   const handleUpload = async () => {
     if (files.length === 0) return;
 
@@ -157,24 +175,123 @@ export default function InvoiceUploader({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Active Client Info */}
+    <div className="space-y-6">
+      {/* Active Client Info - Glassmorphic */}
       {activeClientName ? (
-        <div className="bg-primary/20 border border-primary/20 rounded-lg p-4">
-          <p className="text-sm text-foreground">
-            📂 Subiendo facturas para:{" "}
-            <span className="font-semibold">{activeClientName}</span>
-          </p>
+        <div className="bg-[var(--glass-white)] backdrop-blur-md border border-primary/30 rounded-2xl p-5 shadow-[0_8px_24px_0_rgba(59,130,246,0.15)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-r before:from-primary/10 before:to-transparent before:pointer-events-none before:z-[-1]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center shadow-md">
+              <FolderOpen className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Subiendo facturas para
+              </p>
+              <p className="text-sm font-bold text-foreground">{activeClientName}</p>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-          <p className="text-sm text-destructive">
-            ⚠️ Debes seleccionar un cliente antes de subir facturas
-          </p>
+        <div className="bg-destructive/10 backdrop-blur-sm border border-destructive/30 rounded-2xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-destructive/20 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-destructive" />
+            </div>
+            <p className="text-sm font-medium text-destructive">
+              Debes seleccionar un cliente antes de subir facturas
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Drop Zone */}
+      {/* Upload Options - Two Buttons Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Browse Files Button */}
+        <div
+          onClick={() => !activeClientName || isUploading ? null : fileInputRef.current?.click()}
+          className={`
+            group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-8
+            cursor-pointer transition-all duration-300
+            shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)]
+            dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)]
+            hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)]
+            dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)]
+            hover:translate-y-[-4px]
+            relative
+            before:absolute before:inset-0 before:rounded-2xl
+            before:bg-gradient-to-b before:from-white/20 before:to-transparent
+            before:pointer-events-none before:z-[-1]
+            ${!activeClientName || isUploading ? "opacity-50 cursor-not-allowed" : ""}
+          `}
+        >
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
+              <Upload className="w-10 h-10 text-primary drop-shadow-sm" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground mb-1">
+                Seleccionar archivos
+              </p>
+              <p className="text-sm text-muted-foreground">
+                JPG, PNG, WEBP, PDF
+              </p>
+            </div>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,application/pdf"
+            multiple
+            onChange={(e) => handleFileSelect(e.target.files)}
+            className="hidden"
+            disabled={!activeClientName || isUploading}
+          />
+        </div>
+
+        {/* Camera Capture Button */}
+        <div
+          onClick={() => !activeClientName || isUploading ? null : handleCameraCapture()}
+          className={`
+            group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-8
+            cursor-pointer transition-all duration-300
+            shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)]
+            dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)]
+            hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)]
+            dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)]
+            hover:translate-y-[-4px]
+            relative
+            before:absolute before:inset-0 before:rounded-2xl
+            before:bg-gradient-to-b before:from-white/20 before:to-transparent
+            before:pointer-events-none before:z-[-1]
+            ${!activeClientName || isUploading ? "opacity-50 cursor-not-allowed" : ""}
+          `}
+        >
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 flex items-center justify-center shadow-[0_4px_16px_rgba(16,185,129,0.2)] group-hover:shadow-[0_6px_24px_rgba(16,185,129,0.3)] group-hover:scale-110 transition-all duration-300">
+              <Camera className="w-10 h-10 text-emerald-500 drop-shadow-sm" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground mb-1">
+                Tomar foto
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Usa tu cámara
+              </p>
+            </div>
+          </div>
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => handleFileSelect(e.target.files)}
+            className="hidden"
+            disabled={!activeClientName || isUploading}
+          />
+        </div>
+      </div>
+
+      {/* Drag & Drop Zone - Optional Alternative */}
       <div
         onDrop={handleDrop}
         onDragOver={(e) => {
@@ -182,52 +299,35 @@ export default function InvoiceUploader({
           setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
-        onClick={() => fileInputRef.current?.click()}
         className={`
-          border-2 border-dashed rounded-xl p-5
-          cursor-pointer transition-all
-          ${
-            isDragging
-              ? "border-primary bg-primary/5"
-              : "border-border hover:border-primary/50 hover:bg-muted/50"
+          border-2 border-dashed rounded-2xl p-6
+          transition-all duration-300
+          bg-[var(--glass-white)] backdrop-blur-sm
+          ${isDragging
+            ? "border-primary bg-primary/10 scale-[1.02]"
+            : "border-[var(--glass-border)] hover:border-primary/50"
           }
           ${!activeClientName ? "opacity-50 cursor-not-allowed" : ""}
         `}
       >
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
-            <Upload className="w-8 h-8 text-primary" />
-          </div>
-
-          <div>
-            <p className="text-lg font-medium text-foreground mb-1">
-              Arrastra archivos aquí o haz click para seleccionar
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Soporta JPG, PNG, WEBP, PDF (máx. 20 archivos, 5MB cada uno)
-            </p>
-          </div>
-        </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,application/pdf"
-          multiple
-          onChange={(e) => handleFileSelect(e.target.files)}
-          className="hidden"
-          disabled={!activeClientName || isUploading}
-        />
+        <p className="text-center text-sm text-muted-foreground">
+          O arrastra archivos aquí (máx. 20 archivos, 5MB cada uno)
+        </p>
       </div>
 
-      {/* File Previews */}
+      {/* File Previews - Glassmorphic */}
       {files.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">
-              {files.length} archivo{files.length !== 1 ? "s" : ""} seleccionado
-              {files.length !== 1 ? "s" : ""}
-            </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                <FileImage className="w-4 h-4 text-primary" />
+              </div>
+              <p className="text-sm font-bold text-foreground">
+                {files.length} archivo{files.length !== 1 ? "s" : ""} seleccionado
+                {files.length !== 1 ? "s" : ""}
+              </p>
+            </div>
             {files.length > 0 && !isUploading && (
               <Button
                 variant="ghost"
@@ -236,7 +336,7 @@ export default function InvoiceUploader({
                   files.forEach((f) => URL.revokeObjectURL(f.preview));
                   setFiles([]);
                 }}
-                className="text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 Limpiar todo
               </Button>
@@ -247,10 +347,10 @@ export default function InvoiceUploader({
             {files.map((fileItem, index) => (
               <div
                 key={index}
-                className="relative group border border-border rounded-lg overflow-hidden bg-card"
+                className="relative group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl overflow-hidden shadow-[0_4px_16px_0_rgba(31,38,135,0.1)] hover:shadow-[0_8px_24px_0_rgba(31,38,135,0.15)] transition-all duration-300"
               >
                 {/* Preview Image */}
-                <div className="aspect-square bg-muted relative">
+                <div className="aspect-square bg-muted/50 relative">
                   <img
                     src={fileItem.preview}
                     alt={fileItem.file.name}
@@ -261,24 +361,23 @@ export default function InvoiceUploader({
                   {fileItem.status !== "pending" && (
                     <div
                       className={`
-                      absolute inset-0 flex items-center justify-center
-                      ${
-                        fileItem.status === "success"
-                          ? "bg-green-500/90"
+                      absolute inset-0 flex items-center justify-center backdrop-blur-md
+                      ${fileItem.status === "success"
+                          ? "bg-emerald-500/90"
                           : fileItem.status === "error"
-                          ? "bg-destructive/90"
-                          : "bg-primary/90"
-                      }
+                            ? "bg-destructive/90"
+                            : "bg-primary/90"
+                        }
                     `}
                     >
                       {fileItem.status === "uploading" && (
-                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                        <Loader2 className="w-8 h-8 text-white animate-spin drop-shadow-md" />
                       )}
                       {fileItem.status === "success" && (
-                        <CheckCircle2 className="w-8 h-8 text-white" />
+                        <CheckCircle2 className="w-8 h-8 text-white drop-shadow-md" />
                       )}
                       {fileItem.status === "error" && (
-                        <AlertCircle className="w-8 h-8 text-white" />
+                        <AlertCircle className="w-8 h-8 text-white drop-shadow-md" />
                       )}
                     </div>
                   )}
@@ -290,7 +389,7 @@ export default function InvoiceUploader({
                         e.stopPropagation();
                         handleRemove(index);
                       }}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-destructive text-white opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center shadow-lg hover:scale-110"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -298,15 +397,15 @@ export default function InvoiceUploader({
                 </div>
 
                 {/* File Info */}
-                <div className="p-2">
+                <div className="p-3 bg-[var(--glass-white)]/50 backdrop-blur-sm">
                   <div className="flex items-center gap-2">
                     <FileImage className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <p className="text-xs text-foreground truncate">
+                    <p className="text-xs text-foreground truncate font-medium">
                       {fileItem.file.name}
                     </p>
                   </div>
                   {fileItem.error && (
-                    <p className="text-xs text-destructive mt-1 truncate">
+                    <p className="text-xs text-destructive mt-1 truncate font-medium">
                       {fileItem.error}
                     </p>
                   )}
@@ -317,21 +416,26 @@ export default function InvoiceUploader({
         </div>
       )}
 
-      {/* Upload Button */}
+      {/* Upload Button - Gradient */}
       {files.length > 0 && (
         <div className="flex justify-end">
           <Button
             onClick={handleUpload}
             disabled={!activeClientName || isUploading || files.length === 0}
-            className="min-w-40"
+            variant="gradient"
+            size="lg"
+            className="min-w-48 shadow-lg"
           >
             {isUploading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                 Procesando...
               </>
             ) : (
-              `Procesar ${files.length} factura${files.length !== 1 ? "s" : ""}`
+              <>
+                <Upload className="w-5 h-5 mr-2" />
+                Procesar {files.length} factura{files.length !== 1 ? "s" : ""}
+              </>
             )}
           </Button>
         </div>

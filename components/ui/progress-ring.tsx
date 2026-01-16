@@ -21,7 +21,7 @@ const progressRingVariants = cva(
 
 export interface ProgressRingProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof progressRingVariants> {
+  VariantProps<typeof progressRingVariants> {
   value: number // 0-100
   max?: number
   showLabel?: boolean
@@ -94,7 +94,7 @@ const ProgressRing = React.forwardRef<HTMLDivElement, ProgressRingProps>(
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-muted/20"
+            className="text-slate-50"
           />
 
           {/* Progress circle */}

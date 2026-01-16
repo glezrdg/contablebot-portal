@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AdminHeader from '@/components/AdminHeader';
+import Sidebar from '@/components/Sidebar';
 import type { MeResponse } from '@/types';
 
 interface DashboardLayoutProps {
@@ -29,8 +30,8 @@ export default function DashboardLayout({
   requirePlan,
 }: DashboardLayoutProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<MeResponse | null>(null);
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
 
   // Refresh user data - can be called by children to update usage, etc.
   const refreshUserData = useCallback(async () => {
@@ -48,6 +49,23 @@ export default function DashboardLayout({
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  // Handle page transitions for smooth content updates
+  useEffect(() => {
+    const handleRouteChangeStart = () => setIsPageTransitioning(true);
+    const handleRouteChangeComplete = () => setIsPageTransitioning(false);
+    const handleRouteChangeError = () => setIsPageTransitioning(false);
+
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    router.events.on('routeChangeError', handleRouteChangeError);
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+      router.events.off('routeChangeError', handleRouteChangeError);
+    };
+  }, [router]);
 
   const fetchUserData = async () => {
     try {
@@ -90,27 +108,10 @@ export default function DashboardLayout({
     } catch (error) {
       console.error('Error fetching user data:', error);
       router.push('/login');
-    } finally {
-      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen page-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          {/* Glassmorphic loading card */}
-          <div className="bg-[var(--glass-white)] backdrop-blur-lg border border-[var(--glass-border)] rounded-2xl p-8 shadow-[var(--glass-shadow)]">
-            <div className="flex items-center gap-4 text-foreground">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
-              <span className="text-lg font-medium">Cargando...</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  // Show layout immediately, pages will handle their own loading states
   if (!userData) {
     return null;
   }
@@ -122,22 +123,35 @@ export default function DashboardLayout({
         <meta name="description" content={description} />
       </Head>
 
-      <div className="min-h-screen page-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <AdminHeader
-            firmName={userData.firmName || ''}
-            userEmail={userData.email || ''}
-            usedThisMonth={userData.usedThisMonth || 0}
-            planLimit={userData.planLimit || 0}
-            manageUrl={userData.manageUrl}
-            showUserStats={showUserStats}
-            userRole={userData.role}
-            planKey={userData.planKey}
-          />
+      <div className="min-h-screen page-background flex">
+        {/* Desktop Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block">
+          <Sidebar userRole={userData.role} />
+        </div>
 
-          <main className="transition-smooth">
-            {typeof children === 'function' ? children(userData, refreshUserData) : children}
-          </main>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-h-screen">
+          <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+            <AdminHeader
+              firmName={userData.firmName || ''}
+              userEmail={userData.email || ''}
+              usedThisMonth={userData.usedThisMonth || 0}
+              planLimit={userData.planLimit || 0}
+              manageUrl={userData.manageUrl}
+              showUserStats={showUserStats}
+              userRole={userData.role}
+              planKey={userData.planKey}
+            />
+
+            <main
+              className={`
+                transition-all duration-200 ease-in-out
+                ${isPageTransitioning ? 'opacity-70 scale-[0.99]' : 'opacity-100 scale-100'}
+              `}
+            >
+              {typeof children === 'function' ? children(userData, refreshUserData) : children}
+            </main>
+          </div>
         </div>
       </div>
     </>

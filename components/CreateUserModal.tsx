@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { X, AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { X, AlertCircle, CheckCircle2, Eye, EyeOff, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toast } from "primereact/toast";
 import type { Client } from "@/types";
@@ -149,23 +149,31 @@ export default function CreateUserModal({
 
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[51]"
+        className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="bg-card border border-border rounded-xl shadow-lg">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card z-10">
-            <h2 className="text-xl font-semibold text-foreground">
-              Crear nuevo usuario
-            </h2>
+          <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center shadow-md">
+                  <UserPlus className="w-5 h-5 text-primary drop-shadow-sm" />
+                </div>
+                Crear nuevo usuario
+              </h2>
+              <p className="text-sm text-muted-foreground mt-2 font-medium">
+                Completa los datos del nuevo usuario
+              </p>
+            </div>
             <button
               onClick={onClose}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)] shadow-sm"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             </button>
           </div>
 

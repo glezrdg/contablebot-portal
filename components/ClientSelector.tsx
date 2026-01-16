@@ -90,27 +90,28 @@ export default function ClientSelector({
 
   return (
     <div className="relative">
-      {/* Trigger Button */}
+      {/* Trigger Button - Glassmorphic */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          flex items-center gap-2 px-4 py-2 rounded-xl
-          border border-border bg-secondary
-          hover:bg-muted transition-colors
+          w-full flex items-center justify-between gap-3 px-5 py-4 rounded-xl
+          bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)]
+          hover:bg-[var(--glass-white)]/80 hover:shadow-md transition-all
+          shadow-sm
           ${activeClientRnc ? "text-foreground" : "text-muted-foreground"}
         `}
       >
-        <span className="text-sm font-medium truncate max-w-xs">
+        <span className="text-sm font-bold truncate flex-1 text-left">
           {loading ? "Cargando..." : displayText}
         </span>
         <ChevronDown
-          className={`w-4 h-4 transition-transform ${
+          className={`w-5 h-5 transition-transform duration-300 flex-shrink-0 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown Menu - Glassmorphic */}
       {isOpen && (
         <>
           {/* Backdrop */}
@@ -119,36 +120,38 @@ export default function ClientSelector({
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Menu */}
-          <div className="absolute top-full left-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-lg z-20 max-h-96 overflow-y-auto">
-            {/* Add New Client Button */}
+          {/* Menu - Enhanced Glassmorphic */}
+          <div className="absolute top-full left-0 mt-2 w-full min-w-[320px] bg-[var(--glass-white)] backdrop-blur-xl border border-[var(--glass-border)] rounded-xl shadow-[0_16px_48px_0_rgba(0,0,0,0.3)] z-20 max-h-96 overflow-y-auto before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+            {/* Add New Client Button - Gradient */}
             <button
               onClick={() => {
                 setIsOpen(false);
                 onAddClient();
               }}
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors border-b border-border"
+              className="w-full flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 transition-all border-b border-[var(--glass-border)] group"
             >
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <Plus className="w-4 h-4 text-primary-foreground" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-[hsl(221_83%_63%)] flex items-center justify-center flex-shrink-0 shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all">
+                <Plus className="w-5 h-5 text-white drop-shadow-sm" />
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-sm font-bold text-foreground">
                   Agregar nuevo cliente
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground font-medium">
                   Crear cliente con RNC
                 </p>
               </div>
             </button>
 
-            {/* Client List */}
+            {/* Client List - Enhanced */}
             {clients.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                No hay clientes. Agrega uno para comenzar.
+              <div className="px-5 py-8 text-center">
+                <p className="text-sm text-muted-foreground font-medium">
+                  No hay clientes. Agrega uno para comenzar.
+                </p>
               </div>
             ) : (
-              <div className="py-1">
+              <div className="py-2">
                 {clients.map((client) => {
                   // client.name contains business name, client.rnc contains compact RNC
                   const isActive = client.rnc === activeClientRnc;
@@ -164,28 +167,34 @@ export default function ClientSelector({
                       onClick={() => handleSelectClient(client)}
                       disabled={!hasValidRnc}
                       className={`
-                        w-full flex items-center gap-3 px-4 py-3
-                        hover:bg-muted transition-colors
-                        ${isActive ? "bg-primary/20" : ""}
+                        w-full flex items-center gap-3 px-5 py-3
+                        hover:bg-[var(--glass-white)]/50 transition-all
+                        ${isActive ? "bg-primary/10 border-l-4 border-primary" : "border-l-4 border-transparent"}
                         ${!hasValidRnc ? "opacity-50 cursor-not-allowed" : ""}
                       `}
                     >
                       {/* Active indicator */}
-                      <div className="w-5 flex-shrink-0">
-                        {isActive && <Check className="w-5 h-5 text-primary" />}
+                      <div className="w-6 flex-shrink-0 flex items-center justify-center">
+                        {isActive && (
+                          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                            <Check className="w-4 h-4 text-primary font-bold" />
+                          </div>
+                        )}
                       </div>
 
                       {/* Client info */}
                       <div className="flex-1 text-left min-w-0">
                         <p
-                          className={`text-sm font-medium truncate ${
+                          className={`text-sm font-bold truncate ${
                             isActive ? "text-primary" : "text-foreground"
                           }`}
                         >
                           {client.name}
                         </p>
                         {formattedRnc && (
-                          <p className="text-xs text-muted-foreground">{formattedRnc}</p>
+                          <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                            {formattedRnc}
+                          </p>
                         )}
                       </div>
                     </button>

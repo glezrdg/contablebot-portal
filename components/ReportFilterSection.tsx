@@ -83,55 +83,58 @@ export default function ReportFilterSection({
   };
 
   return (
-    <section className="mb-8 rounded-2xl bg-card border border-border shadow-lg overflow-hidden">
-      {/* Header with Toggle and Export Buttons */}
-      <div className="bg-muted/30 border-b border-border px-4 sm:px-6 py-4">
+    <section className="mb-8 rounded-2xl bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] overflow-hidden relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+      {/* Header with Toggle and Export Buttons - Glassmorphic */}
+      <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-[var(--glass-border)] px-4 sm:px-6 py-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           {/* Left: Filter Title and Summary */}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity text-left flex-1"
+            className="flex items-center gap-3 hover:opacity-80 transition-all text-left flex-1 group"
           >
-            <Filter className="w-5 h-5 text-primary flex-shrink-0" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all">
+              <Filter className="w-5 h-5 text-primary drop-shadow-sm" />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-foreground">
+                <h2 className="text-lg font-bold text-foreground">
                   Filtros de Reporte
                 </h2>
                 {isExpanded ? (
-                  <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform" />
                 )}
               </div>
               {!isExpanded && (
-                <p className="text-sm text-muted-foreground truncate mt-0.5">
+                <p className="text-sm text-muted-foreground truncate mt-1 font-medium">
                   {getFilterSummary()}
                 </p>
               )}
             </div>
           </button>
 
-          {/* Export Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2">
+          {/* Export Buttons - Glassmorphic Gradient */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={onExportStats}
               disabled={statsLoading}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              className="group flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[hsl(221_83%_63%)] text-primary-foreground hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
               <span>Exportar Reporte</span>
             </button>
 
             <button
               onClick={onExportInvoices}
               disabled={invoiceCount === 0}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-secondary text-foreground hover:bg-muted transition-all text-sm font-medium border border-border disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] text-foreground hover:bg-[var(--glass-white)]/80 hover:shadow-md transition-all text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
-              <FileSpreadsheet className="w-4 h-4" />
-              <span>Exportar Facturas (606)</span>
+              <FileSpreadsheet className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">Exportar Facturas (606)</span>
+              <span className="sm:hidden">606</span>
               {invoiceCount > 0 && (
-                <span className="ml-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-semibold">
+                <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold">
                   {invoiceCount}
                 </span>
               )}
@@ -143,18 +146,20 @@ export default function ReportFilterSection({
       {/* Filter Content - Only show when expanded */}
       {isExpanded && (
         <div className="p-4 sm:p-6 space-y-6 animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Client Filter Buttons */}
+          {/* Client Filter Buttons - Pill Style */}
           {isAdmin && (<div>
-            <label className="block text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+            <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-4 uppercase tracking-widest">
+              <div className="w-1 h-4 bg-primary rounded-full"></div>
               Filtrar por cliente
             </label>
-            <div className="flex flex-wrap gap-2">
-              {/* All clients button */}
+            <div className="flex flex-wrap gap-3">
+              {/* All clients button - Pill style */}
               <button
                 onClick={() => onClientSelect(null)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedClientId === null
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-secondary text-foreground hover:bg-muted border border-border"
+                data-state={selectedClientId === null ? "active" : "inactive"}
+                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${selectedClientId === null
+                  ? "bg-[#3B82F6] text-white shadow-md hover:bg-[#2563EB] hover:shadow-lg scale-[1.02]"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                   }`}
               >
                 Todos los clientes
@@ -164,15 +169,15 @@ export default function ReportFilterSection({
                 <button
                   key={client.id}
                   onClick={() => onClientSelect(client.id)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedClientId === client.id
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "bg-secondary text-foreground hover:bg-muted border border-border"
+                  data-state={selectedClientId === client.id ? "active" : "inactive"}
+                  className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${selectedClientId === client.id
+                    ? "bg-[#3B82F6] text-white shadow-md hover:bg-[#2563EB] hover:shadow-lg scale-[1.02]"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                     }`}
                 >
                   {client.name}
                 </button>
               ))}
-              <div className="border-t border-border" />
             </div>
           </div>)}
 

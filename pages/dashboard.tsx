@@ -10,8 +10,10 @@ import type {
   ErrorResponse,
 } from "../types";
 import AddClientModal from "@/components/AddClientModal";
+import AddClientWizardModal from "@/components/AddClientWizardModal";
 import UploadInvoiceModal from "@/components/UploadInvoiceModal";
 import EditInvoiceModal from "@/components/EditInvoiceModal";
+import InvoiceDetailModal from "@/components/InvoiceDetailModal";
 import DashboardLayout from "@/components/DashboardLayout";
 import ClientFilterButtons from "@/components/ClientFilterButtons";
 import InvoiceDataTable from "@/components/InvoiceDataTable";
@@ -42,9 +44,12 @@ export default function DashboardPage() {
     undefined
   );
   const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [showAddClientWizardModal, setShowAddClientWizardModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [invoiceToEdit, setInvoiceToEdit] = useState<Invoice | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   // Filter state - Dashboard only shows current month
   const [fromDate] = useState<Date | null>(() => {
@@ -339,6 +344,12 @@ export default function DashboardPage() {
     }
   };
 
+  // View invoice details handler
+  const handleViewInvoice = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setShowDetailModal(true);
+  };
+
   // Delete invoice handler
   const handleDeleteInvoice = (invoice: Invoice) => {
     confirmDialog({
@@ -499,13 +510,14 @@ export default function DashboardPage() {
             <ConfirmDialog />
 
             {/* Quick Action Cards with Enhanced 3D Glassmorphic Design */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              {/* Subir Factura - Blue */}
               <div
                 onClick={handleOpenUploader}
                 className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]"
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
-                  <Upload className="w-8 h-8 text-primary drop-shadow-sm" />
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/40 to-blue-500/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <Upload className="w-8 h-8 text-blue-500 drop-shadow-sm" />
                 </div>
                 <h3 className="font-bold text-foreground mb-2 text-lg">
                   Subir Factura
@@ -515,12 +527,29 @@ export default function DashboardPage() {
                 </p>
               </div>
 
+              {/* Control de Calidad - Emerald */}
+              <a
+                href="/dashboard/qa"
+                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/40 to-emerald-500/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(16,185,129,0.2)] group-hover:shadow-[0_6px_24px_rgba(16,185,129,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <ShieldCheck className="w-8 h-8 text-emerald-500 drop-shadow-sm" />
+                </div>
+                <h3 className="font-bold text-foreground mb-2 text-lg">
+                  Control de Calidad
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Revisa y aprueba facturas que necesitan atención
+                </p>
+              </a>
+
+              {/* Ver Reportes - Purple */}
               <a
                 href="/reportes"
                 className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
               >
-                <div className="w-16 h-16  rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
-                  <BarChart3 className="w-8 h-8 text-primary drop-shadow-sm" />
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500/40 to-purple-500/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(168,85,247,0.2)] group-hover:shadow-[0_6px_24px_rgba(168,85,247,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <BarChart3 className="w-8 h-8 text-purple-500 drop-shadow-sm" />
                 </div>
                 <h3 className="font-bold text-foreground mb-2 text-lg">
                   Ver Reportes
@@ -530,12 +559,13 @@ export default function DashboardPage() {
                 </p>
               </a>
 
+              {/* Configuración - Orange */}
               <a
                 href="/configuracion"
                 className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
               >
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
-                  <Settings className="w-8 h-8 text-primary drop-shadow-sm" />
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500/40 to-orange-500/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(249,115,22,0.2)] group-hover:shadow-[0_6px_24px_rgba(249,115,22,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <Settings className="w-8 h-8 text-orange-500 drop-shadow-sm" />
                 </div>
                 <h3 className="font-bold text-foreground mb-2 text-lg">
                   Configuración
@@ -552,6 +582,13 @@ export default function DashboardPage() {
               onClose={() => setShowAddClientModal(false)}
               onClientAdded={handleClientAdded}
             />
+
+            {/* Add Client Wizard Modal (TEST) */}
+            {/* <AddClientWizardModal
+              isOpen={showAddClientWizardModal}
+              onClose={() => setShowAddClientWizardModal(false)}
+              onClientAdded={handleClientAdded}
+            /> */}
 
             {/* Upload Invoice Modal */}
             <UploadInvoiceModal
@@ -575,6 +612,16 @@ export default function DashboardPage() {
                 setInvoiceToEdit(null);
               }}
               onSave={handleSaveInvoice}
+            />
+
+            {/* Invoice Detail Modal */}
+            <InvoiceDetailModal
+              isOpen={showDetailModal}
+              onClose={() => {
+                setShowDetailModal(false);
+                setSelectedInvoice(null);
+              }}
+              invoice={selectedInvoice}
             />
 
             {/* Client Filter Buttons - Only show for admin users */}
@@ -622,34 +669,39 @@ export default function DashboardPage() {
             )}
 
             {/* Facturas Section with Enhanced 3D Glassmorphic Design */}
-            <section className="rounded-2xl bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-              {/* Section Header */}
-              <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-baseline gap-3">
-                    <h2 className="text-xl font-bold text-foreground">
-                      Facturas
-                    </h2>
-                    <span className="text-sm font-medium text-muted-foreground px-3 py-1 bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] rounded-full">
-                      {filteredInvoices.length}{qualityFilter !== "all" ? ` de ${totalInvoices}` : ""} resultados
-                    </span>
-                  </div>
+            <section className="rounded-2xl bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] p-4 sm:p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+              {/* Section Header - Single Row */}
+              <div className="mb-6 flex flex-col lg:flex-row lg:items-center gap-3">
+                {/* Title and Result Count */}
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold text-foreground">
+                    Facturas
+                  </h2>
+                  <span className="text-sm font-medium text-muted-foreground px-3 py-1 bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] rounded-full whitespace-nowrap">
+                    {filteredInvoices.length}{qualityFilter !== "all" ? ` de ${totalInvoices}` : ""} resultados
+                  </span>
+                </div>
 
-                  {/* Quality Filter */}
+                {/* Quality Filter */}
+                <div className="w-full lg:w-64">
                   <Dropdown
                     value={qualityFilter}
                     options={qualityFilterOptions}
                     onChange={(e) => setQualityFilter(e.value)}
                     placeholder="Filtrar por calidad"
-                    className="w-48"
+                    className="w-full"
                   />
                 </div>
 
-                <ExportButtons
-                  onExportExcel={exportToExcel606}
-                  onExportCSV={exportToCSV}
-                  disabled={filteredInvoices.length === 0}
-                />
+                {/* Export Buttons */}
+                <div className="w-full lg:w-auto lg:ml-auto">
+                  <ExportButtons
+                    onExportExcel={exportToExcel606}
+                    onExportCSV={exportToCSV}
+                    disabled={filteredInvoices.length === 0}
+                    totalCount={filteredInvoices.length}
+                  />
+                </div>
               </div>
 
               <InvoiceDataTable
@@ -659,6 +711,7 @@ export default function DashboardPage() {
                 onColumnChange={handleColumnChange}
                 onEditInvoice={handleEditInvoice}
                 onDeleteInvoice={handleDeleteInvoice}
+                onViewInvoice={handleViewInvoice}
                 emptyMessage="Ajusta los filtros o envía nuevas facturas desde el bot de Telegram."
               />
             </section>

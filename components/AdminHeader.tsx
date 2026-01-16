@@ -5,16 +5,10 @@
  * Shows firm name, user email, usage stats, and navigation buttons.
  */
 
-import { useRouter } from "next/router";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
   FileText,
-  BarChart3,
-  TrendingUp,
-  Building2,
-  Users,
-  ShieldCheck,
   Menu,
 } from "lucide-react";
 import ProfileDropdown from "./ProfileDropdown";
@@ -43,14 +37,8 @@ export default function AdminHeader({
   userRole = 'admin',
   planKey,
 }: AdminHeaderProps) {
-  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-
-  console.log('Plan key', planKey)
-  // Check if user module should be visible (admin only, Pro+ plan)
-  const showAdminModules = userRole === 'admin' &&
-    (planKey === 'pro' || planKey === 'ultra' || planKey === 'enterprise');
 
   // Check if user has Pro+ plan
   const hasProPlan = planKey === 'pro' || planKey === 'ultra' || planKey === 'enterprise';
@@ -86,8 +74,8 @@ export default function AdminHeader({
 
       {/* Top Bar - Logo and Actions */}
       <div className={`
-        sticky top-0 z-40 -mt-6 pt-6 mb-4 pb-6
-        flex items-center justify-between
+        sticky top-0 z-40 -mt-6 pt-6 mb-4 pb-4
+        flex items-center justify-between gap-2
         transition-glass
         ${isScrolled
           ? 'bg-[var(--glass-white)] backdrop-blur-lg border-b border-[var(--glass-border)] shadow-md'
@@ -97,14 +85,14 @@ export default function AdminHeader({
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="md:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+          className="lg:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors shrink-0"
           aria-label="Abrir menú"
         >
           <Menu className="w-6 h-6" />
         </button>
 
-        {/* Logo and Brand */}
-        <Link href="/dashboard" className="hidden sm:flex items-center gap-3 group">
+        {/* Logo and Brand - Hidden on mobile when sidebar is present */}
+        <Link href="/dashboard" className="hidden lg:flex items-center gap-3 group shrink-0">
           <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all group-hover:scale-105">
             <FileText className="w-5 h-5 text-primary-foreground" />
           </div>
@@ -116,74 +104,11 @@ export default function AdminHeader({
           </div>
         </Link>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          {/* Dashboard Link */}
-          <Link
-            href="/dashboard"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/dashboard"
-              ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
-              : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
-              }`}
-          >
-            <BarChart3 className="w-4 h-4" />
-            <span>Dashboard</span>
-          </Link>
+        {/* Spacer to push items to the right on mobile */}
+        <div className="flex-1 lg:hidden" />
 
-          {/* Reports Link */}
-          <Link
-            href="/reportes"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/reportes"
-              ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
-              : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
-              }`}
-          >
-            <TrendingUp className="w-4 h-4" />
-            <span>Reportes</span>
-          </Link>
-
-          {/* Clients Link */}
-          {/* Users Link (Admin only, Pro+ plan) */}
-          {showAdminModules && (
-            <>
-              <Link
-                href="/usuarios"
-                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/usuarios"
-                  ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
-                  : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
-                  }`}
-              >
-                <Users className="w-4 h-4" />
-                <span>Usuarios</span>
-              </Link></>
-          )}
-          <Link
-            href="/dashboard/qa"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/dashboard/qa"
-              ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
-              : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
-              }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>QA</span>
-          </Link>
-
-          {/* QA Link (Admin only) */}
-          {userRole === 'admin' && (
-            <>
-              <Link
-                href="/clientes"
-                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/clientes"
-                  ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
-                  : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
-                  }`}
-              >
-                <Building2 className="w-4 h-4" />
-                <span>Clientes</span>
-              </Link>
-            </>
-          )}
-
+        {/* Action Buttons - Removed since sidebar now handles navigation */}
+        <div className="flex items-center gap-2 shrink-0">
           {/* Client Switcher */}
           <ClientSwitcher />
 
