@@ -74,7 +74,8 @@ export default function AdminHeader({
 
       {/* Top Bar - Logo and Actions */}
       <div className={`
-        sticky top-0 z-40 -mt-6 pt-4 mb-4 pb-4
+        sticky top-0 z-40 -mt-6 sm:-mt-8 pt-4 sm:pt-6 mb-4 pb-4
+        -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8
         flex items-center justify-between gap-2 sm:gap-3
         transition-glass
         ${isScrolled
@@ -93,8 +94,8 @@ export default function AdminHeader({
 
         {/* Logo and Brand - Hidden on mobile when sidebar is present */}
         <Link href="/dashboard" className="hidden lg:flex items-center gap-3 group shrink-0">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all group-hover:scale-105">
-            <FileText className="w-5 h-5 text-primary-foreground" />
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all group-hover:scale-105">
+            <FileText className="w-5 h-5 text-white" />
           </div>
           <div>
             <h1 className="text-sm font-bold uppercase text-foreground group-hover:text-primary transition-colors">
@@ -126,8 +127,8 @@ export default function AdminHeader({
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* User Info */}
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border-2 border-primary/30 backdrop-blur-sm shadow-lg">
-              <span className="text-xl font-bold text-primary">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] flex items-center justify-center shadow-lg shadow-primary/25">
+              <span className="text-xl font-bold text-white">
                 {firmName.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -157,7 +158,7 @@ export default function AdminHeader({
             <div className="flex items-center justify-between gap-4 sm:gap-6 md:gap-8">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-primary/40 to-primary/10 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl flex items-center justify-center shadow-md">
                     <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>

@@ -111,70 +111,70 @@ export default function MobileSidenav({
 
   return (
     <>
-      {/* Glassmorphic Backdrop with Blur */}
+      {/* Backdrop with Blur */}
       <div
-        className={`fixed inset-0 bg-black/30 backdrop-blur-sm transition-all duration-300 z-40 ${
+        className={`fixed inset-0 bg-black/40 backdrop-blur-md transition-all duration-300 z-[1100] ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         aria-hidden="true"
       />
 
-      {/* Glass Drawer */}
+      {/* Solid White Drawer - matching modal style */}
       <div
         ref={drawerRef}
         className={`
-          fixed inset-y-0 left-0 w-72
-          bg-[var(--glass-white)] backdrop-blur-xl
-          border-r border-[var(--glass-border)]
-          shadow-2xl
+          fixed inset-y-0 left-0 w-[280px]
+          bg-white dark:bg-slate-900
+          border-r border-border
+          shadow-[0_24px_64px_0_rgba(0,0,0,0.3)]
           transform transition-all duration-300 ease-out
-          z-50 flex flex-col
+          z-[1101] flex flex-col
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        {/* Logo Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[var(--glass-border)]">
+        {/* Logo Header with gradient accent */}
+        <div className="flex items-center justify-between p-5 border-b border-border bg-gradient-to-r from-primary/5 via-[hsl(262_83%_58%)]/10 to-primary/5">
           <Link href="/dashboard" className="flex items-center gap-3 group" onClick={onClose}>
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all group-hover:scale-105">
-              <FileText className="w-5 h-5 text-primary-foreground" />
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all group-hover:scale-105">
+              <FileText className="w-5 h-5 text-white drop-shadow-sm" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                 ContableBot
               </h1>
-              <p className="text-xs text-muted-foreground">Portal de facturas</p>
+              <p className="text-xs text-muted-foreground font-medium">Portal de facturas</p>
             </div>
           </Link>
           <button
             onClick={onClose}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md rounded-lg transition-all"
+            className="group p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
             aria-label="Cerrar menú"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
           </button>
         </div>
 
-        {/* User info section with glass effect */}
-        <div className="p-4 border-b border-[var(--glass-border)]">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)]">
+        {/* User info section */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/5 to-[hsl(262_83%_58%)]/5 border border-primary/10">
             {/* Firm avatar */}
-            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-md">
-              <span className="text-primary-foreground font-semibold text-sm">
+            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-full flex items-center justify-center shadow-md shadow-primary/25">
+              <span className="text-white font-bold text-sm drop-shadow-sm">
                 {userData.firm_name?.[0]?.toUpperCase() || 'F'}
               </span>
             </div>
             {/* Firm info */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">
+              <p className="text-sm font-bold text-foreground truncate">
                 {userData.firm_name}
               </p>
-              <p className="text-xs text-muted-foreground truncate">{userData.email}</p>
+              <p className="text-xs text-muted-foreground font-medium truncate">{userData.email}</p>
             </div>
           </div>
         </div>
 
-        {/* Navigation links with glass styling */}
-        <nav className="flex-1 overflow-y-auto p-4">
+        {/* Navigation links */}
+        <nav className="flex-1 overflow-y-auto p-3">
           <div className="space-y-1">
             {navLinks.map((link) => {
               if (!link.show) return null;
@@ -186,63 +186,67 @@ export default function MobileSidenav({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     active
-                      ? 'bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm'
-                      : 'text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)] hover:scale-[1.02]'
+                      ? 'bg-primary/10 text-primary border-l-4 border-primary font-bold'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground font-medium border-l-4 border-transparent'
                   }`}
                   onClick={onClose}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="font-medium">{link.label}</span>
+                  <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'text-primary' : ''}`} />
+                  <span>{link.label}</span>
                 </Link>
               );
             })}
           </div>
         </nav>
 
-        {/* Quick actions at bottom with glass effects */}
-        <div className="p-4 border-t border-[var(--glass-border)] space-y-1">
+        {/* Quick actions at bottom */}
+        <div className="p-3 border-t border-border space-y-1">
           <Link
             href="/tutorial"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)] transition-all"
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+              isActive('/tutorial')
+                ? 'bg-primary/10 text-primary border-l-4 border-primary font-bold'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground font-medium border-l-4 border-transparent'
+            }`}
             onClick={onClose}
           >
-            <PlayCircle className="w-5 h-5 flex-shrink-0" />
-            <span className="font-medium">Tutorial</span>
+            <PlayCircle className={`w-5 h-5 flex-shrink-0 ${isActive('/tutorial') ? 'text-primary' : ''}`} />
+            <span>Tutorial</span>
           </Link>
 
           <Link
             href="/configuracion"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)] transition-all"
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+              isActive('/configuracion')
+                ? 'bg-primary/10 text-primary border-l-4 border-primary font-bold'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground font-medium border-l-4 border-transparent'
+            }`}
             onClick={onClose}
           >
-            <Settings className="w-5 h-5 flex-shrink-0" />
-            <span className="font-medium">Configuración</span>
+            <Settings className={`w-5 h-5 flex-shrink-0 ${isActive('/configuracion') ? 'text-primary' : ''}`} />
+            <span>Configuración</span>
           </Link>
 
           {userData.plan && (
             <a
-              href={
-                userData.plan === 'starter'
-                  ? 'https://whop.com/hub/'
-                  : 'https://whop.com/hub/'
-              }
+              href="https://whop.com/hub/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)] transition-all"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground font-medium transition-all border-l-4 border-transparent"
             >
               <CreditCard className="w-5 h-5 flex-shrink-0" />
-              <span className="font-medium">Suscripción</span>
+              <span>Suscripción</span>
             </a>
           )}
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-destructive/80 hover:bg-destructive/10 hover:text-destructive hover:border hover:border-destructive/20 transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 font-medium transition-all border-l-4 border-transparent"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span className="font-medium">Cerrar Sesión</span>
+            <span>Cerrar Sesión</span>
           </button>
         </div>
       </div>

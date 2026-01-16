@@ -12,6 +12,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Users, UserPlus, Shield, UserX, Edit, Trash2 } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
+import PageLoader from '@/components/PageLoader';
 import CreateUserModal from '@/components/CreateUserModal';
 import EditUserModal from '@/components/EditUserModal';
 import type { Client } from '@/types';
@@ -37,7 +38,7 @@ export default function UsuariosPage() {
 
   const [users, setUsers] = useState<User[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -221,6 +222,20 @@ export default function UsuariosPage() {
     );
   };
 
+  // Show full page loader on initial load
+  if (loadingUsers && users.length === 0) {
+    return (
+      <DashboardLayout
+        title="Usuarios - ContableBot Portal"
+        description="Gestión de usuarios"
+        requireAdmin={true}
+        requirePlan="pro"
+      >
+        <PageLoader message="Cargando usuarios..." />
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout
       title="Usuarios - ContableBot Portal"
@@ -232,15 +247,15 @@ export default function UsuariosPage() {
       <ConfirmDialog />
 
       {/* Page Title */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center shadow-lg">
-              <Users className="w-6 h-6 text-primary drop-shadow-sm" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary/30 to-[hsl(262_83%_58%)]/20 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary drop-shadow-sm" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Usuarios</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-xl sm:text-3xl font-bold text-foreground">Usuarios</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Gestiona los usuarios con acceso a la firma
               </p>
             </div>
@@ -248,7 +263,7 @@ export default function UsuariosPage() {
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-[hsl(221_83%_63%)] text-primary-foreground rounded-lg font-medium hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary to-[hsl(262_83%_58%)] text-primary-foreground rounded-xl font-medium hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all w-full sm:w-auto"
           >
             <UserPlus className="w-4 h-4" />
             Crear Usuario
@@ -257,7 +272,7 @@ export default function UsuariosPage() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+      <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-xl sm:before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] overflow-x-auto">
         <DataTable
           value={users}
           loading={loadingUsers}

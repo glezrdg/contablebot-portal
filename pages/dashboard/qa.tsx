@@ -5,6 +5,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import DashboardLayout from "@/components/DashboardLayout";
+import PageLoader from "@/components/PageLoader";
 import type { Invoice, Client } from "@/types";
 import { validateInvoice, getQualityLevel, type ValidationResult } from "@/lib/invoice-validator";
 import { ShieldCheck, AlertTriangle, CheckCircle, XCircle, RefreshCw, Eye, Calculator, FileWarning, AlertOctagon, X, Trash2, FileText } from "lucide-react";
@@ -409,6 +410,11 @@ export default function QADashboardPage() {
           fetchClients();
         }
 
+        // Show loader during initial data fetch
+        if (loading && invoices.length === 0) {
+          return <PageLoader message="Cargando control de calidad..." />;
+        }
+
         return (
         <>
           <Toast ref={toast} />
@@ -570,7 +576,7 @@ export default function QADashboardPage() {
                   <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
                     <div>
                       <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center shadow-md">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 flex items-center justify-center shadow-md">
                           <FileText className="w-5 h-5 text-primary drop-shadow-sm" />
                         </div>
                         Detalle de Factura
@@ -765,7 +771,7 @@ export default function QADashboardPage() {
                   <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
                     <div>
                       <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center shadow-md">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 flex items-center justify-center shadow-md">
                           <RefreshCw className="w-5 h-5 text-primary drop-shadow-sm" />
                         </div>
                         Confirmar reprocesamiento

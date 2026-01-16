@@ -15,6 +15,7 @@ import UploadInvoiceModal from "@/components/UploadInvoiceModal";
 import EditInvoiceModal from "@/components/EditInvoiceModal";
 import InvoiceDetailModal from "@/components/InvoiceDetailModal";
 import DashboardLayout from "@/components/DashboardLayout";
+import PageLoader from "@/components/PageLoader";
 import ClientFilterButtons from "@/components/ClientFilterButtons";
 import InvoiceDataTable from "@/components/InvoiceDataTable";
 import ExportButtons from "@/components/ExportButtons";
@@ -72,6 +73,7 @@ export default function DashboardPage() {
   const [totalInvoices, setTotalInvoices] = useState<number>(0);
 
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState("");
 
   // Quality filter options
@@ -502,6 +504,16 @@ export default function DashboardPage() {
           if (!refreshUserDataRef.current) {
             refreshUserDataRef.current = refreshUserData;
           }
+
+          // Mark initial loading as complete once userData is received
+          if (initialLoading) {
+            setInitialLoading(false);
+          }
+        }
+
+        // Show loader while initial data is loading
+        if (initialLoading) {
+          return <PageLoader message="Cargando dashboard..." />;
         }
 
         return (
@@ -511,13 +523,13 @@ export default function DashboardPage() {
 
             {/* Quick Action Cards with Enhanced 3D Glassmorphic Design */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-              {/* Subir Factura - Blue */}
+              {/* Subir Factura - Primary Blue-Purple gradient */}
               <div
                 onClick={handleOpenUploader}
-                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]"
+                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(59,130,246,0.25),0_6px_24px_0_rgba(59,130,246,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]"
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/40 to-blue-500/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
-                  <Upload className="w-8 h-8 text-blue-500 drop-shadow-sm" />
+                <div className="w-16 h-16 bg-gradient-to-br from-primary/30 to-[hsl(262_83%_58%)]/20 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <Upload className="w-8 h-8 text-primary drop-shadow-sm" />
                 </div>
                 <h3 className="font-bold text-foreground mb-2 text-lg">
                   Subir Factura
@@ -527,12 +539,12 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              {/* Control de Calidad - Emerald */}
+              {/* Control de Calidad - Emerald with brand accent */}
               <a
                 href="/dashboard/qa"
-                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
+                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(16,185,129,0.25),0_6px_24px_0_rgba(16,185,129,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/40 to-emerald-500/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(16,185,129,0.2)] group-hover:shadow-[0_6px_24px_rgba(16,185,129,0.3)] group-hover:scale-110 transition-all duration-300">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/30 to-teal-400/20 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(16,185,129,0.2)] group-hover:shadow-[0_6px_24px_rgba(16,185,129,0.3)] group-hover:scale-110 transition-all duration-300">
                   <ShieldCheck className="w-8 h-8 text-emerald-500 drop-shadow-sm" />
                 </div>
                 <h3 className="font-bold text-foreground mb-2 text-lg">
@@ -543,13 +555,13 @@ export default function DashboardPage() {
                 </p>
               </a>
 
-              {/* Ver Reportes - Purple */}
+              {/* Ver Reportes - Secondary Purple */}
               <a
                 href="/reportes"
-                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
+                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(139,92,246,0.25),0_6px_24px_0_rgba(139,92,246,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500/40 to-purple-500/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(168,85,247,0.2)] group-hover:shadow-[0_6px_24px_rgba(168,85,247,0.3)] group-hover:scale-110 transition-all duration-300">
-                  <BarChart3 className="w-8 h-8 text-purple-500 drop-shadow-sm" />
+                <div className="w-16 h-16 bg-gradient-to-br from-[hsl(262_83%_58%)]/30 to-violet-400/20 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(139,92,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(139,92,246,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <BarChart3 className="w-8 h-8 text-[hsl(262_83%_58%)] drop-shadow-sm" />
                 </div>
                 <h3 className="font-bold text-foreground mb-2 text-lg">
                   Ver Reportes
@@ -559,13 +571,13 @@ export default function DashboardPage() {
                 </p>
               </a>
 
-              {/* Configuración - Orange */}
+              {/* Configuración - Amber/Orange accent */}
               <a
                 href="/configuracion"
-                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
+                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(245,158,11,0.25),0_6px_24px_0_rgba(245,158,11,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500/40 to-orange-500/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(249,115,22,0.2)] group-hover:shadow-[0_6px_24px_rgba(249,115,22,0.3)] group-hover:scale-110 transition-all duration-300">
-                  <Settings className="w-8 h-8 text-orange-500 drop-shadow-sm" />
+                <div className="w-16 h-16 bg-gradient-to-br from-amber-500/30 to-orange-400/20 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(245,158,11,0.2)] group-hover:shadow-[0_6px_24px_rgba(245,158,11,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <Settings className="w-8 h-8 text-amber-500 drop-shadow-sm" />
                 </div>
                 <h3 className="font-bold text-foreground mb-2 text-lg">
                   Configuración

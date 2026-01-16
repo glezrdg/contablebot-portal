@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Toast } from "primereact/toast";
 import DashboardLayout from "@/components/DashboardLayout";
+import PageLoader from "@/components/PageLoader";
 import ReportFilterSection from "@/components/ReportFilterSection";
 import UnifiedDateFilter from "@/components/UnifiedDateFilter";
 import InvoiceDataTable from "@/components/InvoiceDataTable";
@@ -60,6 +61,7 @@ export default function ReportesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [totalInvoices, setTotalInvoices] = useState<number>(0);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
     // Default visible columns
@@ -69,8 +71,11 @@ export default function ReportesPage() {
   });
 
   useEffect(() => {
-    fetchClients();
-    fetchReportStats();
+    const loadInitialData = async () => {
+      await Promise.all([fetchClients(), fetchReportStats()]);
+      setInitialLoading(false);
+    };
+    loadInitialData();
   }, []);
 
   // Note: User data is now fetched by DashboardLayout and passed via render prop
@@ -421,6 +426,10 @@ export default function ReportesPage() {
       description="Reportes y estadísticas de facturas"
     >
       {(userData) => {
+        if (initialLoading) {
+          return <PageLoader message="Cargando reportes..." />;
+        }
+
         return (
           <>
             <Toast ref={toast} />
@@ -474,9 +483,9 @@ export default function ReportesPage() {
             {/* Stats Cards Grid with Enhanced 3D Glassmorphic Design */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {/* Total Invoices */}
-              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(59,130,246,0.25),0_6px_24px_0_rgba(59,130,246,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(59,130,246,0.2)]">
+                  <div className="w-14 h-14 bg-gradient-to-br from-primary/30 to-[hsl(262_83%_58%)]/20 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(59,130,246,0.2)]">
                     <FileText className="w-7 h-7 text-primary drop-shadow-sm" />
                   </div>
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -512,10 +521,10 @@ export default function ReportesPage() {
               </div>
 
               {/* This Month */}
-              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(139,92,246,0.25),0_6px_24px_0_rgba(139,92,246,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(59,130,246,0.2)]">
-                    <CalendarIcon className="w-7 h-7 text-primary drop-shadow-sm" />
+                  <div className="w-14 h-14 bg-gradient-to-br from-[hsl(262_83%_58%)]/30 to-violet-400/20 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(139,92,246,0.2)]">
+                    <CalendarIcon className="w-7 h-7 text-[hsl(262_83%_58%)] drop-shadow-sm" />
                   </div>
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Este mes
@@ -621,7 +630,7 @@ export default function ReportesPage() {
                       className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border-2 border-primary/20">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/10 flex items-center justify-center border-2 border-primary/20">
                           <span className="text-sm font-bold text-primary">
                             {index + 1}
                           </span>
@@ -652,11 +661,11 @@ export default function ReportesPage() {
                 </div>
 
                 <button
-                  onClick={() => router.push("/dashboard")}
-                  className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-secondary hover:bg-muted transition-colors text-sm font-medium text-foreground"
+                  onClick={() => router.push("/clientes")}
+                  className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] hover:bg-primary/5 hover:border-primary/20 transition-all text-sm font-medium text-foreground group"
                 >
                   Ver todos los clientes
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>

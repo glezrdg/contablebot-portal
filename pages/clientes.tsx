@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import DashboardLayout from "@/components/DashboardLayout";
+import PageLoader from "@/components/PageLoader";
 import AddClientModal from "@/components/AddClientModal";
 import EditClientModal from "@/components/EditClientModal";
 import type { Client, ErrorResponse } from "@/types";
@@ -11,7 +12,7 @@ import { Plus, Pencil, Trash2, Building2 } from "lucide-react";
 export default function ClientesPage() {
   const toast = useRef<Toast>(null);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState<Client[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -175,6 +176,18 @@ export default function ClientesPage() {
     );
   });
 
+  // Show full page loader on initial load
+  if (loading && clients.length === 0) {
+    return (
+      <DashboardLayout
+        title="Clientes - ContableBot"
+        description="Gestión de clientes"
+      >
+        <PageLoader message="Cargando clientes..." />
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout
       title="Clientes - ContableBot"
@@ -184,157 +197,157 @@ export default function ClientesPage() {
       <ConfirmDialog />
 
       {/* Header */}
-      <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center shadow-lg">
-                <Building2 className="w-6 h-6 text-primary drop-shadow-sm" />
-              </div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Gestión de Clientes
-              </h1>
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary/30 to-[hsl(262_83%_58%)]/20 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">
+            <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary drop-shadow-sm" />
+          </div>
+          <h1 className="text-xl sm:text-3xl font-bold text-foreground">
+            Gestión de Clientes
+          </h1>
+        </div>
+        <p className="text-sm sm:text-base text-muted-foreground ml-[52px] sm:ml-[60px]">
+          Administra tus clientes y sus datos fiscales
+        </p>
+      </div>
+
+      {/* Stats Card */}
+      <div className="grid grid-cols-1 gap-4 mb-6">
+        <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:translate-y-[-2px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-xl sm:before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium uppercase tracking-wider">
+                Total de clientes
+              </p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 tabular-nums">
+                {clients.length}
+              </p>
             </div>
-            <p className="text-muted-foreground">
-              Administra tus clientes y sus datos fiscales
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(59,130,246,0.2)]">
+              <Building2 className="w-6 h-6 sm:w-7 sm:h-7 text-primary drop-shadow-sm" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Actions Bar */}
+      <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-6 shadow-[var(--glass-shadow)]">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-between">
+          {/* Search */}
+          <div className="flex-1 w-full sm:max-w-md">
+            <input
+              type="text"
+              placeholder="Buscar por nombre o RNC..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm sm:text-base"
+            />
+          </div>
+
+          {/* Add Client Button */}
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[hsl(262_83%_58%)] text-primary-foreground hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all font-medium w-full sm:w-auto"
+          >
+            <Plus className="w-5 h-5" />
+            Agregar Cliente
+          </button>
+        </div>
+      </div>
+
+      {/* Clients Table */}
+      <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-xl sm:before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+        {loading ? (
+          <div className="p-8 sm:p-12 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="mt-4 text-muted-foreground text-sm sm:text-base">
+              Cargando clientes...
             </p>
           </div>
-
-          {/* Stats Card */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">
-                    Total de clientes
-                  </p>
-                  <p className="text-3xl font-bold text-foreground mt-1 tabular-nums">
-                    {clients.length}
-                  </p>
-                </div>
-                <div className="w-14 h-14 bg-gradient-to-br from-primary/30 to-primary/10 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(59,130,246,0.2)]">
-                  <Building2 className="w-7 h-7 text-primary drop-shadow-sm" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions Bar */}
-          <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 mb-6 shadow-[var(--glass-shadow)]">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              {/* Search */}
-              <div className="flex-1 max-w-md">
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre o RNC..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                />
-              </div>
-
-              {/* Add Client Button */}
+        ) : filteredClients.length === 0 ? (
+          <div className="p-8 sm:p-12 text-center">
+            <Building2 className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-muted-foreground opacity-50 mb-4" />
+            <p className="text-muted-foreground text-sm sm:text-base">
+              {searchQuery
+                ? "No se encontraron clientes con ese criterio de búsqueda"
+                : "No hay clientes registrados"}
+            </p>
+            {!searchQuery && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-[hsl(221_83%_63%)] text-primary-foreground hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all font-medium"
+                className="mt-4 px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm sm:text-base"
               >
-                <Plus className="w-5 h-5" />
-                Agregar Cliente
+                Agregar primer cliente
               </button>
-            </div>
-          </div>
-
-          {/* Clients Table */}
-          <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-            {loading ? (
-              <div className="p-12 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <p className="mt-4 text-muted-foreground">
-                  Cargando clientes...
-                </p>
-              </div>
-            ) : filteredClients.length === 0 ? (
-              <div className="p-12 text-center">
-                <Building2 className="w-16 h-16 mx-auto text-muted-foreground opacity-50 mb-4" />
-                <p className="text-muted-foreground">
-                  {searchQuery
-                    ? "No se encontraron clientes con ese criterio de búsqueda"
-                    : "No hay clientes registrados"}
-                </p>
-                {!searchQuery && (
-                  <button
-                    onClick={() => setShowAddModal(true)}
-                    className="mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                  >
-                    Agregar primer cliente
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-muted/50 border-b border-border">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Nombre
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        RNC/Cédula
-                      </th>
-                      <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {filteredClients.map((client) => (
-                      <tr
-                        key={client.id}
-                        className="hover:bg-muted/30 transition-colors"
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <Building2 className="w-5 h-5 text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-foreground">
-                                {client.name}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="font-mono text-sm text-foreground">
-                            {formatCompactRnc(client.rnc)}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {client.rnc.length === 9 ? "RNC" : "Cédula"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleEditClient(client)}
-                              className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                              title="Editar cliente"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClient(client)}
-                              className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-muted-foreground hover:text-red-500"
-                              title="Eliminar cliente"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             )}
           </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b border-border">
+                <tr>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Nombre
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    RNC/Cédula
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredClients.map((client) => (
+                  <tr
+                    key={client.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="px-4 sm:px-6 py-3 sm:py-4">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground text-sm sm:text-base truncate">
+                            {client.name}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4">
+                      <div className="font-mono text-xs sm:text-sm text-foreground">
+                        {formatCompactRnc(client.rnc)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {client.rnc.length === 9 ? "RNC" : "Cédula"}
+                      </div>
+                    </td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4">
+                      <div className="flex items-center justify-end gap-1 sm:gap-2">
+                        <button
+                          onClick={() => handleEditClient(client)}
+                          className="p-1.5 sm:p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                          title="Editar cliente"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClient(client)}
+                          className="p-1.5 sm:p-2 rounded-lg hover:bg-red-500/10 transition-colors text-muted-foreground hover:text-red-500"
+                          title="Eliminar cliente"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       {/* Add Client Modal */}
       <AddClientModal

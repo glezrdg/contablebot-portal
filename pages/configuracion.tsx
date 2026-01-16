@@ -27,20 +27,25 @@ export default function ConfiguracionPage() {
       {(userData, refreshUserData) => (
         <>
           {/* Page Title */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Configuración</h1>
-            <p className="text-muted-foreground">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary/30 to-[hsl(262_83%_58%)]/20 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">
+                <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-primary drop-shadow-sm" />
+              </div>
+              <h1 className="text-xl sm:text-3xl font-bold text-foreground">Configuración</h1>
+            </div>
+            <p className="text-sm sm:text-base text-muted-foreground ml-[52px] sm:ml-[60px]">
               Ajusta tu perfil, integraciones y preferencias
             </p>
           </div>
 
           {/* Tab Navigation - Horizontal */}
-          <nav className="flex items-center gap-2 mb-6 bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-2 shadow-[var(--glass-shadow)]">
+          <nav className="flex items-center gap-1 sm:gap-2 mb-6 bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-[var(--glass-shadow)] overflow-x-auto">
             <button
               onClick={() => setActiveTab("perfil")}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                 activeTab === "perfil"
-                  ? "bg-primary/10 text-primary shadow-sm"
+                  ? "bg-gradient-to-r from-primary/20 to-[hsl(262_83%_58%)]/15 text-primary shadow-sm border border-primary/20"
                   : "text-muted-foreground hover:bg-[var(--glass-white)] hover:text-foreground"
               }`}
             >
@@ -50,9 +55,9 @@ export default function ConfiguracionPage() {
 
             <button
               onClick={() => setActiveTab("suscripcion")}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                 activeTab === "suscripcion"
-                  ? "bg-primary/10 text-primary shadow-sm"
+                  ? "bg-gradient-to-r from-primary/20 to-[hsl(262_83%_58%)]/15 text-primary shadow-sm border border-primary/20"
                   : "text-muted-foreground hover:bg-[var(--glass-white)] hover:text-foreground"
               }`}
             >
@@ -62,9 +67,9 @@ export default function ConfiguracionPage() {
 
             <button
               onClick={() => setActiveTab("preferencias")}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                 activeTab === "preferencias"
-                  ? "bg-primary/10 text-primary shadow-sm"
+                  ? "bg-gradient-to-r from-primary/20 to-[hsl(262_83%_58%)]/15 text-primary shadow-sm border border-primary/20"
                   : "text-muted-foreground hover:bg-[var(--glass-white)] hover:text-foreground"
               }`}
             >
@@ -171,7 +176,12 @@ function PerfilTab({ userData, onUpdate }: { userData: MeResponse | null; onUpda
 
   return (
     <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-      <h2 className="text-xl font-semibold text-foreground mb-6">Información del perfil</h2>
+      <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+        <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl flex items-center justify-center shadow-sm">
+          <User className="w-4 h-4 text-primary" />
+        </div>
+        Información del perfil
+      </h2>
 
       {message && (
         <div
@@ -226,7 +236,7 @@ function PerfilTab({ userData, onUpdate }: { userData: MeResponse | null; onUpda
         {/* Change Password Section */}
         <div className="pt-6 border-t border-[var(--glass-border)]">
           <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary/30 to-primary/10 rounded-xl flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl flex items-center justify-center shadow-sm">
               <Lock className="w-4 h-4 text-primary" />
             </div>
             Cambiar contraseña
@@ -518,7 +528,12 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
 
       {/* Current Plan Card */}
       <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-        <h2 className="text-xl font-semibold text-foreground mb-6">Plan actual</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl flex items-center justify-center shadow-sm">
+            <CreditCard className="w-4 h-4 text-primary" />
+          </div>
+          Plan actual
+        </h2>
 
         <div className="space-y-4">
           {/* Status Badge */}
@@ -648,7 +663,10 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
 
       {/* Subscription Features */}
       <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-        <h3 className="text-lg font-medium text-foreground mb-4">
+        <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl flex items-center justify-center shadow-sm">
+            <Zap className="w-4 h-4 text-primary" />
+          </div>
           Funciones de tu plan
         </h3>
         <ul className="space-y-3">
@@ -695,7 +713,7 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
       {userData?.isActive && !userData?.cancelAtPeriodEnd && (
         <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
           <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary/30 to-primary/10 rounded-xl flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl flex items-center justify-center shadow-sm">
               <ArrowUp className="w-4 h-4 text-primary" />
             </div>
             <h3 className="text-lg font-medium text-foreground">
@@ -796,13 +814,18 @@ function PreferenciasTab() {
 
   return (
     <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-      <h2 className="text-xl font-semibold text-foreground mb-6">Preferencias</h2>
+      <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+        <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl flex items-center justify-center shadow-sm">
+          <Settings className="w-4 h-4 text-primary" />
+        </div>
+        Preferencias
+      </h2>
 
       <div className="space-y-6">
         {/* Notifications Section */}
         <div>
           <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary/30 to-primary/10 rounded-xl flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl flex items-center justify-center shadow-sm">
               <Bell className="w-4 h-4 text-primary" />
             </div>
             Notificaciones
@@ -850,7 +873,10 @@ function PreferenciasTab() {
 
         {/* Export Settings */}
         <div className="pt-6 border-t border-[var(--glass-border)]">
-          <h3 className="text-lg font-medium text-foreground mb-4">
+          <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 rounded-xl flex items-center justify-center shadow-sm">
+              <Settings className="w-4 h-4 text-primary" />
+            </div>
             Configuración de exportación
           </h3>
           <label className="flex items-center justify-between p-4 bg-muted/50 rounded-lg cursor-pointer">

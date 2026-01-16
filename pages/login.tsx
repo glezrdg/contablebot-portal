@@ -7,12 +7,13 @@ import type { ErrorResponse } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Loader2 } from "lucide-react";
+import { FileText, Loader2, Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -63,170 +64,198 @@ export default function LoginPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center gap-2 mb-12">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <span className="font-semibold text-xl text-foreground">Contable Bot</span>
-            </Link>
-            <h1 className="text-2xl font-bold text-foreground mb-2">Bienvenido de vuelta</h1>
-            <p className="text-muted-foreground">Ingresa tus credenciales para continuar</p>
+      <div className="min-h-screen flex">
+        {/* Left Side - Form */}
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+          {/* Background decorations */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+            <div className="absolute -top-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-[hsl(262_83%_58%)]/10 rounded-full blur-3xl" />
           </div>
 
-          <div className="bg-gray-50 border border-border rounded-2xl p-8">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="su@email.com"
-                  disabled={loading}
-                  autoFocus
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="password">Contraseña</Label>
-                  <Link href="/recuperar" className="text-xs text-primary hover:underline">
-                    ¿Olvidaste tu contraseña?
-                  </Link>
+          <div className="w-full max-w-md relative z-10">
+            {/* Logo */}
+            <div className="text-center mb-8">
+              <Link href="/" className="inline-flex items-center gap-2.5 mb-8 group">
+                <div className="w-11 h-11 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all group-hover:scale-105">
+                  <FileText className="w-6 h-6 text-white" />
                 </div>
-                <Input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Su contraseña"
-                  disabled={loading}
-                  required
-                />
-              </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 text-center">
-                  {error}
-                </div>
-              )}
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Iniciando sesión...
-                  </>
-                ) : (
-                  "Iniciar Sesión"
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                ¿No tienes cuenta?{" "}
-                <Link href="/register" className="text-primary hover:underline font-medium">
-                  Crear cuenta
-                </Link>
+                <span className="font-bold text-xl text-foreground">ContableBot</span>
+              </Link>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+                Bienvenido de vuelta
+              </h1>
+              <p className="text-muted-foreground">
+                Ingresa tus credenciales para continuar
               </p>
             </div>
+
+            {/* Form Card */}
+            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 rounded-2xl p-8 shadow-xl shadow-primary/5">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-foreground font-medium">
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="tu@email.com"
+                      disabled={loading}
+                      autoFocus
+                      required
+                      className="pl-11 h-12 bg-white/50 dark:bg-slate-800/50 border-white/20 dark:border-slate-700/50 focus:border-primary/50 focus:ring-primary/20 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="password" className="text-foreground font-medium">
+                      Contraseña
+                    </Label>
+                    <Link
+                      href="/recuperar"
+                      className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Tu contraseña"
+                      disabled={loading}
+                      required
+                      className="pl-11 pr-11 h-12 bg-white/50 dark:bg-slate-800/50 border-white/20 dark:border-slate-700/50 focus:border-primary/50 focus:ring-primary/20 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-sm text-destructive text-center animate-fade-up">
+                    {error}
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-gradient-to-r from-primary to-[hsl(262_83%_58%)] hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all text-base font-medium"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Iniciando sesión...
+                    </>
+                  ) : (
+                    <>
+                      Iniciar Sesión
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              {/* Register Link */}
+              <div className="mt-6 pt-6 border-t border-border/50 text-center">
+                <p className="text-sm text-muted-foreground">
+                  ¿No tienes cuenta?{" "}
+                  <Link
+                    href="/register"
+                    className="text-primary hover:text-primary/80 font-semibold transition-colors"
+                  >
+                    Crear cuenta
+                  </Link>
+                </p>
+              </div>
+            </div>
+
+            {/* Terms */}
+            <p className="text-center text-xs text-muted-foreground mt-6">
+              Al iniciar sesión, aceptas nuestros{" "}
+              <Link href="/terminos" className="text-primary hover:underline">
+                términos
+              </Link>{" "}
+              y{" "}
+              <Link href="/privacidad" className="text-primary hover:underline">
+                privacidad
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+
+        {/* Right Side - Visual */}
+        <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary/5 via-background to-[hsl(262_83%_58%)]/5 items-center justify-center p-12 relative overflow-hidden">
+          {/* Background decorations */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-blob" />
+            <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-[hsl(262_83%_58%)]/10 rounded-full blur-3xl animate-blob-delayed" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
           </div>
 
-          <p className="text-center text-xs text-muted-foreground mt-6">
-            Al iniciar sesión, aceptas nuestros{" "}
-            <Link href="/terminos" className="text-primary hover:underline">
-              términos
-            </Link>{" "}
-            y{" "}
-            <Link href="/privacidad" className="text-primary hover:underline">
-              privacidad
-            </Link>
-            .
-          </p>
+          <div className="max-w-lg text-center relative z-10">
+            {/* Icon */}
+            <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/20 shadow-xl animate-float">
+              <Sparkles className="w-12 h-12 text-primary" />
+            </div>
+
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Potenciado por{" "}
+              <span className="text-gradient">Inteligencia Artificial</span>
+            </h2>
+
+            <p className="text-lg text-muted-foreground mb-10">
+              Automatiza tu contabilidad con la tecnología más avanzada.
+              Extrae datos de facturas en segundos con precisión del 99.5%.
+            </p>
+
+            {/* Features */}
+            <div className="grid grid-cols-2 gap-4 text-left">
+              {[
+                { label: "Facturas procesadas", value: "10,000+" },
+                { label: "Precisión IA", value: "99.5%" },
+                { label: "Tiempo promedio", value: "< 5s" },
+                { label: "Clientes activos", value: "500+" },
+              ].map((stat, i) => (
+                <div
+                  key={i}
+                  className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/50"
+                >
+                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-        <div className="bg-white p-8 sm:p-10 rounded-xl shadow-lg w-full max-w-md">
-          <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-2">
-            ContableBot Portal
-          </h1>
-          <p className="text-sm text-center text-gray-500 mb-8">
-            Ingrese sus credenciales
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="su@email.com"
-                disabled={loading}
-                autoFocus
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Contraseña
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Su contraseña"
-                disabled={loading}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 text-center">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-3 px-4 text-base font-semibold text-white bg-blue-600 rounded-lg transition-colors ${
-                loading ? "opacity-60 cursor-not-allowed" : "hover:bg-blue-700"
-              }`}
-            >
-              {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-            </button>
-
-            <p className="text-center text-sm text-gray-500 mt-4">
-              ¿Primera vez?{" "}
-              <Link
-                href="/setup-account"
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Crear cuenta con licencia
-              </Link>
-            </p>
-          </form>
-        </div>
-      </div> */}
     </>
   );
 }

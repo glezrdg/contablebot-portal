@@ -55,10 +55,9 @@ export default function InvoiceDetailModal({
       />
 
       {/* Modal */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] flex flex-col bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
+          <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
             <div>
               <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center shadow-md">
@@ -78,8 +77,8 @@ export default function InvoiceDetailModal({
             </button>
           </div>
 
-          {/* Content */}
-          <div className="p-6 space-y-6">
+          {/* Content with scroll */}
+          <div className="flex-1 min-h-0 overflow-y-auto modal-scrollbar p-6 space-y-6">
             {/* Invoice Basic Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -210,7 +209,7 @@ export default function InvoiceDetailModal({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 p-6 border-t border-[var(--glass-border)]">
+          <div className="flex justify-end gap-3 p-6 border-t border-[var(--glass-border)] flex-shrink-0">
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors font-medium"
@@ -218,7 +217,6 @@ export default function InvoiceDetailModal({
               Cerrar
             </button>
           </div>
-        </div>
       </div>
     </>,
     document.body

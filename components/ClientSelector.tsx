@@ -5,7 +5,8 @@
  * Shows current active client and allows switching between clients.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, Check, Plus } from "lucide-react";
 import { formatCompactRnc } from "@/lib/rnc-validator";
 import type { Client } from "@/types";
@@ -26,10 +27,24 @@ export default function ClientSelector({
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
   useEffect(() => {
     fetchClients();
   }, []);
+
+  // Update dropdown position when opened
+  useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  }, [isOpen]);
 
   const fetchClients = async () => {
     try {
@@ -92,6 +107,7 @@ export default function ClientSelector({
     <div className="relative">
       {/* Trigger Button - Glassmorphic */}
       <button
+        ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`
           w-full flex items-center justify-between gap-3 px-5 py-4 rounded-xl
@@ -111,17 +127,25 @@ export default function ClientSelector({
         />
       </button>
 
-      {/* Dropdown Menu - Glassmorphic */}
-      {isOpen && (
+      {/* Dropdown Menu - Portal-based for better UX in modals */}
+      {isOpen && createPortal(
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-[1200]"
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Menu - Enhanced Glassmorphic */}
-          <div className="absolute top-full left-0 mt-2 w-full min-w-[320px] bg-[var(--glass-white)] backdrop-blur-xl border border-[var(--glass-border)] rounded-xl shadow-[0_16px_48px_0_rgba(0,0,0,0.3)] z-20 max-h-96 overflow-y-auto before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+          {/* Menu - Enhanced Glassmorphic, rendered via portal */}
+          <div
+            style={{
+              position: 'fixed',
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: Math.max(dropdownPosition.width, 320),
+            }}
+            className="z-[1201] bg-white dark:bg-slate-900 backdrop-blur-xl border border-[var(--glass-border)] rounded-xl shadow-[0_16px_48px_0_rgba(0,0,0,0.3)] max-h-80 overflow-y-auto modal-scrollbar"
+          >
             {/* Add New Client Button - Gradient */}
             <button
               onClick={() => {
@@ -168,7 +192,7 @@ export default function ClientSelector({
                       disabled={!hasValidRnc}
                       className={`
                         w-full flex items-center gap-3 px-5 py-3
-                        hover:bg-[var(--glass-white)]/50 transition-all
+                        hover:bg-muted/50 transition-all
                         ${isActive ? "bg-primary/10 border-l-4 border-primary" : "border-l-4 border-transparent"}
                         ${!hasValidRnc ? "opacity-50 cursor-not-allowed" : ""}
                       `}
@@ -203,7 +227,8 @@ export default function ClientSelector({
               </div>
             )}
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

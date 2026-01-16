@@ -118,8 +118,8 @@ export default function Sidebar({ userRole = "user" }: SidebarProps) {
         <div className="h-16 flex items-center justify-between px-4 border-b border-[var(--glass-border)]">
           {!isCollapsed && (
             <div className="flex items-center gap-2 animate-fade-in">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center shadow-md">
-                <FileText className="w-4 h-4 text-primary" />
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] flex items-center justify-center shadow-lg shadow-primary/25">
+                <FileText className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg text-foreground">
                 ContableBot
@@ -127,14 +127,14 @@ export default function Sidebar({ userRole = "user" }: SidebarProps) {
             </div>
           )}
           {isCollapsed && (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center shadow-md mx-auto animate-fade-in">
-              <FileText className="w-4 h-4 text-primary" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] flex items-center justify-center shadow-lg shadow-primary/25 mx-auto animate-fade-in">
+              <FileText className="w-5 h-5 text-white" />
             </div>
           )}
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-hidden">
           {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
