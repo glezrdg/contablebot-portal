@@ -32,6 +32,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const [userData, setUserData] = useState<MeResponse | null>(null);
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Refresh user data - can be called by children to update usage, etc.
   const refreshUserData = useCallback(async () => {
@@ -80,6 +81,7 @@ export default function DashboardLayout({
 
       const data: MeResponse = await response.json();
       setUserData(data);
+      setIsInitialLoad(false);
 
       // Check admin requirement
       if (requireAdmin && data.role !== 'admin') {
@@ -107,6 +109,7 @@ export default function DashboardLayout({
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
+      setIsInitialLoad(false);
       router.push('/login');
     }
   };
@@ -118,49 +121,53 @@ export default function DashboardLayout({
         <meta name="description" content={description} />
       </Head>
 
-      {!userData ? (
-        // Minimal loading state - shows layout structure without blocking transitions
-        <div className="min-h-screen page-background flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-            <p className="text-sm text-muted-foreground">Cargando...</p>
-          </div>
-        </div>
-      ) : (
-        <div className="min-h-screen page-background flex">
-          {/* Desktop Sidebar - Hidden on mobile */}
-          <div className="hidden lg:block">
+      <div className="min-h-screen page-background flex">
+        {/* Desktop Sidebar - Always visible after initial load */}
+        <div className="hidden lg:block">
+          {!isInitialLoad && userData ? (
             <Sidebar userRole={userData.role} />
-          </div>
+          ) : !isInitialLoad ? (
+            <div className="fixed left-0 top-0 h-screen w-64 bg-[var(--glass-white)] backdrop-blur-xl border-r border-[var(--glass-border)] animate-pulse" />
+          ) : null}
+        </div>
 
-          {/* Main Content Area */}
-          <div className="flex-1 flex flex-col min-h-screen">
-            <div className="w-full px-0 sm:px-6 lg:px-8 py-6 sm:py-8">
-              <AdminHeader
-                firmName={userData.firmName || ''}
-                userEmail={userData.email || ''}
-                usedThisMonth={userData.usedThisMonth || 0}
-                planLimit={userData.planLimit || 0}
-                manageUrl={userData.manageUrl}
-                showUserStats={showUserStats}
-                userRole={userData.role}
-                planKey={userData.planKey}
-              />
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+          <div className="w-full h-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            {!isInitialLoad && userData ? (
+              <>
+                <AdminHeader
+                  firmName={userData.firmName || ''}
+                  userEmail={userData.email || ''}
+                  usedThisMonth={userData.usedThisMonth || 0}
+                  planLimit={userData.planLimit || 0}
+                  manageUrl={userData.manageUrl}
+                  showUserStats={showUserStats}
+                  userRole={userData.role}
+                  planKey={userData.planKey}
+                />
 
-              <main
-                className={`
-                  px-4 sm:px-0
-                  max-w-full overflow-x-hidden
-                  transition-all duration-200 ease-in-out
-                  ${isPageTransitioning ? 'opacity-70 scale-[0.99]' : 'opacity-100 scale-100'}
-                `}
-              >
-                {typeof children === 'function' ? children(userData, refreshUserData) : children}
-              </main>
-            </div>
+                <main
+                  className={`
+                    max-w-full
+                    transition-all duration-200 ease-in-out
+                    ${isPageTransitioning ? 'opacity-70 scale-[0.99]' : 'opacity-100 scale-100'}
+                  `}
+                >
+                  {typeof children === 'function' ? children(userData, refreshUserData) : children}
+                </main>
+              </>
+            ) : (
+              <div className="flex items-center justify-center min-h-screen">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                  <p className="text-sm text-muted-foreground">Cargando...</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 }

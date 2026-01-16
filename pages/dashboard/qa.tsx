@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Toast } from "primereact/toast";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -413,66 +414,67 @@ export default function QADashboardPage() {
           <Toast ref={toast} />
 
           {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <ShieldCheck className="w-8 h-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">Control de Calidad</h1>
+          <div className="mb-4 sm:mb-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Control de Calidad</h1>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Revisa y aprueba facturas que necesitan atencion
             </p>
           </div>
 
           {/* Stats Cards with 3D Glassmorphic Design */}
           {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-500/30 to-yellow-500/10 rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(234,179,8,0.2)]">
-                    <AlertTriangle className="w-4 h-4 text-yellow-500 drop-shadow-sm" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-2px] transition-all duration-300">
+                <div className="flex items-start gap-2 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-yellow-500/30 to-yellow-500/10 rounded-lg sm:rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(234,179,8,0.2)] flex-shrink-0">
+                    <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-500 drop-shadow-sm" />
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium">Dudosas (IA)</span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground font-medium leading-tight">Dudosas (IA)</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground tabular-nums">{stats.flaggedByAI}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums">{stats.flaggedByAI}</p>
               </div>
-              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 bg-gradient-to-br from-red-500/30 to-red-500/10 rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(239,68,68,0.2)]">
-                    <XCircle className="w-4 h-4 text-red-500 drop-shadow-sm" />
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-2px] transition-all duration-300">
+                <div className="flex items-start gap-2 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-red-500/30 to-red-500/10 rounded-lg sm:rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(239,68,68,0.2)] flex-shrink-0">
+                    <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500 drop-shadow-sm" />
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium">Errores matemáticos</span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground font-medium leading-tight">Errores matemáticos</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground tabular-nums">{stats.mathErrors}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums">{stats.mathErrors}</p>
               </div>
-              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500/30 to-orange-500/10 rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(249,115,22,0.2)]">
-                    <AlertTriangle className="w-4 h-4 text-orange-500 drop-shadow-sm" />
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-2px] transition-all duration-300">
+                <div className="flex items-start gap-2 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-orange-500/30 to-orange-500/10 rounded-lg sm:rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(249,115,22,0.2)] flex-shrink-0">
+                    <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 drop-shadow-sm" />
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium">Baja confianza</span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground font-medium leading-tight">Baja confianza</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground tabular-nums">{stats.lowConfidence}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums">{stats.lowConfidence}</p>
               </div>
-              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 bg-gradient-to-br from-green-500/30 to-green-500/10 rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(34,197,94,0.2)]">
-                    <CheckCircle className="w-4 h-4 text-green-500 drop-shadow-sm" />
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-2px] transition-all duration-300">
+                <div className="flex items-start gap-2 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-green-500/30 to-green-500/10 rounded-lg sm:rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(34,197,94,0.2)] flex-shrink-0">
+                    <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500 drop-shadow-sm" />
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium">Total revisadas</span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground font-medium leading-tight">Total revisadas</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground tabular-nums">{stats.total}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums">{stats.total}</p>
               </div>
             </div>
           )}
 
           {/* Filter and Actions */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-col gap-3 sm:gap-4 mb-4">
+            {/* Filters Row */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
               <Dropdown
                 value={filter}
                 options={filterOptions}
                 onChange={(e) => setFilter(e.value)}
-                className="w-48"
+                className="w-full sm:w-48 text-sm"
               />
               {isAdmin && clients.length > 0 && (
                 <Dropdown
@@ -486,43 +488,46 @@ export default function QADashboardPage() {
                   ]}
                   onChange={(e) => setSelectedClientId(e.value)}
                   placeholder="Filtrar por cliente"
-                  className="w-56"
+                  className="w-full sm:w-56 text-sm"
                 />
               )}
               <button
                 onClick={fetchQAInvoices}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors text-sm font-medium"
               >
                 <RefreshCw className="w-4 h-4" />
-                Actualizar
+                <span className="hidden sm:inline">Actualizar</span>
               </button>
             </div>
 
+            {/* Bulk Actions Row */}
             {selectedInvoices.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {selectedInvoices.length} seleccionadas
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                <span className="text-xs sm:text-sm text-foreground font-medium">
+                  {selectedInvoices.length} factura{selectedInvoices.length !== 1 ? 's' : ''} seleccionada{selectedInvoices.length !== 1 ? 's' : ''}
                 </span>
-                <button
-                  onClick={handleBulkApprove}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Aprobar
-                </button>
-                <button
-                  onClick={handleBulkReprocess}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Reprocesar
-                </button>
+                <div className="flex items-center gap-2 sm:ml-auto">
+                  <button
+                    onClick={handleBulkApprove}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Aprobar
+                  </button>
+                  <button
+                    onClick={handleBulkReprocess}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors text-sm font-medium"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Reprocesar
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
           {/* Data Table with 3D Glassmorphic Design */}
-          <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+          <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] overflow-x-auto">
             <DataTable
               value={invoices}
               loading={loading}
@@ -550,16 +555,16 @@ export default function QADashboardPage() {
           </div>
 
           {/* Detail Dialog */}
-          {showDetailDialog && detailInvoice && (
+          {showDetailDialog && detailInvoice && createPortal(
             <>
               {/* Backdrop */}
               <div
-                className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
+                className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
                 onClick={() => setShowDetailDialog(false)}
               />
 
               {/* Modal */}
-              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-3xl max-h-[90vh] overflow-y-auto">
                 <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
                   {/* Header */}
                   <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
@@ -744,17 +749,18 @@ export default function QADashboardPage() {
                   </div>
                 </div>
               </div>
-            </>
+            </>,
+            document.body
           )}
 
           {/* Reprocess Confirmation Modal */}
-          {confirmReprocess.show && (
+          {confirmReprocess.show && createPortal(
             <>
               <div
-                className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
+                className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
                 onClick={() => setConfirmReprocess({ show: false })}
               />
-              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md">
                 <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
                   <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
                     <div>
@@ -802,17 +808,18 @@ export default function QADashboardPage() {
                   </div>
                 </div>
               </div>
-            </>
+            </>,
+            document.body
           )}
 
           {/* Delete Confirmation Modal */}
-          {confirmDelete.show && confirmDelete.invoice && (
+          {confirmDelete.show && confirmDelete.invoice && createPortal(
             <>
               <div
-                className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
+                className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
                 onClick={() => setConfirmDelete({ show: false })}
               />
-              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md">
                 <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
                   <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-red-500/5 via-red-500/10 to-red-500/5">
                     <div>
@@ -854,17 +861,18 @@ export default function QADashboardPage() {
                   </div>
                 </div>
               </div>
-            </>
+            </>,
+            document.body
           )}
 
           {/* Bulk Approve Confirmation Modal */}
-          {confirmBulkApprove && (
+          {confirmBulkApprove && createPortal(
             <>
               <div
-                className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
+                className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
                 onClick={() => setConfirmBulkApprove(false)}
               />
-              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md">
                 <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
                   <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-green-500/5 via-green-500/10 to-green-500/5">
                     <div>
@@ -906,7 +914,8 @@ export default function QADashboardPage() {
                   </div>
                 </div>
               </div>
-            </>
+            </>,
+            document.body
           )}
         </>
         );

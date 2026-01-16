@@ -4,6 +4,7 @@
  * Modal for uploading invoices with client selection.
  */
 
+import { createPortal } from "react-dom";
 import { X, Upload } from "lucide-react";
 import ClientSelector from "@/components/ClientSelector";
 import InvoiceUploader from "@/components/InvoiceUploader";
@@ -46,16 +47,16 @@ export default function UploadInvoiceModal({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop - Enhanced */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
+        className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
         onClick={onClose}
       />
 
       {/* Modal - Solid White */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-4xl h-[90vh] overflow-y-auto">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-4xl h-[90vh] overflow-y-auto">
         <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
           {/* Header - Glassmorphic with Gradient */}
           <div className="flex items-center justify-between p-6 sm:p-8 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
@@ -146,6 +147,7 @@ export default function UploadInvoiceModal({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

@@ -9,7 +9,7 @@ import { PlayCircle } from "lucide-react";
 
 export default function TutorialPage() {
   // Tutorial video URL - replace with your actual video URL
-  const tutorialVideoUrl = "https://www.youtube.com/watch?v=lNIL5DN3Qyo";
+  const tutorialVideoUrl = "https://www.youtube.com/embed/lNIL5DN3Qyo";
 
   return (
     <DashboardLayout

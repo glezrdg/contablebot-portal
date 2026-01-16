@@ -4,6 +4,7 @@
  * Modal for viewing invoice details in read-only mode.
  */
 
+import { createPortal } from "react-dom";
 import { X, FileText } from "lucide-react";
 import type { Invoice } from "@/types";
 
@@ -45,16 +46,16 @@ export default function InvoiceDetailModal({
     }
   };
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
+        className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
@@ -219,6 +220,7 @@ export default function InvoiceDetailModal({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

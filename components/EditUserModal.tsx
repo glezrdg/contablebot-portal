@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X, AlertCircle, CheckCircle2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toast } from "primereact/toast";
@@ -148,18 +149,18 @@ export default function EditUserModal({
 
   // Prevent editing admin users
   if (user.role === 'admin') {
-    return (
+    return createPortal(
       <>
         <Toast ref={toast} />
 
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
           onClick={onClose}
         />
 
         {/* Modal */}
-        <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
+        <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md">
           <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4 p-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -177,22 +178,23 @@ export default function EditUserModal({
             </div>
           </div>
         </div>
-      </>
+      </>,
+      document.body
     );
   }
 
-  return (
+  return createPortal(
     <>
       <Toast ref={toast} />
 
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
+        className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
@@ -387,6 +389,7 @@ export default function EditUserModal({
           </form>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

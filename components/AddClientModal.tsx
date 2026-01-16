@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, AlertCircle, CheckCircle2, UserPlus } from "lucide-react";
 import { validateRnc, type RncValidationResult } from "@/lib/rnc-validator";
 import { Button } from "@/components/ui/button";
@@ -119,16 +120,16 @@ export default function AddClientModal({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop - Enhanced */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
+        className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
         onClick={onClose}
       />
 
       {/* Modal - Solid White */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md mx-4">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md mx-4">
         <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)]">
           {/* Header - Glassmorphic with Gradient */}
           <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
@@ -261,6 +262,7 @@ export default function AddClientModal({
           </form>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

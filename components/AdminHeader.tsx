@@ -74,7 +74,7 @@ export default function AdminHeader({
 
       {/* Top Bar - Logo and Actions */}
       <div className={`
-        sticky top-0 z-40 -mt-6 pt-4 mb-4 pb-4 px-4 sm:px-0
+        sticky top-0 z-40 -mt-6 pt-4 mb-4 pb-4
         flex items-center justify-between gap-2 sm:gap-3
         transition-glass
         ${isScrolled
@@ -123,7 +123,7 @@ export default function AdminHeader({
 
       {/* Bottom Bar - User Info and Usage Stats (Dashboard only) */}
       {showUserStats && (
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 sm:px-0">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* User Info */}
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border-2 border-primary/30 backdrop-blur-sm shadow-lg">
