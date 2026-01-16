@@ -510,7 +510,7 @@ export default function DashboardPage() {
             <ConfirmDialog />
 
             {/* Quick Action Cards with Enhanced 3D Glassmorphic Design */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
               {/* Subir Factura - Blue */}
               <div
                 onClick={handleOpenUploader}

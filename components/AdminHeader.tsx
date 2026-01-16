@@ -123,7 +123,7 @@ export default function AdminHeader({
 
       {/* Bottom Bar - User Info and Usage Stats (Dashboard only) */}
       {showUserStats && (
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 sm:px-0">
           {/* User Info */}
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border-2 border-primary/30 backdrop-blur-sm shadow-lg">
@@ -131,11 +131,11 @@ export default function AdminHeader({
                 {firmName.charAt(0).toUpperCase()}
               </span>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg font-semibold text-foreground truncate">
                 {firmName}
               </h2>
-              <p className="text-sm text-muted-foreground">{userEmail}</p>
+              <p className="text-sm text-muted-foreground truncate">{userEmail}</p>
             </div>
           </div>
 
@@ -143,7 +143,7 @@ export default function AdminHeader({
           <div className="
             bg-[var(--glass-white)] backdrop-blur-xl
             border-2 border-[var(--glass-border)]
-            rounded-2xl px-8 py-5
+            rounded-2xl px-4 sm:px-6 md:px-8 py-4 md:py-5
             shadow-[0_12px_40px_0_rgba(31,38,135,0.2),0_6px_20px_0_rgba(31,38,135,0.15),inset_0_2px_0_0_rgba(255,255,255,0.6)]
             dark:shadow-[0_12px_40px_0_rgba(0,0,0,0.5),0_6px_20px_0_rgba(0,0,0,0.4),inset_0_2px_0_0_rgba(255,255,255,0.15)]
             hover:shadow-[0_16px_56px_0_rgba(31,38,135,0.3),0_8px_28px_0_rgba(31,38,135,0.2),inset_0_2px_0_0_rgba(255,255,255,0.7)]
@@ -151,30 +151,26 @@ export default function AdminHeader({
             hover:translate-y-[-6px]
             transition-all duration-300
             relative
-            before:absolute before:inset-0 before:rounded-2xl
-            before:bg-gradient-to-br before:from-primary/10 before:via-transparent before:to-transparent
-            before:pointer-events-none before:z-[-1]
-            after:absolute after:inset-0 after:rounded-2xl
-            after:bg-gradient-to-t after:from-white/5 after:to-transparent
-            after:pointer-events-none after:z-[-1]
+            shrink-0
+            w-full md:w-auto md:min-w-[300px] md:max-w-[400px]
           ">
-            <div className="flex items-center justify-between gap-8">
-              <div className="flex-1">
+            <div className="flex items-center justify-between gap-4 sm:gap-6 md:gap-8">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 bg-gradient-to-br from-primary/40 to-primary/10 rounded-xl flex items-center justify-center shadow-md">
                     <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-primary/80">
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary/80 whitespace-nowrap">
                     Uso mensual
                   </p>
                 </div>
                 <div className="flex items-baseline gap-2 mb-3">
-                  <span className="text-3xl font-bold text-foreground tabular-nums bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text">
+                  <span className="text-2xl sm:text-3xl font-bold text-foreground tabular-nums">
                     {usedThisMonth}
                   </span>
-                  <span className="text-lg text-muted-foreground font-medium">
+                  <span className="text-base sm:text-lg text-muted-foreground font-medium whitespace-nowrap">
                     / {planLimit}
                   </span>
                 </div>
@@ -209,7 +205,7 @@ export default function AdminHeader({
               </div>
 
               {/* Enhanced Usage Ring with stronger glow */}
-              <div className="relative">
+              <div className="relative shrink-0 hidden sm:block">
                 <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-50"></div>
                 <UsageRing
                   used={usedThisMonth}

@@ -1,5 +1,31 @@
 # Glassmorphic UI Redesign - Changelog
 
+## Version 1.27.0 - January 2026
+
+Fixed content overflow issues to prevent elements from extending beyond page boundaries.
+
+### Content Overflow Fixes
+
+**DashboardLayout Content Constraints** ([components/DashboardLayout.tsx](components/DashboardLayout.tsx)):
+- Added `max-w-full` to main content container to prevent overflow
+- Added `overflow-x-hidden` to hide any horizontal scrollbars
+- Ensures all content stays within viewport boundaries
+
+**Dashboard Grid Responsiveness** ([pages/dashboard.tsx](pages/dashboard.tsx)):
+- Updated quick action cards grid: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`
+- Better breakpoint progression (mobile → 2 cols tablet → 4 cols desktop)
+- Reduced gap on mobile: `gap-4 sm:gap-6` for compact layout
+- Cards now properly stack and flow on smaller screens
+
+**Benefits**:
+- ✅ No content extends beyond page boundaries
+- ✅ No horizontal scrolling on any screen size
+- ✅ Better grid layout on tablet devices
+- ✅ Improved spacing hierarchy across breakpoints
+- ✅ Professional, contained layout on all devices
+
+---
+
 ## Version 1.26.0 - January 2026
 
 Fixed responsive design for mobile and tablet screens across header and layout.

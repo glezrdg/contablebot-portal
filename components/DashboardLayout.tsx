@@ -146,6 +146,7 @@ export default function DashboardLayout({
             <main
               className={`
                 px-4 sm:px-0
+                max-w-full overflow-x-hidden
                 transition-all duration-200 ease-in-out
                 ${isPageTransitioning ? 'opacity-70 scale-[0.99]' : 'opacity-100 scale-100'}
               `}
