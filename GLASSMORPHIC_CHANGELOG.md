@@ -1,5 +1,34 @@
 # Glassmorphic UI Redesign - Changelog
 
+## Version 1.26.0 - January 2026
+
+Fixed responsive design for mobile and tablet screens across header and layout.
+
+### Responsive Design Improvements
+
+**AdminHeader Responsive Fixes** ([components/AdminHeader.tsx](components/AdminHeader.tsx)):
+- Added responsive padding: `px-4 sm:px-0` to prevent content touching edges on mobile
+- Adjusted top padding: `pt-4` (reduced from pt-6) for better mobile spacing
+- Scaled menu icon: `w-5 h-5 sm:w-6 sm:h-6` for better touch targets
+- Added negative margin to menu button: `-ml-2` to align with content
+- Reduced gap between elements: `gap-1.5 sm:gap-2` for compact mobile layout
+- Better spacing control across all breakpoints
+
+**DashboardLayout Responsive Updates** ([components/DashboardLayout.tsx](components/DashboardLayout.tsx)):
+- Container padding: `px-0 sm:px-6 lg:px-8` for full-width on mobile
+- Vertical padding: `py-6 sm:py-8` for consistent spacing
+- Main content padding: `px-4 sm:px-0` to maintain proper content margins
+- Ensures content doesn't touch screen edges on any device
+
+**Benefits**:
+- ✅ Proper spacing on all screen sizes (mobile, tablet, desktop)
+- ✅ Content never touches screen edges
+- ✅ Touch-friendly button sizes on mobile
+- ✅ Consistent padding system across breakpoints
+- ✅ Better use of screen real estate
+
+---
+
 ## Version 1.25.0 - January 2026
 
 Moved configuration tabs from vertical sidebar to horizontal top navigation for modern UX.

@@ -74,8 +74,8 @@ export default function AdminHeader({
 
       {/* Top Bar - Logo and Actions */}
       <div className={`
-        sticky top-0 z-40 -mt-6 pt-6 mb-4 pb-4
-        flex items-center justify-between gap-2
+        sticky top-0 z-40 -mt-6 pt-4 mb-4 pb-4 px-4 sm:px-0
+        flex items-center justify-between gap-2 sm:gap-3
         transition-glass
         ${isScrolled
           ? 'bg-[var(--glass-white)] backdrop-blur-lg border-b border-[var(--glass-border)] shadow-md'
@@ -85,10 +85,10 @@ export default function AdminHeader({
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="lg:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors shrink-0"
+          className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors shrink-0"
           aria-label="Abrir menú"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
         {/* Logo and Brand - Hidden on mobile when sidebar is present */}
@@ -107,8 +107,8 @@ export default function AdminHeader({
         {/* Spacer to push items to the right on mobile */}
         <div className="flex-1 lg:hidden" />
 
-        {/* Action Buttons - Removed since sidebar now handles navigation */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Client Switcher */}
           <ClientSwitcher />
 

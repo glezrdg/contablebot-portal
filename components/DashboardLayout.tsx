@@ -131,7 +131,7 @@ export default function DashboardLayout({
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-h-screen">
-          <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+          <div className="w-full px-0 sm:px-6 lg:px-8 py-6 sm:py-8">
             <AdminHeader
               firmName={userData.firmName || ''}
               userEmail={userData.email || ''}
@@ -145,6 +145,7 @@ export default function DashboardLayout({
 
             <main
               className={`
+                px-4 sm:px-0
                 transition-all duration-200 ease-in-out
                 ${isPageTransitioning ? 'opacity-70 scale-[0.99]' : 'opacity-100 scale-100'}
               `}
