@@ -55,15 +55,15 @@ export default function ProfileDropdown({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Profile Button */}
+      {/* Profile Button with Glass Effect */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted transition-colors"
+        className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] hover:bg-[var(--glass-white)]/80 hover:shadow-md transition-all"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
         {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border-2 border-primary/20">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border-2 border-primary/30 shadow-sm">
           <span className="text-sm font-bold text-primary">
             {firmName.charAt(0).toUpperCase()}
           </span>
@@ -82,11 +82,11 @@ export default function ProfileDropdown({
         />
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown Menu with Glassmorphic Design */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-[var(--glass-white)] backdrop-blur-xl border border-[var(--glass-border)] rounded-xl shadow-[0_24px_48px_0_rgba(0,0,0,0.2)] overflow-hidden z-[100] before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
           {/* User Info Section */}
-          <div className="px-4 py-3 border-b border-border">
+          <div className="px-4 py-3 border-b border-[var(--glass-border)] bg-[var(--glass-white)]/50">
             <p className="text-sm font-semibold text-foreground truncate">
               {firmName}
             </p>
@@ -100,20 +100,24 @@ export default function ProfileDropdown({
             {/* Tutorial */}
             <Link
               href="/tutorial"
-              className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-[var(--glass-white)]/50 hover:backdrop-blur-md transition-all"
               onClick={() => setIsOpen(false)}
             >
-              <PlayCircle className="w-4 h-4 text-muted-foreground" />
+              <div className="w-5 h-5 flex items-center justify-center">
+                <PlayCircle className="w-4 h-4 text-muted-foreground" />
+              </div>
               <span>Tutorial</span>
             </Link>
 
             {/* Settings */}
             <Link
               href="/configuracion"
-              className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-[var(--glass-white)]/50 hover:backdrop-blur-md transition-all"
               onClick={() => setIsOpen(false)}
             >
-              <Settings className="w-4 h-4 text-muted-foreground" />
+              <div className="w-5 h-5 flex items-center justify-center">
+                <Settings className="w-4 h-4 text-muted-foreground" />
+              </div>
               <span>Configuración</span>
             </Link>
 
@@ -123,10 +127,12 @@ export default function ProfileDropdown({
                 href={manageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-[var(--glass-white)]/50 hover:backdrop-blur-md transition-all"
                 onClick={() => setIsOpen(false)}
               >
-                <CreditCard className="w-4 h-4 text-muted-foreground" />
+                <div className="w-5 h-5 flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-muted-foreground" />
+                </div>
                 <span>Suscripción</span>
               </a>
             ) : (
@@ -134,25 +140,29 @@ export default function ProfileDropdown({
                 href="https://whop.com/hub"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-[var(--glass-white)]/50 hover:backdrop-blur-md transition-all"
                 onClick={() => setIsOpen(false)}
               >
-                <CreditCard className="w-4 h-4 text-muted-foreground" />
+                <div className="w-5 h-5 flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-muted-foreground" />
+                </div>
                 <span>Whop Hub</span>
               </a>
             )}
           </div>
 
           {/* Logout Section */}
-          <div className="border-t border-border py-1">
+          <div className="border-t border-[var(--glass-border)] py-1">
             <button
               onClick={() => {
                 setIsOpen(false);
                 handleLogout();
               }}
-              className="flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors w-full text-left"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 hover:backdrop-blur-md transition-all w-full text-left"
             >
-              <LogOut className="w-4 h-4" />
+              <div className="w-5 h-5 flex items-center justify-center">
+                <LogOut className="w-4 h-4" />
+              </div>
               <span>Salir</span>
             </button>
           </div>

@@ -111,25 +111,31 @@ export default function MobileSidenav({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Glassmorphic Backdrop with Blur */}
       <div
-        className={`fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity duration-300 z-40 ${
+        className={`fixed inset-0 bg-black/30 backdrop-blur-sm transition-all duration-300 z-40 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         aria-hidden="true"
       />
 
-      {/* Drawer */}
+      {/* Glass Drawer */}
       <div
         ref={drawerRef}
-        className={`fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-950 border-r border-border transform transition-transform duration-300 z-50 flex flex-col ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`
+          fixed inset-y-0 left-0 w-72
+          bg-[var(--glass-white)] backdrop-blur-xl
+          border-r border-[var(--glass-border)]
+          shadow-2xl
+          transform transition-all duration-300 ease-out
+          z-50 flex flex-col
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
       >
         {/* Logo Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--glass-border)]">
           <Link href="/dashboard" className="flex items-center gap-3 group" onClick={onClose}>
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all group-hover:scale-105">
               <FileText className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
@@ -141,25 +147,25 @@ export default function MobileSidenav({
           </Link>
           <button
             onClick={onClose}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md rounded-lg transition-all"
             aria-label="Cerrar menú"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* User info section */}
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-3">
+        {/* User info section with glass effect */}
+        <div className="p-4 border-b border-[var(--glass-border)]">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)]">
             {/* Firm avatar */}
-            <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-md">
               <span className="text-primary-foreground font-semibold text-sm">
                 {userData.firm_name?.[0]?.toUpperCase() || 'F'}
               </span>
             </div>
             {/* Firm info */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
+              <p className="text-sm font-semibold text-foreground truncate">
                 {userData.firm_name}
               </p>
               <p className="text-xs text-muted-foreground truncate">{userData.email}</p>
@@ -167,7 +173,7 @@ export default function MobileSidenav({
           </div>
         </div>
 
-        {/* Navigation links */}
+        {/* Navigation links with glass styling */}
         <nav className="flex-1 overflow-y-auto p-4">
           <div className="space-y-1">
             {navLinks.map((link) => {
@@ -180,10 +186,10 @@ export default function MobileSidenav({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                     active
-                      ? 'bg-primary/20 text-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm'
+                      : 'text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)] hover:scale-[1.02]'
                   }`}
                   onClick={onClose}
                 >
@@ -195,11 +201,11 @@ export default function MobileSidenav({
           </div>
         </nav>
 
-        {/* Quick actions at bottom */}
-        <div className="p-4 border-t border-border space-y-1">
+        {/* Quick actions at bottom with glass effects */}
+        <div className="p-4 border-t border-[var(--glass-border)] space-y-1">
           <Link
             href="/tutorial"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)] transition-all"
             onClick={onClose}
           >
             <PlayCircle className="w-5 h-5 flex-shrink-0" />
@@ -208,7 +214,7 @@ export default function MobileSidenav({
 
           <Link
             href="/configuracion"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)] transition-all"
             onClick={onClose}
           >
             <Settings className="w-5 h-5 flex-shrink-0" />
@@ -224,7 +230,7 @@ export default function MobileSidenav({
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)] transition-all"
             >
               <CreditCard className="w-5 h-5 flex-shrink-0" />
               <span className="font-medium">Suscripción</span>
@@ -233,7 +239,7 @@ export default function MobileSidenav({
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-destructive/80 hover:bg-destructive/10 hover:text-destructive hover:border hover:border-destructive/20 transition-all"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             <span className="font-medium">Cerrar Sesión</span>

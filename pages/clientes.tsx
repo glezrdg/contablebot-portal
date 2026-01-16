@@ -186,7 +186,9 @@ export default function ClientesPage() {
       {/* Header */}
       <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <Building2 className="w-8 h-8 text-primary" />
+              <div className="w-12 h-12 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center shadow-lg">
+                <Building2 className="w-6 h-6 text-primary drop-shadow-sm" />
+              </div>
               <h1 className="text-3xl font-bold text-foreground">
                 Gestión de Clientes
               </h1>
@@ -198,23 +200,25 @@ export default function ClientesPage() {
 
           {/* Stats Card */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">
                     Total de clientes
                   </p>
-                  <p className="text-3xl font-bold text-foreground mt-1">
+                  <p className="text-3xl font-bold text-foreground mt-1 tabular-nums">
                     {clients.length}
                   </p>
                 </div>
-                <Building2 className="w-12 h-12 text-primary opacity-20" />
+                <div className="w-14 h-14 bg-gradient-to-br from-primary/30 to-primary/10 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(59,130,246,0.2)]">
+                  <Building2 className="w-7 h-7 text-primary drop-shadow-sm" />
+                </div>
               </div>
             </div>
           </div>
 
           {/* Actions Bar */}
-          <div className="bg-card border border-border rounded-xl p-4 mb-6">
+          <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 mb-6 shadow-[var(--glass-shadow)]">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               {/* Search */}
               <div className="flex-1 max-w-md">
@@ -223,14 +227,14 @@ export default function ClientesPage() {
                   placeholder="Buscar por nombre o RNC..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
               </div>
 
               {/* Add Client Button */}
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-[hsl(221_83%_63%)] text-primary-foreground hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all font-medium"
               >
                 <Plus className="w-5 h-5" />
                 Agregar Cliente
@@ -239,7 +243,7 @@ export default function ClientesPage() {
           </div>
 
           {/* Clients Table */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
             {loading ? (
               <div className="p-12 text-center">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

@@ -471,20 +471,20 @@ export default function ReportesPage() {
               isAdmin={userData?.role === "admin"}
             />
 
-            {/* Stats Cards Grid */}
+            {/* Stats Cards Grid with Enhanced 3D Glassmorphic Design */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {/* Total Invoices */}
-              <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-primary" />
+                  <div className="w-14 h-14 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(59,130,246,0.2)]">
+                    <FileText className="w-7 h-7 text-primary drop-shadow-sm" />
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Total
                   </span>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-3xl font-bold text-foreground">
+                  <p className="text-3xl font-bold text-foreground tabular-nums">
                     {stats?.totalInvoices}
                   </p>
                   <p className="text-sm text-muted-foreground">
@@ -494,17 +494,17 @@ export default function ReportesPage() {
               </div>
 
               {/* Total Amount */}
-              <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-emerald-500" />
+                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(16,185,129,0.2)]">
+                    <DollarSign className="w-7 h-7 text-emerald-500 drop-shadow-sm" />
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Monto
                   </span>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-3xl font-bold text-foreground">
+                  <p className="text-3xl font-bold text-foreground tabular-nums">
                     ${stats?.totalAmount.toLocaleString()}
                   </p>
                   <p className="text-sm text-muted-foreground">Monto total</p>
@@ -512,17 +512,17 @@ export default function ReportesPage() {
               </div>
 
               {/* This Month */}
-              <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
-                    <CalendarIcon className="w-6 h-6 text-primary" />
+                  <div className="w-14 h-14 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(59,130,246,0.2)]">
+                    <CalendarIcon className="w-7 h-7 text-primary drop-shadow-sm" />
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Este mes
                   </span>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-3xl font-bold text-foreground">
+                  <p className="text-3xl font-bold text-foreground tabular-nums">
                     {stats?.thisMonth}
                   </p>
                   <div className="flex items-center gap-2">
@@ -546,17 +546,17 @@ export default function ReportesPage() {
               </div>
 
               {/* Average Amount */}
-              <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-amber-500" />
+                  <div className="w-14 h-14 bg-gradient-to-br from-amber-500/30 to-amber-500/10 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(245,158,11,0.2)]">
+                    <TrendingUp className="w-7 h-7 text-amber-500 drop-shadow-sm" />
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Promedio
                   </span>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-3xl font-bold text-foreground">
+                  <p className="text-3xl font-bold text-foreground tabular-nums">
                     ${stats?.averageAmount.toLocaleString()}
                   </p>
                   <p className="text-sm text-muted-foreground">Monto promedio</p>
@@ -564,10 +564,10 @@ export default function ReportesPage() {
               </div>
             </div>
 
-            {/* Charts Section */}
+            {/* Charts Section with 3D Glassmorphic Design */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               {/* Monthly Breakdown */}
-              <div className="bg-card border border-border rounded-xl p-6">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-semibold text-foreground">
                     Evolución mensual
@@ -606,7 +606,7 @@ export default function ReportesPage() {
               </div>
 
               {/* Top Clients */}
-              <div className="bg-card border border-border rounded-xl p-6">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-semibold text-foreground">
                     Clientes principales
@@ -661,8 +661,8 @@ export default function ReportesPage() {
               </div>
             </div>
 
-            {/* Facturas Section */}
-            <section className="rounded-2xl bg-card border border-border p-5 shadow-lg">
+            {/* Facturas Section with 3D Glassmorphic Design */}
+            <section className="rounded-2xl bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
               <div className="mb-4">
                 <div className="flex items-baseline gap-2">
                   <h2 className="text-lg font-semibold text-foreground">

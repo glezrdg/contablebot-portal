@@ -97,10 +97,15 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          <span>Cargando...</span>
+      <div className="min-h-screen page-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          {/* Glassmorphic loading card */}
+          <div className="bg-[var(--glass-white)] backdrop-blur-lg border border-[var(--glass-border)] rounded-2xl p-8 shadow-[var(--glass-shadow)]">
+            <div className="flex items-center gap-4 text-foreground">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+              <span className="text-lg font-medium">Cargando...</span>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -117,7 +122,7 @@ export default function DashboardLayout({
         <meta name="description" content={description} />
       </Head>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen page-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <AdminHeader
             firmName={userData.firmName || ''}
@@ -130,7 +135,9 @@ export default function DashboardLayout({
             planKey={userData.planKey}
           />
 
-          {typeof children === 'function' ? children(userData, refreshUserData) : children}
+          <main className="transition-smooth">
+            {typeof children === 'function' ? children(userData, refreshUserData) : children}
+          </main>
         </div>
       </div>
     </>

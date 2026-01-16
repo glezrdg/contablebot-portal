@@ -7,7 +7,7 @@
 
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   BarChart3,
@@ -20,6 +20,7 @@ import {
 import ProfileDropdown from "./ProfileDropdown";
 import ClientSwitcher from "./ClientSwitcher";
 import MobileSidenav from "./MobileSidenav";
+import { UsageRing } from "./ui/progress-ring";
 
 interface AdminHeaderProps {
   firmName: string;
@@ -44,6 +45,7 @@ export default function AdminHeader({
 }: AdminHeaderProps) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   console.log('Plan key', planKey)
   // Check if user module should be visible (admin only, Pro+ plan)
@@ -56,6 +58,15 @@ export default function AdminHeader({
   // Calculate usage percentage
   const usagePercentage =
     planLimit > 0 ? Math.min((usedThisMonth / planLimit) * 100, 100) : 0;
+
+  // Track scroll for sticky header effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <header className="mb-6">
@@ -74,7 +85,15 @@ export default function AdminHeader({
       />
 
       {/* Top Bar - Logo and Actions */}
-      <div className="flex items-center justify-between mb-4 pb-6 border-b border-border">
+      <div className={`
+        sticky top-0 z-40 -mt-6 pt-6 mb-4 pb-6
+        flex items-center justify-between
+        transition-glass
+        ${isScrolled
+          ? 'bg-[var(--glass-white)] backdrop-blur-lg border-b border-[var(--glass-border)] shadow-md'
+          : 'border-b border-border'
+        }
+      `}>
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(true)}
@@ -86,11 +105,11 @@ export default function AdminHeader({
 
         {/* Logo and Brand */}
         <Link href="/dashboard" className="hidden sm:flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all group-hover:scale-105">
             <FileText className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+            <h1 className="text-sm font-bold uppercase text-foreground group-hover:text-primary transition-colors">
               ContableBot
             </h1>
             <p className="text-xs text-muted-foreground">Portal de facturas</p>
@@ -102,9 +121,9 @@ export default function AdminHeader({
           {/* Dashboard Link */}
           <Link
             href="/dashboard"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/dashboard"
-              ? "bg-primary/20 text-primary"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/dashboard"
+              ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
+              : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
               }`}
           >
             <BarChart3 className="w-4 h-4" />
@@ -114,9 +133,9 @@ export default function AdminHeader({
           {/* Reports Link */}
           <Link
             href="/reportes"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/reportes"
-              ? "bg-primary/20 text-primary"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/reportes"
+              ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
+              : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
               }`}
           >
             <TrendingUp className="w-4 h-4" />
@@ -129,9 +148,9 @@ export default function AdminHeader({
             <>
               <Link
                 href="/usuarios"
-                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/usuarios"
-                  ? "bg-primary/20 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/usuarios"
+                  ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
+                  : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
                   }`}
               >
                 <Users className="w-4 h-4" />
@@ -140,9 +159,9 @@ export default function AdminHeader({
           )}
           <Link
             href="/dashboard/qa"
-            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/dashboard/qa"
-              ? "bg-primary/20 text-primary"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/dashboard/qa"
+              ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
+              : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
               }`}
           >
             <ShieldCheck className="w-4 h-4" />
@@ -154,9 +173,9 @@ export default function AdminHeader({
             <>
               <Link
                 href="/clientes"
-                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${router.pathname === "/clientes"
-                  ? "bg-primary/20 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${router.pathname === "/clientes"
+                  ? "bg-[var(--glass-white)] backdrop-blur-md text-primary border border-primary/20 shadow-sm"
+                  : "text-muted-foreground hover:bg-[var(--glass-white)] hover:backdrop-blur-md hover:text-foreground hover:border hover:border-[var(--glass-border)]"
                   }`}
               >
                 <Building2 className="w-4 h-4" />
@@ -182,8 +201,8 @@ export default function AdminHeader({
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* User Info */}
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border-2 border-primary/20">
-              <span className="text-lg font-bold text-primary">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border-2 border-primary/30 backdrop-blur-sm shadow-lg">
+              <span className="text-xl font-bold text-primary">
                 {firmName.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -195,88 +214,87 @@ export default function AdminHeader({
             </div>
           </div>
 
-          {/* Usage Stats Card */}
-          <div className="bg-gradient-to-br from-card to-card/50 border border-border rounded-xl px-6 py-4 shadow-sm hover:shadow-md transition-shadow">
+          {/* Enhanced Usage Stats Card with Premium 3D Glass Effect */}
+          <div className="
+            bg-[var(--glass-white)] backdrop-blur-xl
+            border-2 border-[var(--glass-border)]
+            rounded-2xl px-8 py-5
+            shadow-[0_12px_40px_0_rgba(31,38,135,0.2),0_6px_20px_0_rgba(31,38,135,0.15),inset_0_2px_0_0_rgba(255,255,255,0.6)]
+            dark:shadow-[0_12px_40px_0_rgba(0,0,0,0.5),0_6px_20px_0_rgba(0,0,0,0.4),inset_0_2px_0_0_rgba(255,255,255,0.15)]
+            hover:shadow-[0_16px_56px_0_rgba(31,38,135,0.3),0_8px_28px_0_rgba(31,38,135,0.2),inset_0_2px_0_0_rgba(255,255,255,0.7)]
+            dark:hover:shadow-[0_16px_56px_0_rgba(0,0,0,0.6),0_8px_28px_0_rgba(0,0,0,0.5),inset_0_2px_0_0_rgba(255,255,255,0.2)]
+            hover:translate-y-[-6px]
+            transition-all duration-300
+            relative
+            before:absolute before:inset-0 before:rounded-2xl
+            before:bg-gradient-to-br before:from-primary/10 before:via-transparent before:to-transparent
+            before:pointer-events-none before:z-[-1]
+            after:absolute after:inset-0 after:rounded-2xl
+            after:bg-gradient-to-t after:from-white/5 after:to-transparent
+            after:pointer-events-none after:z-[-1]
+          ">
             <div className="flex items-center justify-between gap-8">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  Uso mensual
-                </p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-foreground">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary/40 to-primary/10 rounded-xl flex items-center justify-center shadow-md">
+                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary/80">
+                    Uso mensual
+                  </p>
+                </div>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span className="text-3xl font-bold text-foreground tabular-nums bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text">
                     {usedThisMonth}
                   </span>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-lg text-muted-foreground font-medium">
                     / {planLimit}
                   </span>
                 </div>
-              </div>
 
-              {/* Circular Progress Indicator */}
-              <div className="relative w-16 h-16">
-                {/* Background circle */}
-                <svg className="transform -rotate-90 w-16 h-16">
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    stroke="currentColor"
-                    strokeWidth="6"
-                    fill="none"
-                    className="text-secondary"
-                  />
-                  {/* Progress circle */}
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    stroke="currentColor"
-                    strokeWidth="6"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 28}`}
-                    strokeDashoffset={`${2 * Math.PI * 28 * (1 - usagePercentage / 100)
-                      }`}
-                    className={`transition-all duration-500 ${usagePercentage >= 90
-                      ? "text-destructive"
-                      : usagePercentage >= 70
-                        ? "text-amber-500"
-                        : "text-primary"
-                      }`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                {/* Percentage text */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span
-                    className={`text-xs font-bold ${usagePercentage >= 90
-                      ? "text-destructive"
-                      : usagePercentage >= 70
-                        ? "text-amber-500"
-                        : "text-primary"
-                      }`}
-                  >
-                    {Math.round(usagePercentage)}%
-                  </span>
+                {/* Enhanced Status message with color-coded badges */}
+                <div className="mt-2">
+                  {usagePercentage >= 90 && (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 border border-destructive/30 backdrop-blur-sm">
+                      <svg className="w-4 h-4 text-destructive" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs text-destructive font-bold">Casi al límite</span>
+                    </div>
+                  )}
+                  {usagePercentage >= 70 && usagePercentage < 90 && (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 backdrop-blur-sm">
+                      <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                      </svg>
+                      <span className="text-xs text-amber-500 font-bold">{planLimit - usedThisMonth} restantes</span>
+                    </div>
+                  )}
+                  {usagePercentage < 70 && (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-sm">
+                      <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs text-emerald-500 font-bold">{planLimit - usedThisMonth} disponibles</span>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
 
-            {/* Status message */}
-            {usagePercentage >= 90 && (
-              <p className="text-xs text-destructive mt-2 font-medium">
-                ⚠️ Casi alcanzando el límite
-              </p>
-            )}
-            {usagePercentage >= 70 && usagePercentage < 90 && (
-              <p className="text-xs text-amber-500 mt-2 font-medium">
-                📊 {planLimit - usedThisMonth} facturas restantes
-              </p>
-            )}
-            {usagePercentage < 70 && (
-              <p className="text-xs text-muted-foreground mt-2">
-                {planLimit - usedThisMonth} facturas disponibles
-              </p>
-            )}
+              {/* Enhanced Usage Ring with stronger glow */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-50"></div>
+                <UsageRing
+                  used={usedThisMonth}
+                  limit={planLimit}
+                  size="md"
+                  showLabel={false}
+                  glowEffect={true}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}

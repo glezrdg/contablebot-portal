@@ -27,6 +27,18 @@
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
     --radius: 0.5rem;
+
+    /* Glassmorphism colors */
+    --glass-white: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+
+    /* Enhanced primary with gradients */
+    --primary-gradient: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 63%) 100%);
+    --accent-gradient: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(221 83% 53%) 100%);
+
+    /* Subtle background patterns */
+    --bg-pattern: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.03) 0%, transparent 50%);
   }
 }
 
@@ -58,6 +70,12 @@
   --destructive-foreground: oklch(0.637 0.237 25.331);
   --border: oklch(0.25 0.015 250);
   --input: oklch(0.25 0.015 250);
+
+  /* Glassmorphism colors for dark mode */
+  --glass-white: rgba(0, 0, 0, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --bg-pattern: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
 }
 
 @theme inline {
@@ -108,4 +126,48 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Glassmorphism and Animation Utilities */
+@layer utilities {
+  .transition-smooth {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-glass {
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease,
+      backdrop-filter 200ms ease,
+      box-shadow 200ms ease;
+  }
+
+  .hover-lift {
+    transition: transform 200ms ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+
+  .page-background {
+    background:
+      var(--bg-pattern),
+      linear-gradient(180deg,
+        hsl(var(--background)) 0%,
+        hsl(var(--muted) / 0.3) 100%
+      );
+    min-height: 100vh;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

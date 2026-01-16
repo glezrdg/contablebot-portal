@@ -423,36 +423,44 @@ export default function QADashboardPage() {
             </p>
           </div>
 
-          {/* Stats Cards */}
+          {/* Stats Cards with 3D Glassmorphic Design */}
           {stats && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-card border border-border rounded-xl p-4">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center gap-2 mb-1">
-                  <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                  <span className="text-sm text-muted-foreground">Dudosas (IA)</span>
+                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-500/30 to-yellow-500/10 rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(234,179,8,0.2)]">
+                    <AlertTriangle className="w-4 h-4 text-yellow-500 drop-shadow-sm" />
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">Dudosas (IA)</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{stats.flaggedByAI}</p>
+                <p className="text-2xl font-bold text-foreground tabular-nums">{stats.flaggedByAI}</p>
               </div>
-              <div className="bg-card border border-border rounded-xl p-4">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center gap-2 mb-1">
-                  <XCircle className="w-4 h-4 text-red-500" />
-                  <span className="text-sm text-muted-foreground">Errores matematicos</span>
+                  <div className="w-8 h-8 bg-gradient-to-br from-red-500/30 to-red-500/10 rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(239,68,68,0.2)]">
+                    <XCircle className="w-4 h-4 text-red-500 drop-shadow-sm" />
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">Errores matemáticos</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{stats.mathErrors}</p>
+                <p className="text-2xl font-bold text-foreground tabular-nums">{stats.mathErrors}</p>
               </div>
-              <div className="bg-card border border-border rounded-xl p-4">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center gap-2 mb-1">
-                  <AlertTriangle className="w-4 h-4 text-orange-500" />
-                  <span className="text-sm text-muted-foreground">Baja confianza</span>
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500/30 to-orange-500/10 rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(249,115,22,0.2)]">
+                    <AlertTriangle className="w-4 h-4 text-orange-500 drop-shadow-sm" />
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">Baja confianza</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{stats.lowConfidence}</p>
+                <p className="text-2xl font-bold text-foreground tabular-nums">{stats.lowConfidence}</p>
               </div>
-              <div className="bg-card border border-border rounded-xl p-4">
+              <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-4px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                 <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span className="text-sm text-muted-foreground">Total revisadas</span>
+                  <div className="w-8 h-8 bg-gradient-to-br from-green-500/30 to-green-500/10 rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(34,197,94,0.2)]">
+                    <CheckCircle className="w-4 h-4 text-green-500 drop-shadow-sm" />
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">Total revisadas</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+                <p className="text-2xl font-bold text-foreground tabular-nums">{stats.total}</p>
               </div>
             </div>
           )}
@@ -513,8 +521,8 @@ export default function QADashboardPage() {
             )}
           </div>
 
-          {/* Data Table */}
-          <div className="bg-card border border-border rounded-xl p-4">
+          {/* Data Table with 3D Glassmorphic Design */}
+          <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
             <DataTable
               value={invoices}
               loading={loading}
@@ -550,11 +558,11 @@ export default function QADashboardPage() {
                 onClick={() => setShowDetailDialog(false)}
               />
 
-              {/* Modal */}
+              {/* Modal with Glassmorphic Design */}
               <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-                <div className="bg-card border border-border rounded-xl shadow-lg">
+                <div className="bg-[var(--glass-white)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl shadow-[0_24px_48px_0_rgba(0,0,0,0.3)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
                   {/* Header */}
-                  <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card z-10">
+                  <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] sticky top-0 bg-[var(--glass-white)] backdrop-blur-lg z-10">
                     <h2 className="text-xl font-semibold text-foreground">
                       Detalle de Factura
                     </h2>
@@ -742,8 +750,8 @@ export default function QADashboardPage() {
                 onClick={() => setConfirmReprocess({ show: false })}
               />
               <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
-                <div className="bg-card border border-border rounded-xl shadow-lg">
-                  <div className="flex items-center justify-between p-6 border-b border-border">
+                <div className="bg-[var(--glass-white)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl shadow-[0_24px_48px_0_rgba(0,0,0,0.3)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+                  <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)]">
                     <h2 className="text-xl font-semibold text-foreground">
                       Confirmar reprocesamiento
                     </h2>
@@ -795,8 +803,8 @@ export default function QADashboardPage() {
                 onClick={() => setConfirmDelete({ show: false })}
               />
               <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
-                <div className="bg-card border border-border rounded-xl shadow-lg">
-                  <div className="flex items-center justify-between p-6 border-b border-border">
+                <div className="bg-[var(--glass-white)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl shadow-[0_24px_48px_0_rgba(0,0,0,0.3)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+                  <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)]">
                     <h2 className="text-xl font-semibold text-foreground">
                       Confirmar eliminacion
                     </h2>
@@ -842,8 +850,8 @@ export default function QADashboardPage() {
                 onClick={() => setConfirmBulkApprove(false)}
               />
               <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
-                <div className="bg-card border border-border rounded-xl shadow-lg">
-                  <div className="flex items-center justify-between p-6 border-b border-border">
+                <div className="bg-[var(--glass-white)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl shadow-[0_24px_48px_0_rgba(0,0,0,0.3)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+                  <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)]">
                     <h2 className="text-xl font-semibold text-foreground">
                       Confirmar aprobacion masiva
                     </h2>

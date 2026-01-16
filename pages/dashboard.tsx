@@ -498,48 +498,49 @@ export default function DashboardPage() {
             <Toast ref={toast} />
             <ConfirmDialog />
 
+            {/* Quick Action Cards with Enhanced 3D Glassmorphic Design */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div
                 onClick={handleOpenUploader}
-                className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg"
+                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]"
               >
-                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
-                  <Upload className="w-6 h-6 text-primary" />
+                <div className="w-16 h-16 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <Upload className="w-8 h-8 text-primary drop-shadow-sm" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">
+                <h3 className="font-bold text-foreground mb-2 text-lg">
                   Subir Factura
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Arrastra o selecciona una imagen de factura para procesar
                 </p>
               </div>
 
               <a
                 href="/reportes"
-                className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg block"
+                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
               >
-                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
-                  <BarChart3 className="w-6 h-6 text-primary" />
+                <div className="w-16 h-16  rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <BarChart3 className="w-8 h-8 text-primary drop-shadow-sm" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">
+                <h3 className="font-bold text-foreground mb-2 text-lg">
                   Ver Reportes
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Analiza tus facturas procesadas y genera reportes
                 </p>
               </a>
 
               <a
                 href="/configuracion"
-                className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg block"
+                className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 cursor-pointer shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(31,38,135,0.25),0_6px_24px_0_rgba(31,38,135,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1] block"
               >
-                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
-                  <Settings className="w-6 h-6 text-primary" />
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-[0_4px_16px_rgba(59,130,246,0.2)] group-hover:shadow-[0_6px_24px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-all duration-300">
+                  <Settings className="w-8 h-8 text-primary drop-shadow-sm" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">
+                <h3 className="font-bold text-foreground mb-2 text-lg">
                   Configuración
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Ajusta tu perfil, integraciones y preferencias
                 </p>
               </a>
@@ -620,17 +621,17 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Facturas Section */}
-            <section className="rounded-2xl bg-card border border-border p-5 shadow-lg">
+            {/* Facturas Section with Enhanced 3D Glassmorphic Design */}
+            <section className="rounded-2xl bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
               {/* Section Header */}
-              <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex items-baseline gap-2">
-                    <h2 className="text-lg font-semibold text-foreground">
+                  <div className="flex items-baseline gap-3">
+                    <h2 className="text-xl font-bold text-foreground">
                       Facturas
                     </h2>
-                    <span className="text-sm text-muted-foreground">
-                      ({filteredInvoices.length}{qualityFilter !== "all" ? ` de ${totalInvoices}` : ""} resultados)
+                    <span className="text-sm font-medium text-muted-foreground px-3 py-1 bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] rounded-full">
+                      {filteredInvoices.length}{qualityFilter !== "all" ? ` de ${totalInvoices}` : ""} resultados
                     </span>
                   </div>
 

@@ -235,8 +235,8 @@ export default function UsuariosPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-primary" />
+            <div className="w-12 h-12 bg-gradient-to-br from-primary/40 to-primary/10 rounded-2xl flex items-center justify-center shadow-lg">
+              <Users className="w-6 h-6 text-primary drop-shadow-sm" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-foreground">Usuarios</h1>
@@ -248,7 +248,7 @@ export default function UsuariosPage() {
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-[hsl(221_83%_63%)] text-primary-foreground rounded-lg font-medium hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] transition-all"
           >
             <UserPlus className="w-4 h-4" />
             Crear Usuario
@@ -257,7 +257,7 @@ export default function UsuariosPage() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+      <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
         <DataTable
           value={users}
           loading={loadingUsers}

@@ -1,76 +1,337 @@
+/* ========================================
+   GLASSMORPHIC DATATABLE STYLES
+   ======================================== */
+
+/* Main DataTable Container */
+.p-datatable {
+  background: var(--glass-white) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--glass-shadow) !important;
+  overflow: hidden;
+}
+
+/* DataTable Wrapper */
+.p-datatable-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Table Header */
+.p-datatable-thead > tr > th {
+  background: rgba(59, 130, 246, 0.05) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--glass-border) !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem !important;
+  white-space: nowrap;
+  transition: all 200ms ease;
+}
+
+/* Table Body Rows */
+.p-datatable-tbody > tr {
+  transition: all 200ms ease;
+  border: none !important;
+}
+
+.p-datatable-tbody > tr > td {
+  border-color: var(--glass-border) !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 1rem !important;
+  background: transparent !important;
+}
+
+/* Row Hover Effect */
+.p-datatable-tbody > tr:hover {
+  background: rgba(59, 130, 246, 0.05) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+/* Alternating Row Colors (subtle) */
+.p-datatable-tbody > tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+/* Sortable Columns */
+.p-sortable-column {
+  transition: all 200ms ease;
+}
+
+.p-sortable-column:not(.p-highlight):hover {
+  background: rgba(59, 130, 246, 0.08) !important;
+  color: inherit !important;
+}
+
+.p-sortable-column .p-sortable-column-icon {
+  color: hsl(var(--muted-foreground));
+  transition: all 200ms ease;
+}
+
+.p-sortable-column.p-highlight {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+.p-sortable-column.p-highlight .p-sortable-column-icon {
+  color: hsl(var(--primary)) !important;
+}
+
+/* ========================================
+   PAGINATOR GLASSMORPHIC STYLES
+   ======================================== */
+
+.p-paginator {
+  background: transparent !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid var(--glass-border) !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 1rem !important;
+}
+
+.p-paginator-page,
+.p-paginator-next,
+.p-paginator-prev,
+.p-paginator-first,
+.p-paginator-last {
+  background: var(--glass-white) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+  color: hsl(var(--foreground)) !important;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 0.25rem;
+  transition: all 200ms ease;
+}
+
+.p-paginator-page:hover,
+.p-paginator-next:not(.p-disabled):hover,
+.p-paginator-prev:not(.p-disabled):hover,
+.p-paginator-first:not(.p-disabled):hover,
+.p-paginator-last:not(.p-disabled):hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+.p-paginator-page.p-highlight {
+  background: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.p-paginator-page.p-disabled,
+.p-paginator-next.p-disabled,
+.p-paginator-prev.p-disabled,
+.p-paginator-first.p-disabled,
+.p-paginator-last.p-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   DROPDOWN & INPUT GLASSMORPHIC STYLES
+   ======================================== */
+
+.p-datatable .p-dropdown {
+  background: var(--glass-white) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px;
+  color: hsl(var(--foreground)) !important;
+  transition: all 200ms ease;
+}
+
+.p-datatable .p-dropdown:hover {
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+.p-datatable .p-inputtext {
+  background: var(--glass-white) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px;
+  color: hsl(var(--foreground)) !important;
+  transition: all 200ms ease;
+}
+
+.p-datatable .p-inputtext:focus {
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ========================================
+   DROPDOWN PANEL GLASSMORPHIC
+   ======================================== */
+
+.p-dropdown-panel {
+  background: var(--glass-white) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+  color: hsl(var(--foreground)) !important;
+  transition: all 200ms ease;
+}
+
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: hsl(var(--primary)) !important;
+}
+
+/* ========================================
+   CONFIRM DIALOG GLASSMORPHIC
+   ======================================== */
+
+.p-confirm-dialog {
+  background: var(--glass-white) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.p-confirm-dialog .p-dialog-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  color: hsl(var(--foreground)) !important;
+  padding: 1.5rem !important;
+}
+
+.p-confirm-dialog .p-dialog-content {
+  background: transparent !important;
+  color: hsl(var(--foreground)) !important;
+  padding: 1.5rem !important;
+}
+
+.p-confirm-dialog .p-dialog-footer {
+  background: transparent !important;
+  border-top: 1px solid var(--glass-border) !important;
+  padding: 1rem 1.5rem !important;
+}
+
+/* ========================================
+   TOAST GLASSMORPHIC
+   ======================================== */
+
+.p-toast .p-toast-message {
+  background: var(--glass-white) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+}
+
+.p-toast .p-toast-message-content {
+  color: hsl(var(--foreground)) !important;
+}
+
+.p-toast .p-toast-message-icon {
+  font-size: 1.5rem;
+}
+
+/* Toast variants with colored borders */
+.p-toast .p-toast-message-success {
+  border-left: 4px solid #10b981 !important;
+}
+
+.p-toast .p-toast-message-info {
+  border-left: 4px solid hsl(var(--primary)) !important;
+}
+
+.p-toast .p-toast-message-warn {
+  border-left: 4px solid #f59e0b !important;
+}
+
+.p-toast .p-toast-message-error {
+  border-left: 4px solid hsl(var(--destructive)) !important;
+}
+
+/* ========================================
+   COLUMN FILTER GLASSMORPHIC
+   ======================================== */
+
+.p-column-filter-overlay {
+  background: var(--glass-white) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+.p-column-filter-overlay .p-column-filter-row-items .p-column-filter-row-item {
+  color: hsl(var(--foreground)) !important;
+  transition: all 200ms ease;
+}
+
+.p-column-filter-overlay .p-column-filter-row-items .p-column-filter-row-item:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+
+.dark .p-datatable-thead > tr > th {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
+.dark .p-datatable-tbody > tr:hover {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
+.dark .p-datatable-tbody > tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dark .p-sortable-column:not(.p-highlight):hover {
+  background: rgba(59, 130, 246, 0.12) !important;
+}
+
+.dark .p-paginator-page:hover,
+.dark .p-paginator-next:not(.p-disabled):hover,
+.dark .p-paginator-prev:not(.p-disabled):hover {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+/* ========================================
+   LEGACY DATATABLE-DARK CLASS (FALLBACK)
+   ======================================== */
+
 .datatable-dark .p-datatable {
-          background: transparent;
-        }
-        .datatable-dark .p-datatable-thead > tr > th {
-          font-weight: 600;
-          font-size: 0.75rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          padding: 0.75rem 1rem !important;
-          white-space: nowrap;
-        }
-        .datatable-dark .p-datatable-tbody > tr:nth-child(even) {
-          background: #f2f2f2;
-        }
-        .datatable-dark .p-datatable-tbody > tr:hover {
-          background: #ebebeb !important;
-        }
-        .datatable-dark .p-datatable-tbody > tr > td {
-          border-color: #334155;
-          padding: 0.75rem 1rem;
-        }
-        .datatable-dark
-          .p-paginator
-          .p-paginator-pages
-          .p-paginator-page.p-highlight {
-          background: #0ea5e9;
-          border-color: #0ea5e9;
-          color: white;
-        }
-        .datatable-dark .p-dropdown {
-          background: #ebebeb;
-          border-color: #334155;
-          color: black;
-        }
-        .datatable-dark .p-inputtext {
-          border-color: #334155;
-          color: black;
-        }
-        .datatable-dark .p-sortable-column .p-sortable-column-icon {
-          color: #64748b;
-        }
-        .datatable-dark .p-sortable-column.p-highlight .p-sortable-column-icon {
-          color: #0ea5e9;
-        }
-        .datatable-dark .p-sortable-column:not(.p-highlight):hover {
-          background: #334155 !important;
-          color: #e2e8f0 !important;
-        }
-
-        /* Confirm dialog dark theme */
-        .p-confirm-dialog {
-          background: #1e293b !important;
-          border-color: #334155 !important;
-          color: #e2e8f0 !important;
-        }
-        .p-confirm-dialog .p-dialog-header {
-          background: #1e293b !important;
-          color: #e2e8f0 !important;
-        }
-        .p-confirm-dialog .p-dialog-content {
-          background: #1e293b !important;
-          color: #e2e8f0 !important;
-        }
-        .p-confirm-dialog .p-dialog-footer {
-          background: #1e293b !important;
-          border-color: #334155 !important;
-        }
-
-        /* Toast dark theme */
-        .p-toast .p-toast-message {
-          background: #1e293b !important;
-          border-color: #334155 !important;
-        }
-        .p-toast .p-toast-message-content {
-          color: #e2e8f0 !important;
-        }
+  background: var(--glass-white) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}

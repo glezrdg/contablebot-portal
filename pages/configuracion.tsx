@@ -224,15 +224,15 @@ function PerfilTab({ userData, onUpdate }: { userData: MeResponse | null; onUpda
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6">
+    <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
       <h2 className="text-xl font-semibold text-foreground mb-6">Información del perfil</h2>
 
       {message && (
         <div
-          className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
+          className={`mb-6 p-4 rounded-xl flex items-start gap-3 backdrop-blur-md ${
             message.type === "success"
-              ? "bg-green-500/10 border border-green-500/20 text-green-500"
-              : "bg-destructive/10 border border-destructive/20 text-destructive"
+              ? "bg-green-500/10 border border-green-500/30 text-green-500 shadow-[0_4px_16px_rgba(34,197,94,0.1)]"
+              : "bg-destructive/10 border border-destructive/30 text-destructive shadow-[0_4px_16px_rgba(239,68,68,0.1)]"
           }`}
         >
           {message.type === "success" ? (
@@ -278,9 +278,11 @@ function PerfilTab({ userData, onUpdate }: { userData: MeResponse | null; onUpda
         </div>
 
         {/* Change Password Section */}
-        <div className="pt-6 border-t border-border">
+        <div className="pt-6 border-t border-[var(--glass-border)]">
           <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
-            <Lock className="w-5 h-5" />
+            <div className="w-8 h-8 bg-gradient-to-br from-primary/30 to-primary/10 rounded-xl flex items-center justify-center shadow-sm">
+              <Lock className="w-4 h-4 text-primary" />
+            </div>
             Cambiar contraseña
           </h3>
 
@@ -569,7 +571,7 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
       )}
 
       {/* Current Plan Card */}
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
         <h2 className="text-xl font-semibold text-foreground mb-6">Plan actual</h2>
 
         <div className="space-y-4">
@@ -660,8 +662,8 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
 
       {/* Cancel Confirmation Modal */}
       {showCancelConfirm && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-lg">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-xl flex items-center justify-center z-50 p-4">
+          <div className="bg-[var(--glass-white)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-6 max-w-md w-full shadow-[0_24px_48px_0_rgba(0,0,0,0.3)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
             <h3 className="text-lg font-semibold text-foreground mb-4">
               ¿Cancelar suscripción?
             </h3>
@@ -699,7 +701,7 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
       )}
 
       {/* Subscription Features */}
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
         <h3 className="text-lg font-medium text-foreground mb-4">
           Funciones de tu plan
         </h3>
@@ -745,9 +747,11 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
 
       {/* Change Plans Section */}
       {userData?.isActive && !userData?.cancelAtPeriodEnd && (
-        <div className="bg-card border border-border rounded-xl p-6">
+        <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
           <div className="flex items-center gap-2 mb-6">
-            <ArrowUp className="w-5 h-5 text-primary" />
+            <div className="w-8 h-8 bg-gradient-to-br from-primary/30 to-primary/10 rounded-xl flex items-center justify-center shadow-sm">
+              <ArrowUp className="w-4 h-4 text-primary" />
+            </div>
             <h3 className="text-lg font-medium text-foreground">
               Cambiar plan
             </h3>
@@ -766,7 +770,7 @@ function SuscripcionTab({ userData }: { userData: MeResponse | null }) {
               return (
                 <div
                   key={key}
-                  className="border rounded-lg p-4 transition-all border-border hover:border-primary/50"
+                  className="bg-[var(--glass-white)] backdrop-blur-sm border border-[var(--glass-border)] rounded-xl p-4 transition-all duration-300 hover:shadow-[0_8px_24px_0_rgba(31,38,135,0.15)] dark:hover:shadow-[0_8px_24px_0_rgba(0,0,0,0.3)] hover:translate-y-[-2px]"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -845,14 +849,16 @@ function PreferenciasTab() {
   })
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6">
+    <div className="bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.15),0_4px_16px_0_rgba(31,38,135,0.1),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4),0_4px_16px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
       <h2 className="text-xl font-semibold text-foreground mb-6">Preferencias</h2>
 
       <div className="space-y-6">
         {/* Notifications Section */}
         <div>
           <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
-            <Bell className="w-5 h-5" />
+            <div className="w-8 h-8 bg-gradient-to-br from-primary/30 to-primary/10 rounded-xl flex items-center justify-center shadow-sm">
+              <Bell className="w-4 h-4 text-primary" />
+            </div>
             Notificaciones
           </h3>
           <div className="space-y-4">
@@ -897,7 +903,7 @@ function PreferenciasTab() {
         </div>
 
         {/* Export Settings */}
-        <div className="pt-6 border-t border-border">
+        <div className="pt-6 border-t border-[var(--glass-border)]">
           <h3 className="text-lg font-medium text-foreground mb-4">
             Configuración de exportación
           </h3>
@@ -922,8 +928,8 @@ function PreferenciasTab() {
         </div>
 
         {/* Save Button */}
-        <div className="pt-6 border-t border-border">
-          <Button className="w-full">
+        <div className="pt-6 border-t border-[var(--glass-border)]">
+          <Button className="w-full" variant="gradient">
             Guardar preferencias
           </Button>
           <p className="text-xs text-muted-foreground text-center mt-2">
