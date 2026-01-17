@@ -3,8 +3,9 @@
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { FileText, CheckCircle2, Loader2, XCircle, AlertCircle, ArrowRight, Sparkles, Home, RotateCcw } from "lucide-react"
+import { CheckCircle2, Loader2, XCircle, AlertCircle, ArrowRight, Sparkles, Home, RotateCcw } from "lucide-react"
 import { WHOP_PLANS, type PlanKey } from "@/lib/whop"
 
 function CompleteContent() {
@@ -122,11 +123,17 @@ function CompleteContent() {
 
       <div className="max-w-md w-full text-center relative z-10">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 justify-center mb-10 group">
-          <div className="w-11 h-11 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all group-hover:scale-105">
-            <FileText className="w-6 h-6 text-white" />
+        <Link href="/" className="inline-flex items-center justify-center mb-10 group">
+          <div className="relative transition-all group-hover:scale-105">
+            <Image
+              src="/contablebot-logo.png"
+              alt="ContableBot"
+              width={160}
+              height={37}
+              className="object-contain"
+              priority
+            />
           </div>
-          <span className="font-bold text-xl text-foreground">ContableBot</span>
         </Link>
 
         {/* Loading State */}

@@ -570,10 +570,10 @@ export default function QADashboardPage() {
               />
 
               {/* Modal */}
-              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-                <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-3xl px-4">
+                <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] max-h-[90vh] flex flex-col overflow-hidden">
                   {/* Header */}
-                  <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
+                  <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 flex-shrink-0">
                     <div>
                       <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 flex items-center justify-center shadow-md">
@@ -584,14 +584,14 @@ export default function QADashboardPage() {
                     </div>
                     <button
                       onClick={() => setShowDetailDialog(false)}
-                      className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)] shadow-sm"
+                      className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)]"
                     >
                       <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                     </button>
                   </div>
 
-                  {/* Content */}
-                  <div className="p-6 space-y-6">
+                  {/* Content - Scrollable */}
+                  <div className="p-6 space-y-6 overflow-y-auto flex-1">
                     {/* Invoice Basic Info */}
                     <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 border border-border rounded-lg">
                   <div>
@@ -766,11 +766,11 @@ export default function QADashboardPage() {
                 className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
                 onClick={() => setConfirmReprocess({ show: false })}
               />
-              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md">
-                <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md px-4">
+                <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] overflow-hidden">
                   <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
                     <div>
-                      <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
+                      <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 flex items-center justify-center shadow-md">
                           <RefreshCw className="w-5 h-5 text-primary drop-shadow-sm" />
                         </div>
@@ -779,7 +779,7 @@ export default function QADashboardPage() {
                     </div>
                     <button
                       onClick={() => setConfirmReprocess({ show: false })}
-                      className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)] shadow-sm"
+                      className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)]"
                     >
                       <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                     </button>
@@ -825,11 +825,11 @@ export default function QADashboardPage() {
                 className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
                 onClick={() => setConfirmDelete({ show: false })}
               />
-              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md">
-                <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md px-4">
+                <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] overflow-hidden">
                   <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-red-500/5 via-red-500/10 to-red-500/5">
                     <div>
-                      <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
+                      <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500/40 to-red-500/10 flex items-center justify-center shadow-md">
                           <Trash2 className="w-5 h-5 text-red-500 drop-shadow-sm" />
                         </div>
@@ -838,7 +838,7 @@ export default function QADashboardPage() {
                     </div>
                     <button
                       onClick={() => setConfirmDelete({ show: false })}
-                      className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)] shadow-sm"
+                      className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)]"
                     >
                       <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                     </button>
@@ -878,11 +878,11 @@ export default function QADashboardPage() {
                 className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
                 onClick={() => setConfirmBulkApprove(false)}
               />
-              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md">
-                <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] m-4">
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md px-4">
+                <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] overflow-hidden">
                   <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-green-500/5 via-green-500/10 to-green-500/5">
                     <div>
-                      <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
+                      <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500/40 to-green-500/10 flex items-center justify-center shadow-md">
                           <CheckCircle className="w-5 h-5 text-green-500 drop-shadow-sm" />
                         </div>
@@ -891,7 +891,7 @@ export default function QADashboardPage() {
                     </div>
                     <button
                       onClick={() => setConfirmBulkApprove(false)}
-                      className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)] shadow-sm"
+                      className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)]"
                     >
                       <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                     </button>

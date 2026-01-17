@@ -36,7 +36,7 @@ const features = [
     icon: Shield,
     title: "Cumplimiento DGII",
     description:
-      "Genera reportes 606/607 listos para la DGII. Cumple con todas las regulaciones fiscales.",
+      "Genera reportes 606 listos para la DGII. Cumple con todas las regulaciones fiscales.",
     gradient: "from-rose-500 to-pink-400",
   },
   {

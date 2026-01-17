@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import {
   X,
@@ -12,7 +13,6 @@ import {
   CreditCard,
   LogOut,
   PlayCircle,
-  FileText,
 } from 'lucide-react';
 
 interface MobileSidenavProps {
@@ -135,14 +135,14 @@ export default function MobileSidenav({
         {/* Logo Header with gradient accent */}
         <div className="flex items-center justify-between p-5 border-b border-border bg-gradient-to-r from-primary/5 via-[hsl(262_83%_58%)]/10 to-primary/5">
           <Link href="/dashboard" className="flex items-center gap-3 group" onClick={onClose}>
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all group-hover:scale-105">
-              <FileText className="w-5 h-5 text-white drop-shadow-sm" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                ContableBot
-              </h1>
-              <p className="text-xs text-muted-foreground font-medium">Portal de facturas</p>
+            <div className="relative flex items-center justify-center transition-all group-hover:scale-105">
+              <Image
+                src="/contablebot-logo.png"
+                alt="ContableBot"
+                width={140}
+                height={32}
+                className="object-contain"
+              />
             </div>
           </Link>
           <button

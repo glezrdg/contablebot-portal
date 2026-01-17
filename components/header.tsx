@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { FileText, Menu, X, Sparkles } from "lucide-react"
+import { Menu, X, Sparkles } from "lucide-react"
 import { useState, useEffect } from "react"
 
 export function Header() {
@@ -29,13 +30,17 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 group-hover:shadow-xl group-hover:shadow-primary/40 transition-all group-hover:scale-105">
-              <FileText className="w-5 h-5 text-white drop-shadow-sm" />
+          <Link href="/" className="flex items-center gap-2.5 group relative">
+            <div className="w-200 h-60 relative flex items-center justify-center transition-all group-hover:scale-105">
+              <Image
+                src="/contablebot-logo.png"
+                alt="ContableBot"
+                width={200}
+                height={460}
+                className="object-contain"
+                priority
+              />
             </div>
-            <span className="font-bold text-xl text-foreground group-hover:text-primary transition-colors">
-              ContableBot
-            </span>
           </Link>
 
           {/* Desktop Navigation */}

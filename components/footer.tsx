@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { FileText, Mail, Phone, MapPin, ArrowRight, Sparkles } from "lucide-react"
+import Image from "next/image"
+import { Mail, Phone, MapPin, ArrowRight, Sparkles } from "lucide-react"
 
 export function Footer() {
   return (
@@ -47,11 +48,14 @@ export function Footer() {
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
             {/* Brand Column */}
             <div className="lg:col-span-2">
-              <Link href="/" className="flex items-center gap-2.5 mb-5 group">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all group-hover:scale-105">
-                  <FileText className="w-5 h-5 text-white" />
-                </div>
-                <span className="font-bold text-xl text-foreground">ContableBot</span>
+              <Link href="/" className="inline-block mb-5 group">
+                <Image
+                  src="/contablebot-logo.png"
+                  alt="ContableBot"
+                  width={180}
+                  height={42}
+                  className="object-contain w-[140px] sm:w-[160px] lg:w-[180px] transition-all group-hover:scale-105"
+                />
               </Link>
               <p className="text-muted-foreground mb-6 max-w-sm leading-relaxed">
                 Automatización inteligente de facturas para contadores y empresas en República Dominicana. Extracción por IA, reportes 606/607, y más.

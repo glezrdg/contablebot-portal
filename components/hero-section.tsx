@@ -64,8 +64,8 @@ export function HeroSection() {
         <div className="mt-12 flex flex-wrap items-center justify-center gap-8 sm:gap-12 animate-fade-up-delay-4">
           {[
             { value: "10,000+", label: "Facturas Procesadas" },
-            { value: "99.5%", label: "Precisión IA" },
-            { value: "< 5s", label: "Tiempo Promedio" },
+            { value: "90%", label: "Precisión IA" },
+            { value: "< 1.25s", label: "Tiempo Promedio" },
           ].map((stat, i) => (
             <div key={i} className="text-center">
               <div className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</div>
@@ -126,11 +126,10 @@ export function HeroSection() {
                   ].map((item, i) => (
                     <div
                       key={i}
-                      className={`flex items-center justify-between p-3 rounded-lg transition-all ${
-                        item.highlight
-                          ? 'bg-gradient-to-r from-primary/10 to-[hsl(262_83%_58%)]/10 border border-primary/20'
-                          : 'bg-slate-50/80 dark:bg-slate-800/50'
-                      }`}
+                      className={`flex items-center justify-between p-3 rounded-lg transition-all ${item.highlight
+                        ? 'bg-gradient-to-r from-primary/10 to-[hsl(262_83%_58%)]/10 border border-primary/20'
+                        : 'bg-slate-50/80 dark:bg-slate-800/50'
+                        }`}
                     >
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className={`w-4 h-4 ${item.highlight ? 'text-primary' : 'text-green-500'}`} />

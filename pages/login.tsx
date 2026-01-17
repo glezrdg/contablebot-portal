@@ -3,11 +3,12 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
+import Image from "next/image";
 import type { ErrorResponse } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Loader2, Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight } from "lucide-react";
+import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -77,11 +78,17 @@ export default function LoginPage() {
           <div className="w-full max-w-md relative z-10">
             {/* Logo */}
             <div className="text-center mb-8">
-              <Link href="/" className="inline-flex items-center gap-2.5 mb-8 group">
-                <div className="w-11 h-11 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all group-hover:scale-105">
-                  <FileText className="w-6 h-6 text-white" />
+              <Link href="/" className="inline-flex items-center justify-center mb-8 group">
+                <div className="relative transition-all group-hover:scale-105">
+                  <Image
+                    src="/contablebot-logo.png"
+                    alt="ContableBot"
+                    width={160}
+                    height={37}
+                    className="object-contain"
+                    priority
+                  />
                 </div>
-                <span className="font-bold text-xl text-foreground">ContableBot</span>
               </Link>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                 Bienvenido de vuelta
@@ -240,9 +247,9 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-4 text-left">
               {[
                 { label: "Facturas procesadas", value: "10,000+" },
-                { label: "Precisión IA", value: "99.5%" },
-                { label: "Tiempo promedio", value: "< 5s" },
-                { label: "Clientes activos", value: "500+" },
+                { label: "Precisión IA", value: "90%" },
+                { label: "Tiempo promedio", value: "< 1.25s" },
+                { label: "Clientes activos", value: "10+" },
               ].map((stat, i) => (
                 <div
                   key={i}

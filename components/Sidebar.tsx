@@ -6,10 +6,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import {
   LayoutDashboard,
-  FileText,
   ShieldCheck,
   BarChart3,
   Users,
@@ -117,18 +117,25 @@ export default function Sidebar({ userRole = "user" }: SidebarProps) {
         {/* Logo Section */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-[var(--glass-border)]">
           {!isCollapsed && (
-            <div className="flex items-center gap-2 animate-fade-in">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] flex items-center justify-center shadow-lg shadow-primary/25">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-bold text-lg text-foreground">
-                ContableBot
-              </span>
+            <div className="flex items-center justify-center w-full animate-fade-in">
+              <Image
+                src="/contablebot-logo.png"
+                alt="ContableBot"
+                width={200}
+                height={60}
+                className="object-contain"
+              />
             </div>
           )}
           {isCollapsed && (
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] flex items-center justify-center shadow-lg shadow-primary/25 mx-auto animate-fade-in">
-              <FileText className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 relative flex items-center justify-center mx-auto animate-fade-in">
+              <Image
+                src="/logo_icon.png"
+                alt="ContableBot"
+                width={36}
+                height={36}
+                className="object-contain"
+              />
             </div>
           )}
         </div>
@@ -148,10 +155,9 @@ export default function Sidebar({ userRole = "user" }: SidebarProps) {
                   group relative flex items-center gap-3
                   px-3 py-2.5 rounded-lg
                   transition-all duration-200
-                  ${
-                    active
-                      ? "bg-primary/10 text-primary shadow-sm"
-                      : "text-muted-foreground hover:bg-[var(--glass-white)] hover:text-foreground"
+                  ${active
+                    ? "bg-primary/10 text-primary shadow-sm"
+                    : "text-muted-foreground hover:bg-[var(--glass-white)] hover:text-foreground"
                   }
                   ${isCollapsed ? "justify-center" : ""}
                 `}

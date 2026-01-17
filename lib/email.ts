@@ -98,8 +98,8 @@ export async function sendPasswordResetEmail(
         <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
           <!-- Header -->
           <div style="text-align: center; margin-bottom: 40px;">
-            <div style="display: inline-block; width: 48px; height: 48px; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-radius: 12px; margin-bottom: 16px;"></div>
-            <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #0f172a;">ContableBot</h1>
+            <div style="display: inline-block; width: 48px; height: 48px; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); border-radius: 12px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);"></div>
+            <h1 style="margin: 0; font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">ContableBot</h1>
           </div>
 
           <!-- Main Content -->
@@ -120,7 +120,7 @@ export async function sendPasswordResetEmail(
             <!-- CTA Button -->
             <div style="text-align: center; margin: 32px 0;">
               <a href="${resetUrl}"
-                 style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                 style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);">
                 Restablecer contraseña
               </a>
             </div>
@@ -202,8 +202,8 @@ export async function sendPasswordChangedEmail(
         <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
           <!-- Header -->
           <div style="text-align: center; margin-bottom: 40px;">
-            <div style="display: inline-block; width: 48px; height: 48px; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-radius: 12px; margin-bottom: 16px;"></div>
-            <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #0f172a;">ContableBot</h1>
+            <div style="display: inline-block; width: 48px; height: 48px; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); border-radius: 12px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);"></div>
+            <h1 style="margin: 0; font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">ContableBot</h1>
           </div>
 
           <!-- Main Content -->
@@ -307,8 +307,8 @@ export async function sendInvoiceProcessedEmail(
         <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
           <!-- Header -->
           <div style="text-align: center; margin-bottom: 40px;">
-            <div style="display: inline-block; width: 48px; height: 48px; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-radius: 12px; margin-bottom: 16px;"></div>
-            <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #0f172a;">ContableBot</h1>
+            <div style="display: inline-block; width: 48px; height: 48px; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); border-radius: 12px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);"></div>
+            <h1 style="margin: 0; font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">ContableBot</h1>
           </div>
 
           <!-- Main Content -->
@@ -403,6 +403,189 @@ Ver dashboard: ${dashboardUrl}
   return sendEmail({
     to: email,
     subject: `${invoiceCount} ${invoiceCount === 1 ? 'factura procesada' : 'facturas procesadas'} - ContableBot`,
+    html,
+    text,
+  });
+}
+
+/**
+ * Send welcome email to new users
+ */
+export async function sendWelcomeEmail(
+  email: string,
+  firmName: string,
+  userName?: string
+): Promise<boolean> {
+  const firstName = userName?.split(' ')[0] || 'Usuario';
+  const dashboardUrl = `${APP_URL}/dashboard`;
+  const tutorialUrl = `${APP_URL}/tutorial`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bienvenido a ContableBot</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);">
+        <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <!-- Header with Brand Gradient -->
+          <div style="text-align: center; margin-bottom: 40px;">
+            <div style="display: inline-block; width: 64px; height: 64px; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); border-radius: 16px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);"></div>
+            <h1 style="margin: 0; font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">ContableBot</h1>
+            <p style="margin: 8px 0 0 0; font-size: 14px; color: #64748b; font-weight: 500;">Gestión inteligente de facturas 606</p>
+          </div>
+
+          <!-- Main Content -->
+          <div style="background: white; border-radius: 20px; padding: 48px 40px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08); border: 1px solid rgba(226, 232, 240, 0.8);">
+            <!-- Welcome Message -->
+            <div style="text-align: center; margin-bottom: 32px;">
+              <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #dcfce7 0%, #ddd6fe 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                <span style="font-size: 40px;">🎉</span>
+              </div>
+              <h2 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 700; color: #0f172a;">
+                ¡Bienvenido a ContableBot!
+              </h2>
+              <p style="margin: 0; font-size: 16px; color: #64748b;">
+                Estamos emocionados de tenerte con nosotros, ${firstName}
+              </p>
+            </div>
+
+            <!-- Firm Info -->
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%); border-radius: 12px; padding: 20px; margin: 24px 0; border-left: 4px solid; border-image: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%) 1;">
+              <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b;">
+                Tu empresa
+              </p>
+              <p style="margin: 0; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                ${firmName}
+              </p>
+            </div>
+
+            <p style="margin: 24px 0; font-size: 16px; line-height: 26px; color: #475569;">
+              Tu cuenta ha sido creada exitosamente. ContableBot te ayudará a automatizar el procesamiento de facturas 606 con inteligencia artificial, ahorrándote tiempo y reduciendo errores.
+            </p>
+
+            <!-- Features List -->
+            <div style="margin: 32px 0;">
+              <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 600; color: #0f172a;">
+                ✨ Lo que puedes hacer ahora:
+              </h3>
+
+              <div style="margin-bottom: 16px; padding: 16px; background: #f8fafc; border-radius: 10px; border-left: 3px solid #0ea5e9;">
+                <div style="display: flex; align-items: start;">
+                  <span style="font-size: 24px; margin-right: 12px;">📤</span>
+                  <div>
+                    <p style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: #0f172a;">
+                      Subir facturas
+                    </p>
+                    <p style="margin: 0; font-size: 14px; color: #64748b; line-height: 20px;">
+                      Arrastra imágenes de facturas y deja que la IA extraiga los datos automáticamente
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px; padding: 16px; background: #f8fafc; border-radius: 10px; border-left: 3px solid #8b5cf6;">
+                <div style="display: flex; align-items: start;">
+                  <span style="font-size: 24px; margin-right: 12px;">🔍</span>
+                  <div>
+                    <p style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: #0f172a;">
+                      Control de calidad
+                    </p>
+                    <p style="margin: 0; font-size: 14px; color: #64748b; line-height: 20px;">
+                      Revisa y aprueba facturas con validación inteligente de errores matemáticos
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px; padding: 16px; background: #f8fafc; border-radius: 10px; border-left: 3px solid #10b981;">
+                <div style="display: flex; align-items: start;">
+                  <span style="font-size: 24px; margin-right: 12px;">📊</span>
+                  <div>
+                    <p style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: #0f172a;">
+                      Exportar a Excel
+                    </p>
+                    <p style="margin: 0; font-size: 14px; color: #64748b; line-height: 20px;">
+                      Genera reportes 606 listos para DGII con un solo clic
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div style="text-align: center; margin: 40px 0 24px 0;">
+              <a href="${dashboardUrl}"
+                 style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3); margin: 0 8px 12px 8px;">
+                🚀 Ir al Dashboard
+              </a>
+              <br>
+              <a href="${tutorialUrl}"
+                 style="display: inline-block; padding: 14px 32px; background: white; color: #0ea5e9; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px; border: 2px solid #e2e8f0; margin: 0 8px;">
+                📚 Ver tutorial
+              </a>
+            </div>
+
+            <!-- Help Section -->
+            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e2e8f0;">
+              <p style="margin: 0 0 12px 0; font-size: 14px; color: #64748b; text-align: center;">
+                ¿Necesitas ayuda? Estamos aquí para ti
+              </p>
+              <p style="margin: 0; font-size: 14px; color: #94a3b8; text-align: center;">
+                Respuesta en menos de 24 horas
+              </p>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="text-align: center; margin-top: 40px;">
+            <p style="margin: 0 0 8px 0; font-size: 13px; color: #94a3b8; font-weight: 500;">
+              © ${new Date().getFullYear()} ContableBot. Todos los derechos reservados.
+            </p>
+            <p style="margin: 0; font-size: 12px; color: #cbd5e1;">
+              Gestión inteligente de facturas para República Dominicana
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  const text = `
+¡Bienvenido a ContableBot!
+
+Hola ${firstName},
+
+Estamos emocionados de tenerte con nosotros. Tu cuenta para ${firmName} ha sido creada exitosamente.
+
+ContableBot te ayudará a automatizar el procesamiento de facturas 606 con inteligencia artificial, ahorrándote tiempo y reduciendo errores.
+
+Lo que puedes hacer ahora:
+
+📤 Subir facturas
+Arrastra imágenes de facturas y deja que la IA extraiga los datos automáticamente
+
+🔍 Control de calidad
+Revisa y aprueba facturas con validación inteligente de errores matemáticos
+
+📊 Exportar a Excel
+Genera reportes 606 listos para DGII con un solo clic
+
+Ir al Dashboard: ${dashboardUrl}
+Ver tutorial: ${tutorialUrl}
+
+¿Necesitas ayuda? Estamos aquí para ti.
+Respuesta en menos de 24 horas.
+
+© ${new Date().getFullYear()} ContableBot
+Gestión inteligente de facturas para República Dominicana
+  `.trim();
+
+  return sendEmail({
+    to: email,
+    subject: '🎉 ¡Bienvenido a ContableBot!',
     html,
     text,
   });

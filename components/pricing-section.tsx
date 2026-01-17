@@ -88,22 +88,20 @@ export function PricingSection() {
             return (
               <div
                 key={planKey}
-                className={`pricing-card scroll-animate group relative flex flex-col ${
-                  isPopular ? "lg:scale-105 z-10" : ""
-                }`}
+                className={`pricing-card scroll-animate group relative flex flex-col ${isPopular ? "lg:scale-105 z-10" : ""
+                  }`}
                 style={{ transitionDelay: `${index * 75}ms` }}
               >
                 {/* Card */}
                 <div
-                  className={`relative h-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border rounded-2xl p-5 flex flex-col transition-all duration-500 hover:-translate-y-2 ${
-                    isPopular
-                      ? "border-primary/50 shadow-xl shadow-primary/20"
-                      : "border-white/20 dark:border-slate-700/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
-                  }`}
+                  className={`relative h-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border rounded-2xl p-5 flex flex-col transition-all duration-500 hover:-translate-y-2 ${isPopular
+                    ? "border-primary/50 shadow-xl shadow-primary/20"
+                    : "border-white/20 dark:border-slate-700/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
+                    }`}
                 >
                   {/* Popular Badge */}
                   {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-primary to-[hsl(262_83%_58%)] text-white text-xs font-semibold rounded-full flex items-center gap-1.5 shadow-lg shadow-primary/30">
+                    <div className="absolute z-[50] -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-primary to-[hsl(262_83%_58%)] text-white text-xs font-semibold rounded-full flex items-center gap-1.5 shadow-lg shadow-primary/30">
                       <Sparkles className="w-3 h-3" />
                       Más Popular
                     </div>
@@ -166,11 +164,10 @@ export function PricingSection() {
                   {/* CTA Button */}
                   <Link href={`/register?plan=${planKey}`} className="w-full">
                     <Button
-                      className={`w-full group/btn ${
-                        isPopular
-                          ? "bg-gradient-to-r from-primary to-[hsl(262_83%_58%)] hover:shadow-lg hover:shadow-primary/30"
-                          : "bg-white/50 dark:bg-slate-800/50 hover:bg-primary hover:text-white border border-border hover:border-primary"
-                      } transition-all`}
+                      className={`w-full group/btn ${isPopular
+                        ? "bg-gradient-to-r from-primary to-[hsl(262_83%_58%)] hover:shadow-lg hover:shadow-primary/30"
+                        : "bg-white/50 dark:bg-slate-800/50 hover:bg-primary hover:text-white border border-border hover:border-primary"
+                        } transition-all`}
                       variant={isPopular ? "default" : "outline"}
                       size="sm"
                     >

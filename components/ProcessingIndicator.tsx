@@ -62,10 +62,10 @@ export default function ProcessingIndicator({ onDismiss }: ProcessingIndicatorPr
   if (showSuccess) {
     return (
       <div className="fixed bottom-6 right-6 z-50 max-w-sm animate-in slide-in-from-bottom-4 duration-300">
-        <div className="bg-green-500/90 backdrop-blur-sm border border-green-400/30 rounded-xl shadow-2xl p-4">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 backdrop-blur-sm border border-green-400/30 rounded-xl shadow-[0_8px_32px_rgba(34,197,94,0.4)] p-4">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center animate-bounce">
                 <CheckCircle2 className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -91,7 +91,7 @@ export default function ProcessingIndicator({ onDismiss }: ProcessingIndicatorPr
         onClick={() => setCollapsed(false)}
         className="fixed bottom-6 right-6 z-50 cursor-pointer"
       >
-        <div className="bg-primary/90 backdrop-blur-sm border border-primary/30 rounded-full p-3 shadow-lg hover:bg-primary transition-all animate-pulse">
+        <div className="bg-gradient-to-r from-primary to-[hsl(262_83%_58%)] backdrop-blur-sm border border-primary/30 rounded-full p-3 shadow-[0_8px_32px_rgba(59,130,246,0.4)] hover:shadow-[0_12px_40px_rgba(59,130,246,0.5)] transition-all animate-pulse">
           <div className="flex items-center gap-2">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             <span className="text-white font-medium text-sm">{pendingCount}</span>
@@ -104,11 +104,11 @@ export default function ProcessingIndicator({ onDismiss }: ProcessingIndicatorPr
   // Processing state
   return (
     <div className="fixed bottom-6 right-6 z-50 max-w-sm">
-      <div className="bg-primary/90 backdrop-blur-sm border border-primary/30 rounded-xl shadow-2xl p-4 animate-pulse">
+      <div className="bg-gradient-to-r from-primary to-[hsl(262_83%_58%)] backdrop-blur-sm border border-primary/30 rounded-xl shadow-[0_8px_32px_rgba(59,130,246,0.4)] p-4 animate-pulse">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
+              <FileText className="w-5 h-5 text-white animate-pulse" />
             </div>
           </div>
 

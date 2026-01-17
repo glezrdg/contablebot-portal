@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "worker": "tsx watch --env-file=.env.local worker/process-invoices.ts",
-    "worker:prod": "tsx worker/process-invoices.ts"
+    "worker:prod": "tsx worker/process-invoices.ts",
+    "create-user": "tsx --env-file=.env.local scripts/create-user.ts",
+    "list-users": "tsx --env-file=.env.local scripts/list-users.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",

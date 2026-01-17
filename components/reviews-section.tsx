@@ -1,6 +1,7 @@
 "use client"
 
 import { Star, Quote, MessageSquare } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 const reviews = [
@@ -91,7 +92,7 @@ export function ReviewsSection() {
     <section
       ref={sectionRef}
       id="reviews"
-      className="relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="relative px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       {/* Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
@@ -103,7 +104,7 @@ export function ReviewsSection() {
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-16 sm:mb-20">
+        {/* <div className="text-center mb-16 sm:mb-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <MessageSquare className="w-4 h-4" />
             <span>Testimonios</span>
@@ -116,10 +117,10 @@ export function ReviewsSection() {
             Miles de profesionales en República Dominicana ya confían en ContableBot
             para su gestión de facturas.
           </p>
-        </div>
+        </div> */}
 
         {/* Reviews Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="hidden md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reviews.map((review, index) => (
             <div
               key={index}
@@ -172,10 +173,20 @@ export function ReviewsSection() {
         </div>
 
         {/* Trust Indicators */}
-        <div className="mt-16 sm:mt-20 text-center">
+        <div className="my-12 text-center">
+          <Image
+            src="/contablebot-logo.png"
+            alt="ContableBot"
+            width={400}
+            height={92}
+            className="object-contain m-auto w-[200px] sm:w-[280px] md:w-[350px] lg:w-[400px]"
+            priority
+          />
+        </div>
+        <div className="hidden mt-16 sm:mt-20 text-center">
           <div className="inline-flex flex-col sm:flex-row items-center gap-6 sm:gap-10 p-6 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-slate-700/50">
             <div className="text-center">
-              <div className="text-3xl font-bold text-foreground">500+</div>
+              <div className="text-3xl font-bold text-foreground">10+</div>
               <div className="text-sm text-muted-foreground">Clientes Activos</div>
             </div>
             <div className="w-px h-12 bg-border hidden sm:block" />
@@ -185,7 +196,7 @@ export function ReviewsSection() {
             </div>
             <div className="w-px h-12 bg-border hidden sm:block" />
             <div className="text-center">
-              <div className="text-3xl font-bold text-foreground">99%</div>
+              <div className="text-3xl font-bold text-foreground">90%</div>
               <div className="text-sm text-muted-foreground">Tasa de Satisfacción</div>
             </div>
           </div>

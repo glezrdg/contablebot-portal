@@ -9,7 +9,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02]',
+        default: [
+          'bg-gradient-to-r',
+          'from-primary',
+          'to-[hsl(262_83%_58%)]',
+          'text-white',
+          'hover:shadow-lg',
+          'hover:shadow-primary/30',
+          'hover:scale-[1.02]',
+          'transition-all',
+          'duration-200',
+        ],
+        solid: 'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02]',
         destructive:
           'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 hover:scale-[1.02]',
         outline:
@@ -33,11 +44,13 @@ const buttonVariants = cva(
         gradient: [
           'bg-gradient-to-r',
           'from-primary',
-          'to-[hsl(221_83%_63%)]',
-          'text-primary-foreground',
+          'to-[hsl(262_83%_58%)]',
+          'text-white',
           'hover:shadow-lg',
           'hover:shadow-primary/30',
           'hover:scale-[1.02]',
+          'transition-all',
+          'duration-200',
         ],
         glow: [
           'bg-primary',

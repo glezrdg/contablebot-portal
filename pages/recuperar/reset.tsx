@@ -9,10 +9,11 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileText, Loader2, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight, Shield, Lightbulb } from 'lucide-react';
+import { Loader2, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight, Shield, Lightbulb } from 'lucide-react';
 
 export default function PasswordResetPage() {
   const router = useRouter();
@@ -109,11 +110,17 @@ export default function PasswordResetPage() {
           <div className="w-full max-w-md relative z-10">
             {/* Logo */}
             <div className="text-center mb-8">
-              <Link href="/" className="inline-flex items-center gap-2.5 mb-8 group">
-                <div className="w-11 h-11 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all group-hover:scale-105">
-                  <FileText className="w-6 h-6 text-white" />
+              <Link href="/" className="inline-flex items-center justify-center mb-8 group">
+                <div className="relative transition-all group-hover:scale-105">
+                  <Image
+                    src="/contablebot-logo.png"
+                    alt="ContableBot"
+                    width={160}
+                    height={37}
+                    className="object-contain"
+                    priority
+                  />
                 </div>
-                <span className="font-bold text-xl text-foreground">ContableBot</span>
               </Link>
             </div>
 

@@ -3,11 +3,11 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  FileText,
   Check,
   ArrowLeft,
   ArrowRight,
@@ -133,13 +133,17 @@ function RegistroContent() {
 
         <div className="mx-auto w-full max-w-lg relative z-10">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 mb-8 group">
-            <div className="w-11 h-11 bg-gradient-to-br from-primary to-[hsl(262_83%_58%)] rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all group-hover:scale-105">
-              <FileText className="w-6 h-6 text-white" />
+          <Link href="/" className="inline-flex items-center justify-center mb-8 group">
+            <div className="relative transition-all group-hover:scale-105">
+              <Image
+                src="/contablebot-logo.png"
+                alt="ContableBot"
+                width={160}
+                height={37}
+                className="object-contain"
+                priority
+              />
             </div>
-            <span className="font-bold text-xl text-foreground">
-              ContableBot
-            </span>
           </Link>
 
           {step === "plan" && (
@@ -428,8 +432,14 @@ function RegistroContent() {
 
         <div className="max-w-md text-center relative z-10">
           {/* Icon */}
-          <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/20 shadow-xl animate-float">
-            <FileText className="w-12 h-12 text-primary" />
+          <div className="w-32 h-32 bg-gradient-to-br from-primary/20 to-[hsl(262_83%_58%)]/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/20 shadow-xl animate-float p-4">
+            <Image
+              src="/logo_icon.png"
+              alt="ContableBot"
+              width={80}
+              height={80}
+              className="object-contain"
+            />
           </div>
 
           <h2 className="text-3xl font-bold text-foreground mb-4">

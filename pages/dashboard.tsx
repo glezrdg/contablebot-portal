@@ -19,8 +19,9 @@ import PageLoader from "@/components/PageLoader";
 import ClientFilterButtons from "@/components/ClientFilterButtons";
 import InvoiceDataTable from "@/components/InvoiceDataTable";
 import ExportButtons from "@/components/ExportButtons";
-import { BarChart3, Settings, Upload, ShieldCheck } from "lucide-react";
+import { BarChart3, Settings, Upload, ShieldCheck, Activity } from "lucide-react";
 import { ALL_COLUMNS } from "@/utils/Invoice-columns";
+import { UsageRing } from "@/components/ui/progress-ring";
 import { useProcessing } from "@/contexts/ProcessingContext";
 import { Dropdown } from "primereact/dropdown";
 import { validateInvoice, getQualityLevel } from "@/lib/invoice-validator";
@@ -435,6 +436,112 @@ export default function DashboardPage() {
     }));
 
     const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Get the range of the worksheet
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+
+    // Define column widths
+    ws['!cols'] = [
+      { wch: 12 },  // RNC
+      { wch: 12 },  // FECHA
+      { wch: 30 },  // NOMBRE COMPAÑÍA
+      { wch: 18 },  // NO. COMPROBANTE FISCAL
+      { wch: 15 },  // MATERIALES
+      { wch: 18 },  // MONTO EN SERVICIO EXENTO
+      { wch: 18 },  // MONTO EN BIEN EXENTO
+      { wch: 20 },  // TOTAL DE MONTOS EXENTO
+      { wch: 20 },  // MONTO EN SERVICIO GRAVADO
+      { wch: 18 },  // MONTO EN BIEN GRAVADO
+      { wch: 20 },  // TOTAL DE MONTOS GRAVADO
+      { wch: 16 },  // ITBIS SERVICIOS
+      { wch: 18 },  // ITBIS COMPRAS BIENES
+      { wch: 20 },  // TOTAL FACTURADO EN ITBIS
+      { wch: 20 },  // ITBIS SERVICIOS RETENIDO
+      { wch: 18 },  // RETENCION 30% ITBIS
+      { wch: 14 },  // RETENCION 10%
+      { wch: 14 },  // RETENCION 2%
+      { wch: 12 },  // PROPINA
+      { wch: 16 },  // TOTAL FACTURADO
+      { wch: 16 },  // TOTAL A COBRAR
+    ];
+
+    // Style header row with brand colors
+    for (let col = range.s.c; col <= range.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+      if (!ws[cellAddress]) continue;
+
+      ws[cellAddress].s = {
+        font: {
+          bold: true,
+          color: { rgb: "FFFFFF" },
+          sz: 11
+        },
+        fill: {
+          fgColor: { rgb: "0EA5E9" } // Brand blue color
+        },
+        alignment: {
+          horizontal: "center",
+          vertical: "center",
+          wrapText: true
+        },
+        border: {
+          top: { style: "thin", color: { rgb: "000000" } },
+          bottom: { style: "thin", color: { rgb: "000000" } },
+          left: { style: "thin", color: { rgb: "000000" } },
+          right: { style: "thin", color: { rgb: "000000" } }
+        }
+      };
+    }
+
+    // Style data rows with alternating colors and borders
+    for (let row = range.s.r + 1; row <= range.e.r; row++) {
+      const isEvenRow = row % 2 === 0;
+
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!ws[cellAddress]) continue;
+
+        // Determine if column contains currency values (columns 5-20)
+        const isCurrencyColumn = col >= 5;
+
+        // Determine if column is a total column (indices 7, 10, 13, 19, 20)
+        // 7: TOTAL DE MONTOS EXENTO
+        // 10: TOTAL DE MONTOS GRAVADO
+        // 13: TOTAL FACTURADO EN ITBIS
+        // 19: TOTAL FACTURADO
+        // 20: TOTAL A COBRAR
+        const isTotalColumn = [7, 10, 13, 19, 20].includes(col);
+
+        ws[cellAddress].s = {
+          font: {
+            sz: 10,
+            color: { rgb: isTotalColumn ? "16A34A" : "1E293B" }, // Green text for totals
+            bold: isTotalColumn
+          },
+          fill: {
+            fgColor: { rgb: isTotalColumn
+              ? (isEvenRow ? "F0FDF4" : "ECFDF5")  // Light green for total columns
+              : (isEvenRow ? "F8FAFC" : "FFFFFF")  // Normal alternating colors
+            }
+          },
+          alignment: {
+            horizontal: isCurrencyColumn ? "right" : "left",
+            vertical: "center"
+          },
+          border: {
+            top: { style: "thin", color: { rgb: "E2E8F0" } },
+            bottom: { style: "thin", color: { rgb: "E2E8F0" } },
+            left: { style: "thin", color: { rgb: isTotalColumn ? "10B981" : "E2E8F0" } },
+            right: { style: "thin", color: { rgb: isTotalColumn ? "10B981" : "E2E8F0" } }
+          },
+          numFmt: isCurrencyColumn ? "#,##0.00" : undefined
+        };
+      }
+    }
+
+    // Set row height for header
+    ws['!rows'] = [{ hpt: 30 }];
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "606");
 
@@ -522,7 +629,7 @@ export default function DashboardPage() {
             <ConfirmDialog />
 
             {/* Quick Action Cards with Enhanced 3D Glassmorphic Design */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 mb-8">
               {/* Subir Factura - Primary Blue-Purple gradient */}
               <div
                 onClick={handleOpenUploader}
@@ -586,6 +693,34 @@ export default function DashboardPage() {
                   Ajusta tu perfil, integraciones y preferencias
                 </p>
               </a>
+
+              {/* Uso Mensual - Sky gradient */}
+              <div className="group bg-[var(--glass-white)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl p-6 shadow-[0_4px_16px_0_rgba(31,38,135,0.08),0_2px_8px_0_rgba(31,38,135,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_16px_0_rgba(0,0,0,0.2),0_2px_8px_0_rgba(0,0,0,0.15),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_12px_48px_0_rgba(14,165,233,0.25),0_6px_24px_0_rgba(14,165,233,0.15),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.5),0_6px_24px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:translate-y-[-6px] transition-all duration-300 relative before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none before:z-[-1]">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-sky-500/30 to-blue-500/20 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(14,165,233,0.2)] group-hover:shadow-[0_6px_24px_rgba(14,165,233,0.3)] group-hover:scale-110 transition-all duration-300 flex-shrink-0">
+                    <Activity className="w-8 h-8 text-sky-500 drop-shadow-sm" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-2xl font-bold text-sky-600 dark:text-sky-400 tabular-nums">
+                      {userData.usedThisMonth || 0}/{userData.planLimit || 100}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {(() => {
+                        const percentage = ((userData.usedThisMonth || 0) / (userData.planLimit || 100)) * 100;
+                        if (percentage >= 90) return "⚠️ Límite cercano";
+                        if (percentage >= 75) return "⚡ Uso elevado";
+                        return "✓ Uso normal";
+                      })()}
+                    </div>
+                  </div>
+                </div>
+                <h3 className="font-bold text-foreground mb-2 text-lg">
+                  Uso Mensual
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Facturas procesadas este mes
+                </p>
+              </div>
             </div>
 
             {/* Add Client Modal */}
