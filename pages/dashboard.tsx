@@ -593,7 +593,6 @@ export default function DashboardPage() {
     <DashboardLayout
       title="Dashboard - ContableBot Portal"
       description="Dashboard de facturación 606"
-      showUserStats={true}
     >
       {(userData, refreshUserData) => {
         // Initialize state from userData on first render

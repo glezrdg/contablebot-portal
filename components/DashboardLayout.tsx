@@ -17,7 +17,6 @@ interface DashboardLayoutProps {
   children: React.ReactNode | ((userData: MeResponse, refreshUserData: () => Promise<void>) => React.ReactNode);
   title?: string;
   description?: string;
-  showUserStats?: boolean;
   requireAdmin?: boolean;
   requirePlan?: 'starter' | 'business' | 'pro' | 'ultra' | 'enterprise';
 }
@@ -26,7 +25,6 @@ export default function DashboardLayout({
   children,
   title = 'ContableBot Portal',
   description = 'Portal de gestión de facturas',
-  showUserStats = false,
   requireAdmin = false,
   requirePlan,
 }: DashboardLayoutProps) {
@@ -122,10 +120,7 @@ export default function DashboardLayout({
               <AdminHeader
                 firmName={userData.firmName || ''}
                 userEmail={userData.email || ''}
-                usedThisMonth={userData.usedThisMonth || 0}
-                planLimit={userData.planLimit || 0}
                 manageUrl={userData.manageUrl}
-                showUserStats={showUserStats}
                 userRole={userData.role}
                 planKey={userData.planKey}
               />

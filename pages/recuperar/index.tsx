@@ -13,7 +13,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Mail, ArrowLeft, CheckCircle2, Send, RefreshCw, Shield } from 'lucide-react';
+import { Loader2, Mail, ArrowLeft, CheckCircle2, Send, RefreshCw, Shield, FileText } from 'lucide-react';
 
 export default function PasswordResetRequestPage() {
   const router = useRouter();

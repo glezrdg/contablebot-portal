@@ -15,7 +15,6 @@ export default function TutorialPage() {
     <DashboardLayout
       title="Tutorial - ContableBot"
       description="Aprende a usar ContableBot"
-      showUserStats={false}
     >
       {() => (
         <div className="max-w-5xl mx-auto">

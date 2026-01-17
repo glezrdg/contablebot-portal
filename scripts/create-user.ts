@@ -156,7 +156,7 @@ async function createUser(args: CreateUserArgs, firmId: number): Promise<void> {
   }
 
   // Hash the password
-  // const passwordHash = await bcrypt.hash(args.password, 10);
+  const passwordHash = await bcrypt.hash(args.password, 10);
 
   // Create the user
   const response = await fetch(`${POSTGREST_BASE_URL}/portal_users`, {
@@ -167,7 +167,7 @@ async function createUser(args: CreateUserArgs, firmId: number): Promise<void> {
     },
     body: JSON.stringify({
       email: args.email.toLowerCase().trim(),
-      password_hash: args.password,
+      password_hash: passwordHash,
       full_name: args.fullName || null,
       firm_id: firmId,
       role: args.role,

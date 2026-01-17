@@ -46,6 +46,7 @@ export default function QADashboardPage() {
   // Confirmation modals
   const [confirmReprocess, setConfirmReprocess] = useState<{ show: boolean; invoice?: QAInvoice; bulk?: boolean }>({ show: false });
   const [confirmDelete, setConfirmDelete] = useState<{ show: boolean; invoice?: QAInvoice }>({ show: false });
+  const [confirmApprove, setConfirmApprove] = useState<{ show: boolean; invoice?: QAInvoice }>({ show: false });
   const [confirmBulkApprove, setConfirmBulkApprove] = useState(false);
 
   // Fetch QA invoices
@@ -103,8 +104,13 @@ export default function QADashboardPage() {
     fetchQAInvoices();
   }, [fetchQAInvoices]);
 
-  // Approve invoice (mark as OK)
-  const handleApprove = async (invoice: QAInvoice) => {
+  // Show approve confirmation
+  const handleApprove = (invoice: QAInvoice) => {
+    setConfirmApprove({ show: true, invoice });
+  };
+
+  // Execute approve after confirmation
+  const executeApprove = async (invoice: QAInvoice) => {
     try {
       const response = await fetch(`/api/invoices/${invoice.id}`, {
         method: "PATCH",
@@ -401,7 +407,6 @@ export default function QADashboardPage() {
     <DashboardLayout
       title="Control de Calidad - ContableBot"
       description="Revisar y aprobar facturas"
-      showUserStats={false}
     >
       {(userData) => {
         // Set admin status and fetch clients on userData load
@@ -809,6 +814,67 @@ export default function QADashboardPage() {
                         className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                       >
                         Reprocesar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>,
+            document.body
+          )}
+
+          {/* Approve Confirmation Modal */}
+          {confirmApprove.show && confirmApprove.invoice && createPortal(
+            <>
+              <div
+                className="fixed inset-0 bg-black/40 backdrop-blur-md z-[1100]"
+                onClick={() => setConfirmApprove({ show: false })}
+              />
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1101] w-full max-w-md px-4">
+                <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-[0_24px_64px_0_rgba(0,0,0,0.3)] overflow-hidden">
+                  <div className="flex items-center justify-between p-6 border-b border-[var(--glass-border)] bg-gradient-to-r from-green-500/5 via-green-500/10 to-green-500/5">
+                    <div>
+                      <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center shadow-md">
+                          <CheckCircle className="w-5 h-5 text-green-500 drop-shadow-sm" />
+                        </div>
+                        Confirmar aprobación
+                      </h2>
+                    </div>
+                    <button
+                      onClick={() => setConfirmApprove({ show: false })}
+                      className="group text-muted-foreground hover:text-foreground transition-all p-2 hover:bg-[var(--glass-white)] rounded-xl border border-transparent hover:border-[var(--glass-border)]"
+                    >
+                      <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-foreground mb-6">
+                      ¿Aprobar la factura <span className="font-semibold text-primary">{confirmApprove.invoice.ncf}</span>?
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      Esta acción marcará la factura como OK y se removerán las banderas de dudoso.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setConfirmApprove({ show: false })}
+                        className="flex-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (confirmApprove.invoice) {
+                            await executeApprove(confirmApprove.invoice);
+                          }
+                          setConfirmApprove({ show: false });
+                          if (showDetailDialog) {
+                            setShowDetailDialog(false);
+                          }
+                        }}
+                        className="flex-1 px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors font-medium"
+                      >
+                        Aprobar
                       </button>
                     </div>
                   </div>

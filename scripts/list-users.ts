@@ -111,7 +111,7 @@ async function listUsers(args: ListUsersArgs): Promise<void> {
   );
 
   const firms = firmsResponse.ok ? await firmsResponse.json() : [];
-  const firmMap = new Map(firms.map((f: any) => [f.id, f.name]));
+  const firmMap = new Map<number, string>(firms.map((f: any) => [f.id, f.name]));
 
   console.log(`\n Found ${users.length} user${users.length === 1 ? '' : 's'}:\n`);
   console.log('─'.repeat(120));
@@ -127,7 +127,7 @@ async function listUsers(args: ListUsersArgs): Promise<void> {
   console.log('─'.repeat(120));
 
   for (const user of users) {
-    const firmName = firmMap.get(user.firm_id) || `Firm #${user.firm_id}`;
+    const firmName: string = firmMap.get(user.firm_id) || `Firm #${user.firm_id}`;
     const active = user.is_active ? '✓' : '✗';
     const createdAt = new Date(user.created_at).toLocaleDateString();
 
