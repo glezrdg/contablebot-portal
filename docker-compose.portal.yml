@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: contablebot-portal
+    container_name: contablebot-portal-dev
     restart: unless-stopped
     env_file:
       - .env.local
@@ -13,16 +13,16 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.contablebot-portal.rule=Host(`devcontablebot.solodigital.dev`)"
-      - "traefik.http.routers.contablebot-portal.entrypoints=websecure"
-      - "traefik.http.routers.contablebot-portal.tls.certresolver=le"
-      - "traefik.http.services.contablebot-portal.loadbalancer.server.port=3000"
+      - "traefik.http.routers.contablebot-portal-dev.rule=Host(`devcontablebot.solodigital.dev`)"
+      - "traefik.http.routers.contablebot-portal-dev.entrypoints=websecure"
+      - "traefik.http.routers.contablebot-portal-dev.tls.certresolver=le"
+      - "traefik.http.services.contablebot-portal-dev.loadbalancer.server.port=3000"
 
   contablebot-worker:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: contablebot-worker
+    container_name: contablebot-worker-dev
     restart: unless-stopped
     command: ["npm", "run", "worker:prod"]
     env_file:
